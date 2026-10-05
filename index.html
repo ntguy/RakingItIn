@@ -491,7 +491,7 @@ const TUTORIAL=location.hash==='#tutorial';
 const STREET=TUTORIAL?[[0,420],[700,420],[700,960],[1120,960]]:[[0,290],[1150,290],[1150,900],[200,900],[200,1720],[1980,1720]];
 const STREET_HOOD=TUTORIAL?[1,1,1]:[0,1,1,1,2];
 const HOOD_NAMES=['BIRCH LANE','MAPLE AVENUE','WILLOW HEIGHTS'];
-const Y1=STREET[0][1],XC=STREET[1][0],BULB_R=90,WORLD_W=TUTORIAL?1260:2140,H=TUTORIAL?1100:2380;
+const Y1=STREET[0][1],XC=STREET[1][0],BULB_R=90,WORLD_W=TUTORIAL?1260:2530,H=TUTORIAL?1100:2380;
 const ROADS=STREET.slice(1).map(([x1,y1],i)=>{const [x0,y0]=STREET[i],h=y0===y1?1:0;
   return h?{x0:Math.min(x0,x1),y0:y0-RH,x1:Math.max(x0,x1),y1:y0+RH,h,c:y0,hood:STREET_HOOD[i]}:{x0:x0-RH,y0:Math.min(y0,y1),x1:x0+RH,y1:Math.max(y0,y1),h,c:x0,hood:STREET_HOOD[i]};});
 const BULB={x:STREET[STREET.length-1][0],y:STREET[STREET.length-1][1],r:BULB_R,hood:STREET_HOOD[STREET_HOOD.length-1]};
@@ -515,7 +515,7 @@ const TUT_YARDS={
 // Yard items are the editor's: beds and paving are rough boxes that get snapped into place, fl marks a bed planted with
 // flowers, cars sit where they're put (dir is the way the nose points)
 // a patio: m = its surface ('tile', 'deck', 'stone' or 'brick'), round = an oval one
-const PR_=(k,x,y)=>({t:'prop',k,x,y});
+const PR_=(k,x,y)=>({t:'prop',k,x,y}),ST_=(k,x0,y0,x1,y1)=>({t:'struct',k,x0,y0,x1,y1});
 const PT_=(x0,y0,x1,y1,m,round)=>({t:'patio',x0,y0,x1,y1,mat:m,round:!!round});
 const F_=(x0,x1,y)=>({t:'fence',x0,y0:y,x1,y1:y}),GT_=(x0,x1,y)=>({t:'gate',x0,x1,y}),Q_=(t,x0,y0,x1,y1,fl)=>({t,x0,y0,x1,y1,fl:!!fl,sq:true});
 const P_=(x,y,big)=>({t:'pot',x,y,big:!!big}),T_=(x,y,r,pal)=>({t:'tree',x,y,r,pal}),B_=(t,x0,y0,x1,y1,fl)=>({t,x0,y0,x1,y1,fl:!!fl}),S_=(x,y,r)=>({t:'shrub',x,y,r}),C_=(x,y,vert,dir)=>({t:'car',x,y,vert,dir});
@@ -576,10 +576,15 @@ YARD.birchcourt={apt:1,h:[26,52,114,118],dx:83,yard:[B_('path',78,176,88,240),
   T_(132,28,18,0),T_(56,210,15,2),P_(100,184)]};
 YARD.maplegardens={apt:1,h:[20,12,260,54],dx:150,yard:[B_('path',145,72,155,116),
   B_('mulch',24,72,136,84),B_('mulch',164,72,276,84),PR_('bench',112,102),PR_('bench',188,102),T_(52,100,14,1),T_(250,100,14,3),T_(10,40,12,0),P_(138,92),P_(162,92)]};
-YARD.thewillows={apt:1,h:[46,140,168,124],dx:150,yard:[B_('path',145,270,155,380),
-  {t:'pool',x0:24,y0:290,x1:96,y1:352,round:true,inground:true},B_('mulch',110,286,138,352,1),B_('mulch',162,286,190,352,1),Q_('mulch',198,330,234,380,1),
-  PT_(40,30,210,100,'brick'),Q_('mulch',6,6,34,60,1),Q_('mulch',206,110,234,170,1),
-  S_(206,292,6),S_(222,292,6),S_(206,308,6),T_(24,120,18,0),T_(222,52,16,2),T_(26,264,16,3),P_(138,278,1),P_(162,278,1),P_(206,210)]};
+// The Willows: a U-shaped block round a courtyard (the base of the U along the street, a wing down each side) with
+// a shared pool between decks, six little trees, a fountain plaza out front, and a parking garage down the far side
+YARD.thewillows={apt:1,h:[90,250,280,70],dx:230,yard:[B_('path',225,326,235,420),B_('drive',252,326,284,420),B_('drive',284,336,450,366),
+  ST_('wing',90,60,160,250),ST_('wing',300,60,370,250),ST_('garage',386,96,450,330),C_(322,351,false,1),C_(362,351,false,1),
+  B_('pool',184,112,276,196),PT_(166,68,294,106,'deck'),PT_(166,202,294,244,'stone'),
+  T_(172,110,11,0),T_(288,110,11,2),T_(172,198,11,3),T_(288,198,11,1),T_(206,36,12,2),T_(254,36,12,0),
+  {t:'pool',x0:104,y0:340,x1:184,y1:412,round:true,inground:true},B_('mulch',196,332,220,412,1),B_('mulch',290,374,450,414,1),
+  Q_('mulch',6,40,30,300),Q_('natural',96,6,364,24),Q_('mulch',6,330,90,420,1),
+  S_(110,330,6),S_(150,330,6),S_(330,328,6),S_(362,328,6),P_(212,328,1),P_(244,330,1),P_(168,72),P_(292,72),P_(168,240),P_(292,240)]};
 const HOUSES=TUTORIAL?[
   // the starter house beside the truck, and round the corner a tiny house with a pool
   {face:'S',x:190,y:Y1-FRONT-180,w:220,d:180,s:0,hood:1,level:0,name:'THE COOPERS',tag:'STARTER HOME',yard:TUT_YARDS[0]},
@@ -686,7 +691,7 @@ const HOUSES=TUTORIAL?[
   // ---- an apartment block at the end of each street
   {s:1,hood:0,level:1,face:'W',x:1222,y:226,w:166,d:240,name:'BIRCH COURT',tag:'APARTMENTS',...YARD.birchcourt},
   {s:2,hood:1,level:2,face:'E',x:12,y:1000,w:300,d:116,name:'MAPLE GARDENS',tag:'APARTMENTS',...YARD.maplegardens},
-  {s:6,hood:2,level:4,face:'N',x:1890,y:1826,w:240,d:380,name:'THE WILLOWS',tag:'LUXURY CONDOS',...YARD.thewillows},
+  {s:6,hood:2,level:4,face:'W',x:2080,y:1490,w:460,d:420,name:'THE WILLOWS',tag:'LUXURY CONDOS',...YARD.thewillows},
 ];
 // lots that are scenery only (none now: every house on the map is one you can work)
 const FILLERS=[];
@@ -942,7 +947,8 @@ function orient(L,face,ox,oy){
   L.shrubs=(L.lshrubs||[]).map(b=>{const r=b.r;return{...TRc({x0:b.x-r*.85,y0:b.y-r*.75,x1:b.x+r*.85,y1:b.y+r*.7}),r};});
   // patio furniture is solid too (each piece's footprint)
   L.furn=(L.lfurn||[]).map(f=>TRc({x0:f.x-f.w/2,y0:f.y-f.h/2,x1:f.x+f.w/2,y1:f.y+f.h/2}));
-  L.obst=[L.house,...L.cars,...L.shrubs,...L.furn];
+  L.structs=(L.lstructs||[]).map(TRc);
+  L.obst=[L.house,...L.structs,...L.cars,...L.shrubs,...L.furn];
   L.pots=L.lpots.map(p=>{const [x,y]=L.T(p.x,p.y),o={x:Math.round(x),y:Math.round(y),r:p.big?5:3,big:p.big,col:p.col,fl:p.fl,lot:L,broken:false,stress:0,wob:0,touch:false};POTS.push(o);return o;});
   L.nets=L.lnets.map(n=>{const [x,y]=L.T(n.x,n.y),[vx,vy]=L.V(Math.cos(n.a),Math.sin(n.a)),o={hx:x,hy:y,ha:Math.atan2(vy,vx),lot:L,held:false,n:0};o.x=o.hx;o.y=o.hy;o.a=o.ha;NETS.push(o);return o;});
   for(const p of L.lpaved)if(p.kind==='drive'&&p.y1===d)MOUTHS.push(TRc({x0:p.x0-10,y0:d,x1:p.x1+10,y1:d+FRONT}));
@@ -1233,12 +1239,13 @@ function fenceRect(L,it){const dx=it.x1-it.x0,dy=it.y1-it.y0;
   if(Math.abs(dx)>=Math.abs(dy)){const y=clamp(Math.round(it.y0)-3,0,L.d-6);return{x0:clamp(Math.round(Math.min(it.x0,it.x1)),0,L.w),x1:clamp(Math.round(Math.max(it.x0,it.x1)),0,L.w),y0:y,y1:y+6};}
   const x=clamp(Math.round(it.x0)-3,0,L.w-6);return{x0:x,x1:x+6,y0:clamp(Math.round(Math.min(it.y0,it.y1)),0,L.d),y1:clamp(Math.round(Math.max(it.y0,it.y1)),0,L.d)};}
 function applyYard(L,items){
-  const s=L.style;L.lpaved=[];L.lz=[];L.lcars=[];L.ltrees=[];L.lpots=[];L.lshrubs=[];L.gates=[];L.lprops=[];L.lfences=L.lfences.filter(f=>!f.custom);
+  const s=L.style;L.lpaved=[];L.lz=[];L.lcars=[];L.ltrees=[];L.lpots=[];L.lshrubs=[];L.gates=[];L.lprops=[];L.lstructs=[];L.lfences=L.lfences.filter(f=>!f.custom);
   for(const it of items){
     if(it.t==='fence'){const f=fenceRect(L,it);if(f.x1-f.x0>=6&&f.y1-f.y0>=6&&!rectsHit(f,L.lhouse))L.lfences.push({...f,custom:true});continue;}
     if(it.t==='shrub'){if(!inRect(L.lhouse,it.x,it.y,it.r))L.lshrubs.push({x:Math.round(it.x),y:Math.round(it.y),r:it.r});continue;}
     if(it.t==='tree'){if(!inRect(L.lhouse,it.x,it.y,4))L.ltrees.push({x:Math.round(it.x),y:Math.round(it.y),r:it.r,pal:it.pal,rate:.22+s*.1});continue;}
     if(it.t==='pot'){if(!inRect(L.lhouse,it.x,it.y,3))L.lpots.push(makePot(it.x,it.y,it.big));continue;}
+    if(it.t==='struct'){L.lstructs.push({k:it.k,x0:Math.round(it.x0),y0:Math.round(it.y0),x1:Math.round(it.x1),y1:Math.round(it.y1)});continue;}
     if(it.t==='prop'){(L.lprops||(L.lprops=[])).push({k:it.k,x:Math.round(it.x),y:Math.round(it.y)});continue;}
     if(it.t==='gate'){L.gates.push({x0:Math.round(it.x0),x1:Math.round(it.x1),y:Math.round(it.y)});continue;}
     if(it.t==='car'){L.lcars.push({cx:it.x,cy:it.y,vert:!!it.vert,dir:it.dir||1,col:carCol(L.hood,hash(it.x+L.k*31,it.y*7))});continue;}
@@ -1263,7 +1270,7 @@ function applyYard(L,items){
 function yardFromLot(L){
   return[...L.lpaved.map(p=>({t:p.kind==='path'?'path':'drive',x0:p.x0,y0:p.y0,x1:p.x1,y1:p.y1})),
     ...L.lz.filter(z=>z.shape!=='e'||z.x0!=null).map(z=>({t:z.type,x0:z.x0,y0:z.y0,x1:z.x1,y1:z.y1,fl:!!z.fl,...(z.shape==='e'?{round:true,...(z.type==='pool'&&!z.above?{inground:true}:{})}:{}),...(z.mat?{mat:z.mat}:{}),...(z.shape==='r'&&z.good?{sq:true}:{})})),
-    ...(L.gates||[]).map(g=>({t:'gate',x0:g.x0,x1:g.x1,y:g.y})),...(L.lprops||[]).map(q=>({t:'prop',k:q.k,x:q.x,y:q.y})),
+    ...(L.gates||[]).map(g=>({t:'gate',x0:g.x0,x1:g.x1,y:g.y})),...(L.lprops||[]).map(q=>({t:'prop',k:q.k,x:q.x,y:q.y})),...(L.lstructs||[]).map(q=>({t:'struct',...q})),
     ...L.ltrees.map(t=>({t:'tree',x:t.x,y:t.y,r:t.r,pal:t.pal})),
     ...L.lpots.map(p=>({t:'pot',x:p.x,y:p.y,big:p.big})),
     ...(L.lshrubs||[]).map(b=>({t:'shrub',x:b.x,y:b.y,r:b.r})),
@@ -1407,7 +1414,7 @@ function buildBackground(){
       if(d<1)dark(x,y,d>.85&&BAYER[(y&3)*4+(x&3)]>.5?.86:.74);
     }
   }
-  for(const L of ALL_LOTS){const h=L.house;for(let y=h.y0+7;y<h.y1+8;y++)for(let x=h.x0+7;x<h.x1+8;x++)dark(x,y,.68);}
+  for(const L of ALL_LOTS)for(const h of [L.house,...(L.structs||[])])for(let y=h.y0+7;y<h.y1+8;y++)for(let x=h.x0+7;x<h.x1+8;x++)dark(x,y,.68);
   c.putImageData(img,0,0);
   ALL_LOTS.forEach((L,i)=>blitLot(c,layers[i][1],L));
   for(const t of TREES){c.fillStyle='#3a2416';pcircle(c,t.x,t.y,5);c.fillStyle='#6b4428';pcircle(c,t.x,t.y,4);c.fillStyle='#8a5a36';c.fillRect(t.x-2,t.y-3,2,2);}
@@ -1566,7 +1573,41 @@ function drawApartment(c,L){
   // balconies hang off the front of the Maple and Willow blocks
   if(hd>0)for(let bx=x+10;bx<x+w-20;bx+=hd===2?30:26){if(Math.abs(bx+6-dx)<16)continue;c.fillStyle='rgba(0,0,0,.3)';c.fillRect(bx+2,y+hh+2,12,4);c.fillStyle='#5a5a5a';c.fillRect(bx,y+hh,12,4);c.fillStyle=hd===2?'rgba(160,220,255,.8)':'#c8c2b4';c.fillRect(bx,y+hh+3,12,1);c.fillStyle='#3f7a34';c.fillRect(bx+2,y+hh+1,2,2);}
 }
+// the extra blocks: a wing of the building (same roof, a row of skylights and planters), or a parking garage seen
+// from above: the top deck with its bays marked out and cars parked, a ramp down at the entrance end, a glass stair
+// tower in one corner and planters all along its edge
+function drawStruct(c,L,st){
+  const x=st.x0,y=st.y0,w=st.x1-st.x0,hh=st.y1-st.y0,R=(i,j)=>hash(i*5+L.k+x,j*11+y);
+  c.fillStyle='#1e1414';c.fillRect(x-2,y-2,w+4,hh+4);
+  if(st.k==='garage'){
+    for(let yy=0;yy<hh;yy++)for(let xx=0;xx<w;xx++){const r=R(xx,yy);c.fillStyle=r<.6?'#9a9a96':r<.85?'#8e8e8a':'#a6a6a2';c.fillRect(x+xx,y+yy,1,1);}
+    // planters along every edge
+    c.fillStyle='#2f5a26';c.fillRect(x,y,w,3);c.fillRect(x,y,3,hh);c.fillRect(x+w-3,y,3,hh);c.fillRect(x,y+hh-3,w,3);
+    c.fillStyle='#4a8a3a';for(let k=1;k<w;k+=3){c.fillRect(x+k,y+1,2,1);c.fillRect(x+k,y+hh-2,2,1);}for(let k=1;k<hh;k+=3){c.fillRect(x+1,y+k,1,2);c.fillRect(x+w-2,y+k,1,2);}
+    c.fillStyle='#ff5f8f';for(let k=4;k<w;k+=9){c.fillRect(x+k,y+1,1,1);c.fillRect(x+k+3,y+hh-2,1,1);}
+    // bays down both long sides, a driving lane up the middle
+    const vert=hh>=w,len=vert?hh:w,wid=vert?w:hh,bay=20;
+    c.fillStyle='#f4f1e8';
+    for(let k=34;k<len-14;k+=bay){if(vert){c.fillRect(x+4,y+k,Math.round(wid*.3),1);c.fillRect(x+w-4-Math.round(wid*.3),y+k,Math.round(wid*.3),1);}else{c.fillRect(x+k,y+4,1,Math.round(wid*.3));c.fillRect(x+k,y+hh-4-Math.round(wid*.3),1,Math.round(wid*.3));}}
+    c.fillStyle='#e8c24a';for(let k=34;k<len-14;k+=8){if(vert)c.fillRect(x+(w>>1),y+k,1,4);else c.fillRect(x+k,y+(hh>>1),4,1);}
+    // a few cars up top
+    for(let k=0,b=0;k*bay+44<len-14;k++){for(const side of [0,1]){if(R(k,side+7)<.45)continue;const can=makeCarCached(carCol(2,R(side,k+3)));c.save();
+      if(vert){c.translate(side?x+w-4-Math.round(wid*.15):x+4+Math.round(wid*.15),y+44+k*bay);c.rotate(side?Math.PI:0);}else{c.translate(x+44+k*bay,side?y+hh-4-Math.round(wid*.15):y+4+Math.round(wid*.15));c.rotate(side?Math.PI/2*3:Math.PI/2);}
+      c.scale(.7,.7);c.drawImage(can,-17,-8);c.restore();b++;}}
+    // the ramp at the street end, and the glass stair tower at the far end
+    c.fillStyle='#6a6a66';if(vert)c.fillRect(x+(w>>1)-9,y+hh-30,18,26);else c.fillRect(x+4,y+(hh>>1)-9,26,18);
+    c.fillStyle='#f4f1e8';for(let k=0;k<3;k++){if(vert){const yy=y+hh-26+k*8;c.fillRect(x+(w>>1)-3,yy,1,1);c.fillRect(x+(w>>1)-2,yy-1,1,1);c.fillRect(x+(w>>1)-1,yy-2,2,1);c.fillRect(x+(w>>1)+1,yy-1,1,1);c.fillRect(x+(w>>1)+2,yy,1,1);}}
+    const tx=vert?x+4:x+w-22,ty=vert?y+4:y+4;c.fillStyle='#14202c';c.fillRect(tx,ty,18,18);c.fillStyle='#22364a';c.fillRect(tx+1,ty+1,16,16);c.fillStyle='rgba(160,220,255,.6)';c.fillRect(tx+2,ty+2,6,1);c.fillRect(tx+2,ty+2,1,6);c.fillStyle='#e8c24a';c.fillRect(tx+7,ty+7,4,4);
+    return;}
+  // a wing: the building's roof again
+  const roof=L.hood===0?['#4a4a48','#3e3e3c','#565654']:L.hood===2?['#c8ccd0','#bcc0c4','#d4d8dc']:['#8a8a86','#7e7e7a','#969692'];
+  for(let yy=0;yy<hh;yy++)for(let xx=0;xx<w;xx++){const r=R(xx,yy);c.fillStyle=roof[r<.6?0:r<.82?1:2];c.fillRect(x+xx,y+yy,1,1);}
+  c.fillStyle=L.hood===2?'#e8eef2':'#b8b2a6';c.fillRect(x,y,w,2);c.fillRect(x,y,2,hh);c.fillRect(x+w-2,y,2,hh);c.fillRect(x,y+hh-2,w,2);
+  const vert=hh>=w;for(let k=16;k<(vert?hh:w)-16;k+=22){const sx=vert?x+(w>>1)-6:x+k,sy=vert?y+k:y+(hh>>1)-6;c.fillStyle='#2a3a4a';c.fillRect(sx,sy,12,12);c.fillStyle='#6fb3d9';c.fillRect(sx+1,sy+1,10,10);c.fillStyle='#bfe6ff';c.fillRect(sx+2,sy+2,4,2);}
+  for(const [px,py] of vert?[[x+5,y+5],[x+w-11,y+5],[x+5,y+hh-11],[x+w-11,y+hh-11]]:[[x+5,y+5],[x+w-11,y+5]]){c.fillStyle='#5a3a1e';c.fillRect(px,py,6,6);c.fillStyle='#3f7a34';pcircle(c,px+3,py+2,3);c.fillStyle='#ffd84a';c.fillRect(px+2,py+1,1,1);}
+}
 function drawHouse(c,L){
+  for(const st of L.lstructs||[])drawStruct(c,L,st);
   if(L.apt){drawApartment(c,L);return;}
   const h=L.lhouse,x=h.x0,y=h.y0,w=h.x1-h.x0,hh=h.y1-h.y0,mid=y+Math.round(hh/2),P=ROOF_PALS[L.style];
   c.fillStyle='#1e1414';c.fillRect(x-2,y-2,w+4,hh+4);
@@ -1808,7 +1849,7 @@ function charge(cost){if(today.coop){today.pot-=cost;return cost;}const paid=Mat
 
 // ============================================================ canvas
 let cvs=document.getElementById('game'),ctx=cvs.getContext('2d');
-let scale=3,SUB=1,VW=480,VH=270,gCan,aCan,lCan,gCtx,aCtx,lCtx,gImg,aImg,gBuf,aBuf;
+let scale=3,VW=480,VH=270,gCan,aCan,lCan,gCtx,aCtx,lCtx,gImg,aImg,gBuf,aBuf;
 // The screen is one view, or two side by side. Each has its own canvas, leaf/lighting buffers and camera; the
 // drawing code runs once per view with that view's buffers loaded into the usual globals
 const views=[];let HV=null;
@@ -1819,16 +1860,14 @@ function layoutViews(){
   // two players each see a touch more of the world: about 10% further out than full screen
   const sc=n>1?base/1.1:base;
   views.forEach((v,i)=>{const pw=n>1?Math.floor(W/2):W;v.pw=pw;v.left=i?W-pw:0;v.root.style.left=v.left+'px';v.root.style.width=pw+'px';
-    // the canvas holds SUB canvas pixels per world pixel (as close to one per CSS pixel as a whole number allows), so
-    // things that move can be drawn between world pixels and glide instead of hopping a whole pixel at a time
-    v.sc=sc;v.sub=clamp(Math.floor(sc),1,4);v.w=Math.ceil(pw/sc)+1;v.h=Math.ceil(Hh/sc)+1;v.cvs.width=v.w*v.sub;v.cvs.height=v.h*v.sub;v.cvs.style.width=v.w*sc+'px';v.cvs.style.height=v.h*sc+'px';v.ctx.imageSmoothingEnabled=false;
+    v.sc=sc;v.w=Math.ceil(pw/sc)+1;v.h=Math.ceil(Hh/sc)+1;v.cvs.width=v.w;v.cvs.height=v.h;v.cvs.style.width=v.w*sc+'px';v.cvs.style.height=v.h*sc+'px';v.ctx.imageSmoothingEnabled=false;
     v.gCan=mk(v.w,v.h);v.aCan=mk(v.w,v.h);v.lCan=mk(v.w,v.h);v.gCtx=v.gCan.getContext('2d');v.aCtx=v.aCan.getContext('2d');v.lCtx=v.lCan.getContext('2d');
     v.gImg=v.gCtx.createImageData(v.w,v.h);v.aImg=v.aCtx.createImageData(v.w,v.h);v.gBuf=new Uint32Array(v.gImg.data.buffer);v.aBuf=new Uint32Array(v.aImg.data.buffer);
     v.canOff={x:-1,y:-1};v.cache={};});
   document.body.classList.toggle('coop',n>1);
   useView(views[0]);
 }
-function useView(v){HV=v;cvs=v.cvs;ctx=v.ctx;VW=v.w;VH=v.h;scale=v.sc;SUB=v.sub||1;gCan=v.gCan;aCan=v.aCan;lCan=v.lCan;gCtx=v.gCtx;aCtx=v.aCtx;lCtx=v.lCtx;
+function useView(v){HV=v;cvs=v.cvs;ctx=v.ctx;VW=v.w;VH=v.h;scale=v.sc;gCan=v.gCan;aCan=v.aCan;lCan=v.lCan;gCtx=v.gCtx;aCtx=v.aCtx;lCtx=v.lCtx;
   gImg=v.gImg;aImg=v.aImg;gBuf=v.gBuf;aBuf=v.aBuf;canOff=v.canOff;if(v.pl){camX=v.pl.cam.x;camY=v.pl.cam.y;}}
 // every camera, for things that spawn or despawn just out of sight
 const CAMS=()=>{const c=views.map(v=>({x:v.pl?v.pl.cam.x:camX,y:v.pl?v.pl.cam.y:camY,w:v.w,h:v.h}));const g=typeof NET!=='undefined'&&NET.role==='host'&&NET.ready&&NET.in.cam;if(g)c.push({x:g[0],y:g[1],w:g[2],h:g[3]});return c;};
@@ -4334,10 +4373,6 @@ function drawLighting(cx,cy){
 }
 const SUIT_R=44;
 let canOff={x:0,y:0};
-// draw something that moves at its true position, between world pixels (to the nearest canvas pixel): its draw code
-// works in whole world pixels, so slide the canvas by the leftover fraction while it draws
-function subpx(x,y,fn){const rx=Math.round((x-Math.round(x))*SUB)/SUB,ry=Math.round((y-Math.round(y))*SUB)/SUB;
-  if(!rx&&!ry)return fn();ctx.translate(rx,ry);try{return fn();}finally{ctx.translate(-rx,-ry);}}
 function render(){for(const v of views){useView(v);withPl(v.pl,renderView);}useView(views[0]);}
 function renderView(){
   const shake=(power>1.2?(rnd()-.5)*(power-1.2)*1.2:0)+(crashShake>0?(rnd()-.5)*crashShake*14:0);
@@ -4346,7 +4381,6 @@ function renderView(){
   const ox=Math.round((camX-bx)*scale*dpr)/dpr,oy=Math.round((camY-by)*scale*dpr)/dpr;
   if(ox!==canOff.x||oy!==canOff.y){canOff.x=ox;canOff.y=oy;cvs.style.transform=`translate3d(${-ox}px,${-oy}px,0)`;}
   const cx=bx+Math.round(shake),cy=by+Math.round(shake*.6);
-  ctx.setTransform(SUB,0,0,SUB,0,0);
   ctx.fillStyle='#10171a';ctx.fillRect(0,0,VW,VH);
   const sx=Math.max(0,cx),sy=Math.max(0,cy),sw=Math.min(VW,WORLD_W-sx),sh=Math.min(VH,H-sy);
   if(sw>0&&sh>0)ctx.drawImage(bg,sx,sy,sw,sh,sx-cx,sy-cy,sw,sh);
@@ -4356,20 +4390,20 @@ function renderView(){
   ctx.drawImage(gCan,0,0);
   drawZoneHints(cx,cy,curLot);
   const spr=[];
-  for(const p of peds)spr.push([p.y,()=>subpx(p.x,p.y,()=>p.cameo?drawCameo(p,cx,cy):drawPed(p,cx,cy))]);
-  for(const v of traffic)spr.push([v.y+8,()=>subpx(v.x,v.y,()=>drawTraffic(v,cx,cy))]);
-  for(const o of officers)spr.push([o.y,()=>subpx(o.x,o.y,()=>drawPed(o,cx,cy))]);
-  for(const o of couriers)spr.push([o.y,()=>subpx(o.x,o.y,()=>drawCourier(o,cx,cy))]);
-  for(const k of packages)spr.push([k===carryPkg?P.y+.5:k.y,()=>subpx(k.x,k.y,()=>drawPackage(k,cx,cy))]);
-  for(const q of squirrels)spr.push([q.y,()=>subpx(q.x,q.y,()=>drawSquirrel(q,cx,cy))]);
+  for(const p of peds)spr.push([p.y,()=>p.cameo?drawCameo(p,cx,cy):drawPed(p,cx,cy)]);
+  for(const v of traffic)spr.push([v.y+8,()=>drawTraffic(v,cx,cy)]);
+  for(const o of officers)spr.push([o.y,()=>drawPed(o,cx,cy)]);
+  for(const o of couriers)spr.push([o.y,()=>drawCourier(o,cx,cy)]);
+  for(const k of packages)spr.push([k===carryPkg?P.y+.5:k.y,()=>drawPackage(k,cx,cy)]);
+  for(const q of squirrels)spr.push([q.y,()=>drawSquirrel(q,cx,cy)]);
   for(const m of MAILBOXES)spr.push([m.y+8,()=>drawMailbox(m,cx,cy)]);
   {const lit=sky(hour).dark>.05;for(const L of ALL_LOTS)for(const l of L.lamps||[])spr.push([l.y,()=>drawYardLamp(l,cx,cy,lit)]);}
   for(const b of birds){ctx.fillStyle='rgba(0,0,0,.16)';ctx.fillRect(Math.round(b.x-cx)-1,Math.round(b.y-cy),3,1);}
   for(const c of CARS)spr.push([c.y1,()=>drawCar(c,cx,cy)]);
   for(const st of STREETLIGHTS)spr.push([st.y+1,()=>drawStreetlight(st,cx,cy)]);
   for(const p of POTS){if(p.x-cx<-14||p.x-cx>VW+14||p.y-cy<-4||p.y-cy>VH+24)continue;spr.push([p.y,()=>drawPot(p,cx,cy)]);}
-  for(const pl of players)if(onFoot(pl))spr.push([pl.P.y,()=>withPl(pl,()=>subpx(P.x,P.y,()=>drawPlayer(cx,cy)))]);
-  spr.push([TR.y+12,()=>subpx(TR.x,TR.y,()=>drawTruck(cx,cy))]);
+  for(const pl of players)if(onFoot(pl))spr.push([pl.P.y,()=>withPl(pl,()=>drawPlayer(cx,cy))]);
+  spr.push([TR.y+12,()=>drawTruck(cx,cy)]);
   spr.sort((a,b)=>a[0]-b[0]);for(const s of spr)s[1]();
   for(const s of puffs){ctx.fillStyle=`rgba(200,200,200,${(s.l/s.m*.35).toFixed(2)})`;const r=Math.round((1-s.l/s.m)*3)+1;ctx.fillRect(Math.round(s.x-cx)-r,Math.round(s.y-cy)-r,r*2,r*2);}
   for(const s of streaks){const a=(s.l/s.m)*.5;ctx.fillStyle=s.v?`rgba(220,190,255,${a.toFixed(2)})`:`rgba(255,255,255,${a.toFixed(2)})`;const x=s.x-cx,y=s.y-cy-3;
@@ -4384,7 +4418,7 @@ function renderView(){
   }
   for(const s of sparks){ctx.fillStyle=s.c;ctx.fillRect(Math.round(s.x-cx),Math.round(s.y-cy-s.z),1,1);}
   for(const e of envelopes){const k=e.t/e.T,x=e.x0+(e.x1-e.x0)*k,y=e.y0+(e.y1-e.y0)*k-Math.sin(Math.PI*k)*10;ctx.fillStyle='#8f897d';ctx.fillRect(Math.round(x-cx)-1,Math.round(y-cy)-1,4,3);ctx.fillStyle='#f4f1e8';ctx.fillRect(Math.round(x-cx)-1,Math.round(y-cy)-1,3,2);}
-  for(const b of birds)subpx(b.x,b.y-b.z,()=>drawBird(b,cx,cy));
+  for(const b of birds)drawBird(b,cx,cy);
   drawLighting(cx,cy);
   drawDoorBadges(cx,cy);
   drawPackageCues(cx,cy);
@@ -4549,7 +4583,7 @@ function edLocal(e){const r=ED.can.getBoundingClientRect();return[(e.clientX-r.l
 function edHit(x,y){
   const L=ED.lot;
   for(let i=ED.items.length-1;i>=0;i--){const it=ED.items[i];
-    if(it.t==='car'||it.t==='gate'||it.t==='prop')continue;
+    if(it.t==='car'||it.t==='gate'||it.t==='prop'||it.t==='struct')continue;
     if(it.t==='tree'){if(Math.hypot(x-it.x,y-it.y)<Math.max(8,it.r*.7))return i;continue;}
     if(it.t==='pot'){if(Math.hypot(x-it.x,y-(it.y-3))<(it.big?8:6))return i;continue;}
     if(it.t==='shrub'){if(Math.hypot(x-it.x,y-it.y)<Math.max(6,it.r))return i;continue;}
@@ -4584,7 +4618,7 @@ function edDraw(){
   c.restore();
   // outlines of everything that was drawn, so it's clear what can be erased
   c.lineWidth=Math.max(1,Math.round(sc*.8));
-  ED.items.forEach((it,i)=>{if(it.t==='car'||it.t==='gate'||it.t==='prop')return;const hv=i===ED.hover;c.strokeStyle=hv?'#fff':edCol(it.t);c.setLineDash(hv?[]:[4,3]);
+  ED.items.forEach((it,i)=>{if(it.t==='car'||it.t==='gate'||it.t==='prop'||it.t==='struct')return;const hv=i===ED.hover;c.strokeStyle=hv?'#fff':edCol(it.t);c.setLineDash(hv?[]:[4,3]);
     if(it.t==='tree'){c.beginPath();c.arc(X(it.x),Y(it.y),it.r*sc,0,Math.PI*2);c.stroke();return;}
     if(it.t==='pot'){c.beginPath();c.arc(X(it.x),Y(it.y-3),(it.big?8:6)*sc,0,Math.PI*2);c.stroke();return;}
     if(it.t==='shrub'){c.beginPath();c.arc(X(it.x),Y(it.y),it.r*sc,0,Math.PI*2);c.stroke();return;}
