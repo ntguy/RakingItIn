@@ -514,14 +514,66 @@ const TUT_YARDS={
 // Wangs' matching beds, the Duffys' one bed under the trees, the Okafors' pool and no mulch at all...
 // Yard items are the editor's: beds and paving are rough boxes that get snapped into place, fl marks a bed planted with
 // flowers, cars sit where they're put (dir is the way the nose points)
+const F_=(x0,x1,y)=>({t:'fence',x0,y0:y,x1,y1:y}),GT_=(x0,x1,y)=>({t:'gate',x0,x1,y}),Q_=(t,x0,y0,x1,y1,fl)=>({t,x0,y0,x1,y1,fl:!!fl,sq:true});
 const P_=(x,y,big)=>({t:'pot',x,y,big:!!big}),T_=(x,y,r,pal)=>({t:'tree',x,y,r,pal}),B_=(t,x0,y0,x1,y1,fl)=>({t,x0,y0,x1,y1,fl:!!fl}),S_=(x,y,r)=>({t:'shrub',x,y,r}),C_=(x,y,vert,dir)=>({t:'car',x,y,vert,dir});
+// a side fence across the backyard from each side of the house to the side fence, with a gate in each run
+// (y = the fence line; gates at [x0,x1] in each run)
+const gateFences=(w,hx0,hx1,y,gl,gr)=>[F_(6,gl[0],y),GT_(gl[0],gl[1],y-3),F_(gl[1],hx0,y),F_(hx1,gr[0],y),GT_(gr[0],gr[1],y-3),F_(gr[1],w-6,y)];
+const YARD={
+  // a tiny lot: one rounded bed in the front corner and a strip along the back fence
+  kowalski:{h:[40,50,80,46],dx:70,yard:[B_('path',65,102,75,160),B_('mulch',104,112,154,160),B_('mulch',30,6,130,22),T_(132,62,20,2),T_(30,122,18,0),P_(90,104)]},
+  // a duplex: a strip down the side fence, a corner of wildflowers out back, and a pot either side of the walk
+  baker:{h:[36,56,118,44],dx:66,yard:[B_('path',61,106,71,160),B_('mulch',164,30,184,150),B_('natural',6,6,60,44),B_('mulch',40,104,56,118),B_('mulch',76,104,150,118),
+    T_(100,26,20,1),T_(36,128,18,3),P_(52,126),P_(140,126)]},
+  // a rental: a bed down one side out front, a corner bed out back, and a car parked on the grass
+  flynn:{h:[46,70,90,50],dx:88,yard:[B_('path',83,126,93,180),Q_('mulch',6,100,26,180),B_('mulch',130,6,176,50),C_(152,148,true,-1),
+    T_(40,40,22,0),T_(100,30,16,2),T_(36,150,18,1),P_(108,130)]},
+  // a bungalow: beds along the front, and an island bed in the middle of the backyard between two trees
+  abernathy:{h:[44,76,100,50],dx:80,yard:[B_('path',75,132,85,180),B_('drive',150,126,180,180),C_(165,160,true,-1),B_('mulch',48,130,70,146),B_('mulch',90,130,140,146),
+    Q_('mulch',70,22,120,52),T_(30,40,20,0),T_(160,44,20,2),P_(60,162)]},
+  // a fence across the backyard with a gate each side; corner beds out back and one by the front walk
+  ramirez:{h:[50,64,90,48],dx:82,yard:[B_('path',77,118,87,170),B_('drive',146,112,176,170),C_(161,148,true,-1),
+    ...gateFences(200,50,140,88,[18,38],[156,176]),B_('mulch',6,6,56,46),B_('mulch',150,6,194,46),B_('mulch',54,116,72,130),
+    T_(100,36,22,1),T_(28,142,18,0),P_(98,124)]},
+  // a round above-ground pool out back, right up against a huge old tree
+  nguyen:{h:[40,104,100,50],dx:78,yard:[B_('path',73,160,83,180),{t:'pool',x0:104,y0:12,x1:176,y1:84,round:true},
+    T_(62,52,40,0),B_('mulch',6,128,36,180),B_('mulch',122,158,150,172),P_(96,164),P_(184,96)]},
+  // a long vegetable garden all along the back fence, with mulch only in the two back corners
+  lindqvist:{h:[64,110,112,58],dx:104,yard:[B_('path',99,174,109,220),B_('drive',184,168,216,220),C_(200,198,true,-1),
+    B_('garden',52,6,188,40),B_('mulch',6,6,52,52),B_('mulch',188,6,234,52),B_('mulch',68,172,94,188),
+    T_(36,92,22,0),T_(206,92,22,3),T_(124,70,18,1),P_(120,52)]},
+  // down the left side of the backyard, five beds stacked top to bottom (mulch, garden, mulch, garden, mulch) with
+  // nothing between them; a big tree beside them and a small one above and below it
+  osei:{h:[72,124,80,44],dx:100,yard:[B_('path',95,174,105,200),
+    Q_('mulch',6,6,50,28),B_('garden',6,28,50,50),Q_('mulch',6,50,50,72),B_('garden',6,72,50,94),Q_('mulch',6,94,50,116),
+    T_(86,62,28,1),T_(82,16,12,2),T_(82,108,12,3),P_(130,40),P_(140,150)]},
+  // the gated backyard again, Maple Avenue style: wildflowers and mulch in the back corners, a strip along the fence
+  miller:{h:[70,90,110,56],dx:110,yard:[B_('path',105,152,115,220),B_('drive',190,146,224,220),C_(207,188,true,-1),
+    ...gateFences(250,70,180,116,[30,50],[208,228]),B_('mulch',56,6,194,24),B_('natural',6,6,52,52),B_('mulch',198,6,244,52),B_('mulch',6,170,60,220),
+    T_(125,62,24,0),T_(40,150,18,2),P_(96,162),P_(126,162)]},
+  // a patio off the back of the house, then a big open oval of lawn ringed with trees, and beds all the way round
+  // the fence (mulch down the sides, wildflowers along the back)
+  ashford:{h:[120,190,160,80],dx:178,yard:[B_('path',173,276,183,330),B_('drive',290,270,330,330),C_(310,302,true,-1),
+    Q_('mulch',6,6,30,330),Q_('mulch',370,6,394,330),Q_('natural',30,6,370,30),B_('patio',150,140,250,184),
+    T_(70,86,18,0),T_(330,86,18,2),T_(200,40,18,1),T_(110,52,18,3),T_(290,52,18,0),T_(106,122,16,2),T_(294,122,16,1),
+    B_('mulch',124,274,166,290,1),B_('mulch',186,274,284,290,1),S_(100,234,8),S_(300,234,8),P_(154,144,1),P_(246,144,1),P_(110,300)]},
+  // down the left side of the backyard, five beds stacked top to bottom (garden, mulch, garden, mulch, garden) with a
+  // fence between each; a big tree beside them and a small one above and below it
+  delacroix:{h:[40,200,110,56],dx:80,yard:[B_('path',75,262,85,300),
+    B_('garden',6,6,62,38),F_(6,62,41),Q_('mulch',6,44,62,76),F_(6,62,79),B_('garden',6,82,62,114),F_(6,62,117),Q_('mulch',6,120,62,152),F_(6,62,155),B_('garden',6,158,62,190),
+    T_(108,98,30,0),T_(104,28,12,2),T_(104,170,12,3),B_('mulch',44,260,70,276,1),B_('mulch',92,260,146,276,1),P_(130,286),P_(150,40)]},
+  // a Victorian with a gated backyard: a formal garden out back and flower beds in the corners
+  hartwell:{h:[60,100,130,70],dx:106,yard:[B_('path',101,176,111,240),B_('drive',196,170,236,240),C_(216,208,true,-1),
+    ...gateFences(250,60,190,135,[26,46],[206,226]),B_('garden',80,20,170,60),B_('mulch',6,6,56,56,1),B_('mulch',194,6,244,56,1),B_('mulch',6,190,60,240,1),
+    S_(80,188,6),S_(140,188,6),T_(40,96,22,0),T_(212,96,22,3),P_(94,184),P_(122,184)]},
+};
 const HOUSES=TUTORIAL?[
   // the starter house beside the truck, and round the corner a tiny house with a pool
   {face:'S',x:190,y:Y1-FRONT-180,w:220,d:180,s:0,hood:1,level:0,name:'THE COOPERS',tag:'STARTER HOME',yard:TUT_YARDS[0]},
   {face:'E',x:XC-FRONT-190,y:560,w:210,d:190,s:1,hood:1,level:0,name:'THE WANGS',tag:'COZY BUNGALOW',yard:TUT_YARDS[1]},
-  // the neighbors (yards laid out from a fixed seed, like the extra houses in the full game)
-  {s:0,hood:1,level:0,face:'S',x:12,y:Y1-FRONT-160,w:160,d:160,name:'THE KOWALSKIS',tag:'TINY HOUSE'},{s:0,hood:1,level:0,face:'N',x:20,y:Y1+FRONT,w:182,d:180,name:'THE FLYNNS',tag:'RENTAL'},
-  {s:1,hood:1,level:0,face:'S',x:430,y:Y1-FRONT-180,w:200,d:180,name:'THE BAKERS',tag:'DUPLEX'},{s:2,hood:1,level:0,face:'W',x:XC+FRONT,y:520,w:240,d:220,name:'THE LINDQVISTS',tag:'BI-LEVEL'},
+  // the neighbors, with the same yards as their houses in the full game
+  {s:0,hood:1,level:0,face:'S',x:12,y:Y1-FRONT-160,w:160,d:160,name:'THE KOWALSKIS',tag:'TINY HOUSE',...YARD.kowalski},{s:0,hood:1,level:0,face:'N',x:20,y:Y1+FRONT,w:182,d:180,name:'THE FLYNNS',tag:'RENTAL',...YARD.flynn},
+  {s:1,hood:1,level:0,face:'S',x:430,y:Y1-FRONT-160,w:190,d:160,name:'THE BAKERS',tag:'DUPLEX',...YARD.baker},{s:2,hood:1,level:0,face:'W',x:XC+FRONT,y:520,w:240,d:220,name:'THE LINDQVISTS',tag:'BI-LEVEL',...YARD.lindqvist},
 ]:[
   // ---- Birch Lane
   // a corner bed out front and one out back, a tree by each
@@ -605,20 +657,19 @@ const HOUSES=TUTORIAL?[
     S_(250,200,10),S_(250,262,10),S_(232,330,9),S_(578,236,9),S_(578,290,9),S_(620,410,8),
     T_(120,250,34,0),T_(820,100,30,1),T_(240,470,26,2),T_(620,470,26,3),T_(450,62,30,0),T_(200,74,26,2),T_(720,300,28,1),T_(110,420,26,3),
     P_(324,116,1),P_(516,116,1),P_(556,26),P_(804,26),P_(556,214),P_(804,214),P_(404,334),P_(436,334),P_(336,388),P_(504,388)]},
-  // ---- the rest of each street: every house on the map can be worked. These yards are laid out from a fixed seed
-  // (each house's own), so they come out the same every time
-  {s:0,hood:0,level:0,face:'S',x:12,y:58,w:160,d:160,name:'THE KOWALSKIS',tag:'TINY HOUSE'},
-  {s:1,hood:0,level:0,face:'S',x:640,y:48,w:200,d:170,name:'THE RAMIREZES',tag:'SHOTGUN HOUSE'},
-  {s:0,hood:0,level:0,face:'S',x:860,y:58,w:190,d:160,name:'THE BAKERS',tag:'DUPLEX'},
-  {s:1,hood:0,level:1,face:'S',x:1070,y:38,w:200,d:180,name:'THE NGUYENS',tag:'MILL HOUSE'},
-  {s:0,hood:0,level:0,face:'N',x:20,y:362,w:182,d:180,name:'THE FLYNNS',tag:'RENTAL'},
-  {s:1,hood:0,level:1,face:'N',x:730,y:362,w:190,d:180,name:'THE ABERNATHYS',tag:'BUNGALOW'},
-  {s:2,hood:1,level:2,face:'W',x:1222,y:400,w:240,d:220,name:'THE LINDQVISTS',tag:'BI-LEVEL'},
-  {s:1,hood:1,level:1,face:'W',x:1222,y:670,w:160,d:200,name:'THE OSEIS',tag:'CABIN'},
-  {s:2,hood:1,level:1,face:'S',x:20,y:608,w:250,d:220,name:'THE MILLERS',tag:'RAISED RANCH'},
-  {s:4,hood:2,level:3,face:'S',x:760,y:1318,w:400,d:330,name:'THE ASHFORDS',tag:'GEORGIAN'},
-  {s:5,hood:2,level:3,face:'S',x:1700,y:1348,w:170,d:300,name:'THE DELACROIXS',tag:'TOWNHOUSE'},
-  {s:4,hood:2,level:4,face:'N',x:20,y:1792,w:250,d:240,name:'THE HARTWELLS',tag:'VICTORIAN'},
+  // ---- the rest of each street
+  {s:0,hood:0,level:0,face:'S',x:12,y:58,w:160,d:160,name:'THE KOWALSKIS',tag:'TINY HOUSE',...YARD.kowalski},
+  {s:1,hood:0,level:0,face:'S',x:640,y:48,w:200,d:170,name:'THE RAMIREZES',tag:'SHOTGUN HOUSE',...YARD.ramirez},
+  {s:0,hood:0,level:0,face:'S',x:860,y:58,w:190,d:160,name:'THE BAKERS',tag:'DUPLEX',...YARD.baker},
+  {s:1,hood:0,level:1,face:'S',x:1070,y:38,w:200,d:180,name:'THE NGUYENS',tag:'MILL HOUSE',...YARD.nguyen},
+  {s:0,hood:0,level:0,face:'N',x:20,y:362,w:182,d:180,name:'THE FLYNNS',tag:'RENTAL',...YARD.flynn},
+  {s:1,hood:0,level:1,face:'N',x:730,y:362,w:190,d:180,name:'THE ABERNATHYS',tag:'BUNGALOW',...YARD.abernathy},
+  {s:2,hood:1,level:2,face:'W',x:1222,y:400,w:240,d:220,name:'THE LINDQVISTS',tag:'BI-LEVEL',...YARD.lindqvist},
+  {s:1,hood:1,level:1,face:'W',x:1222,y:670,w:160,d:200,name:'THE OSEIS',tag:'CABIN',...YARD.osei},
+  {s:2,hood:1,level:1,face:'S',x:20,y:608,w:250,d:220,name:'THE MILLERS',tag:'RAISED RANCH',...YARD.miller},
+  {s:4,hood:2,level:3,face:'S',x:760,y:1318,w:400,d:330,name:'THE ASHFORDS',tag:'GEORGIAN',...YARD.ashford},
+  {s:5,hood:2,level:3,face:'S',x:1700,y:1348,w:170,d:300,name:'THE DELACROIXS',tag:'TOWNHOUSE',...YARD.delacroix},
+  {s:4,hood:2,level:4,face:'N',x:20,y:1792,w:250,d:240,name:'THE HARTWELLS',tag:'VICTORIAN',...YARD.hartwell},
 ];
 // lots that are scenery only (none now: every house on the map is one you can work)
 const FILLERS=[];
@@ -783,8 +834,10 @@ function buildLots(){
     WALLS.push(...L.fences,...L.obst);
     let k=0;
     for(const z of L.zones){if(z.type!=='pool')continue;
-      const pl={id:POOLS.length,x0:z.x0+COPE,y0:z.y0+COPE,x1:z.x1-COPE,y1:z.y1-COPE,lot:L,cnt:0};POOLS.push(pl);
-      for(let y=pl.y0;y<pl.y1;y++)for(let x=pl.x0;x<pl.x1;x++)WATER[y*WORLD_W+x]=pl.id+1;
+      const b=zoneBox(z),pl={id:POOLS.length,x0:Math.round(b.x0+COPE),y0:Math.round(b.y0+COPE),x1:Math.round(b.x1-COPE),y1:Math.round(b.y1-COPE),lot:L,cnt:0};POOLS.push(pl);
+      // (a round pool's water is the ellipse inside its wall)
+      if(z.shape==='e')pl.e={cx:z.cx,cy:z.cy,rx:z.rx-COPE,ry:z.ry-COPE};
+      for(let y=pl.y0;y<pl.y1;y++)for(let x=pl.x0;x<pl.x1;x++){if(pl.e){const dx=(x+.5-pl.e.cx)/pl.e.rx,dy=(y+.5-pl.e.cy)/pl.e.ry;if(dx*dx+dy*dy>=1)continue;}WATER[y*WORLD_W+x]=pl.id+1;}
       const n=L.nets[k++];if(n)n.pool=pl;}
   });
   // streetlights on the verge, skipping driveway mouths and intersections
@@ -862,7 +915,7 @@ function orient(L,face,ox,oy){
   L.front=L.V(0,1);
   L.fences=L.lfences.map(TRc);L.house=TRc(L.lhouse);L.paved=L.lpaved.map(TRc);
   L.zones=L.lz.map(z=>{
-    if(z.shape==='e'){const [cx,cy]=L.T(z.cx,z.cy);return{...z,cx,cy,rx:rot&1?z.ry:z.rx,ry:rot&1?z.rx:z.ry};}
+    if(z.shape==='e'){const [cx,cy]=L.T(z.cx,z.cy),rx=rot&1?z.ry:z.rx,ry=rot&1?z.rx:z.ry;return{...z,cx,cy,rx,ry,x0:cx-rx,y0:cy-ry,x1:cx+rx,y1:cy+ry};}
     const r=TRc(z);if(z.shape==='q'){const [ax,ay]=L.T(z.ax,z.ay);r.ax=ax;r.ay=ay;}return r;
   });
   for(const z of L.zones)z.outline=zoneOutline(z,L.house);
@@ -1073,7 +1126,7 @@ function resolveYardRect(L,it){
     const l=x0<=6+M,r=x1>=w-6-M,t=y0<=6+M,b=y1>=d-M;
     if(l)z.x0=6;if(r)z.x1=w-6;if(t)z.y0=6;if(b)z.y1=d;
     const zw=z.x1-z.x0,zh=z.y1-z.y0,strip=Math.max(zw,zh)/Math.min(zw,zh)>2.6;
-    if((l!==r)&&(t!==b)&&!strip){z.shape='q';z.ax=l?6:w-6;z.ay=t?6:d;}
+    if((l!==r)&&(t!==b)&&!strip&&!it.sq){z.shape='q';z.ax=l?6:w-6;z.ay=t?6:d;}
   }
   return z;
 }
@@ -1082,16 +1135,19 @@ function fenceRect(L,it){const dx=it.x1-it.x0,dy=it.y1-it.y0;
   if(Math.abs(dx)>=Math.abs(dy)){const y=clamp(Math.round(it.y0)-3,0,L.d-6);return{x0:clamp(Math.round(Math.min(it.x0,it.x1)),0,L.w),x1:clamp(Math.round(Math.max(it.x0,it.x1)),0,L.w),y0:y,y1:y+6};}
   const x=clamp(Math.round(it.x0)-3,0,L.w-6);return{x0:x,x1:x+6,y0:clamp(Math.round(Math.min(it.y0,it.y1)),0,L.d),y1:clamp(Math.round(Math.max(it.y0,it.y1)),0,L.d)};}
 function applyYard(L,items){
-  const s=L.style;L.lpaved=[];L.lz=[];L.lcars=[];L.ltrees=[];L.lpots=[];L.lshrubs=[];L.lfences=L.lfences.filter(f=>!f.custom);
+  const s=L.style;L.lpaved=[];L.lz=[];L.lcars=[];L.ltrees=[];L.lpots=[];L.lshrubs=[];L.gates=[];L.lfences=L.lfences.filter(f=>!f.custom);
   for(const it of items){
     if(it.t==='fence'){const f=fenceRect(L,it);if(f.x1-f.x0>=6&&f.y1-f.y0>=6&&!rectsHit(f,L.lhouse))L.lfences.push({...f,custom:true});continue;}
     if(it.t==='shrub'){if(!inRect(L.lhouse,it.x,it.y,it.r))L.lshrubs.push({x:Math.round(it.x),y:Math.round(it.y),r:it.r});continue;}
     if(it.t==='tree'){if(!inRect(L.lhouse,it.x,it.y,4))L.ltrees.push({x:Math.round(it.x),y:Math.round(it.y),r:it.r,pal:it.pal,rate:.22+s*.1});continue;}
     if(it.t==='pot'){if(!inRect(L.lhouse,it.x,it.y,3))L.lpots.push(makePot(it.x,it.y,it.big));continue;}
+    if(it.t==='gate'){L.gates.push({x0:Math.round(it.x0),x1:Math.round(it.x1),y:Math.round(it.y)});continue;}
     if(it.t==='car'){L.lcars.push({cx:it.x,cy:it.y,vert:!!it.vert,dir:it.dir||1,col:carCol(L.hood,hash(it.x+L.k*31,it.y*7))});continue;}
     if(!YARD_TYPES[it.t])continue;
     const z=resolveYardRect(L,it);if(!z)continue;
     if(it.t==='drive'||it.t==='path'){L.lpaved.push({...z,kind:it.t});continue;}
+    // a round pool fills its box as an ellipse (and stands above the ground, with a wall round it instead of a deck)
+    if(it.t==='pool'&&it.round){L.lz.push({...z,shape:'e',cx:(z.x0+z.x1)/2,cy:(z.y0+z.y1)/2,rx:(z.x1-z.x0)/2,ry:(z.y1-z.y0)/2,type:'pool',good:false,above:true});continue;}
     L.lz.push({shape:'r',...z,type:it.t,good:it.t==='mulch'||it.t==='natural',fl:!!it.fl});
   }
   // park a car or two on any driveway long enough to hold one (unless the yard says where they go)
@@ -1105,7 +1161,8 @@ function applyYard(L,items){
 }
 function yardFromLot(L){
   return[...L.lpaved.map(p=>({t:p.kind==='path'?'path':'drive',x0:p.x0,y0:p.y0,x1:p.x1,y1:p.y1})),
-    ...L.lz.filter(z=>z.shape!=='e').map(z=>({t:z.type,x0:z.x0,y0:z.y0,x1:z.x1,y1:z.y1,fl:!!z.fl})),
+    ...L.lz.filter(z=>z.shape!=='e'||z.above).map(z=>({t:z.type,x0:z.x0,y0:z.y0,x1:z.x1,y1:z.y1,fl:!!z.fl,...(z.above?{round:true}:{}),...(z.shape==='r'&&z.good?{sq:true}:{})})),
+    ...(L.gates||[]).map(g=>({t:'gate',x0:g.x0,x1:g.x1,y:g.y})),
     ...L.ltrees.map(t=>({t:'tree',x:t.x,y:t.y,r:t.r,pal:t.pal})),
     ...L.lpots.map(p=>({t:'pot',x:p.x,y:p.y,big:p.big})),
     ...(L.lshrubs||[]).map(b=>({t:'shrub',x:b.x,y:b.y,r:b.r})),
@@ -1279,6 +1336,8 @@ function renderLot(L){
     px[y*w+x]=v;
   }
   for(const p of P)if(p.kind!=='path'){for(let y=p.y0;y<p.y1;y++){for(const x of [p.x0,p.x1-1]){let inner=false;for(const q of P)if(q!==p&&q.kind!=='path'&&x>=q.x0&&x<q.x1&&y>=q.y0&&y<q.y1&&!(x===q.x0||x===q.x1-1))inner=true;if(!inner)px[y*w+x]=DRJ;}}}
+  for(const z of L.lz)if(z.above)for(let y=Math.max(0,Math.floor(z.cy-z.ry+2));y<Math.min(d,Math.ceil(z.cy+z.ry+5));y++)for(let x=Math.max(0,Math.floor(z.cx-z.rx+1));x<Math.min(w,Math.ceil(z.cx+z.rx+4));x++){
+    const dx=(x+.5-z.cx-3)/(z.rx+1),dy=(y+.5-z.cy-4)/(z.ry+1);if(dx*dx+dy*dy<1)px[y*w+x]=shade32(px[y*w+x],.68);}
   for(const z of L.lz)paintZone(px,w,d,z);
   gc.putImageData(img,0,0);
   const o=mk(w,d),oc=o.getContext('2d');drawLotDeco(oc,L);drawHouse(oc,L);drawFence(oc,L);
@@ -1295,6 +1354,7 @@ function paintZone(px,WW,HH,z){
   const MUL=['#3e2618','#4a2e1e','#583824','#6b4a30'].map(h=>hexA(h)),MEDGE=hexA('#2a180e'),CHIP=hexA('#8a6240');
   const NAT=['#56752f','#63843a','#739442','#86a04a'].map(h=>hexA(h)),NATD=hexA('#43602a'),NF=[hexA('#e8d25a'),hexA('#d86a9a'),hexA('#fff3d6'),hexA('#b07ae0')],STONE=hexA('#7a7468');
   const TILE=[hexA('#c4baa8'),hexA('#b8ae9c'),hexA('#cfc6b4')],GROUT=hexA('#8a8274'),PEDGE=hexA('#6e675c');
+  const AWALL=hexA('#b8c8d4'),AWALLS=hexA('#93a6b4'),AWALLD=hexA('#4a5a66'),AWALLL=hexA('#e8f2f8');
   const DECK=[hexA('#e0dccf'),hexA('#d4cfc1'),hexA('#e8e4d8')],DECKE=hexA('#9d978a'),WAT=[hexA('#2f93c4'),hexA('#3aa2d2'),hexA('#46afdc')],WLINE=hexA('#2a86b8'),WEDGE=hexA('#1f6a94');
   const SOIL=[hexA('#4a3222'),hexA('#553a28')],LEAFG=[hexA('#3f7a34'),hexA('#5a9a40'),hexA('#2f6a2a')],GF=[hexA('#ff5f8f'),hexA('#ffd84a'),hexA('#fff3d6'),hexA('#b06cff'),hexA('#ff8a3a')],PICKET=hexA('#ece8de'),PICKET2=hexA('#c8c2b4');
   for(let y=y0;y<y1;y++)for(let x=x0;x<x1;x++){
@@ -1309,8 +1369,11 @@ function paintZone(px,WW,HH,z){
       if(z.fl){const cx=x%9,cy=(y+((x/9|0)&1)*4)%8;if(cx<3&&cy<2)v=LEAFG[(cx+cy)%3];if(cx===1&&cy===0)v=GF[((x/9|0)+(y/8|0))%5];}
       if(edge)v=MEDGE;}
     else if(z.type==='natural'){const n=vnoise(x*.25,y*.25);v=NAT[clamp((n*3+r*1.2)|0,0,3)];if(((x+y*3)%7===0)&&r>.5)v=NATD;if(r>.992)v=NF[(r*1000|0)%4];if(edge&&(x+y)%3===0)v=STONE;}
-    else if(z.type==='pool'){const e=Math.min(x-z.x0,z.x1-1-x,y-z.y0,z.y1-1-y);
-      if(e<COPE)v=e===0?DECKE:(x+y*2)%7===0?DECK[1]:DECK[r<.15?2:0];
+    else if(z.type==='pool'){
+      // how far in from the edge: straight in for a square pool, along the radius for a round one
+      const e=z.shape==='e'?Math.floor((1-Math.hypot((x+.5-z.cx)/z.rx,(y+.5-z.cy)/z.ry))*Math.min(z.rx,z.ry)):Math.min(x-z.x0,z.x1-1-x,y-z.y0,z.y1-1-y);
+      if(z.above&&e<COPE){const top=y+.5<z.cy;v=e===0?AWALLD:e===COPE-1?AWALLL:top?AWALL:AWALLS;}
+      else if(e<COPE)v=e===0?DECKE:(x+y*2)%7===0?DECK[1]:DECK[r<.15?2:0];
       else{const n=vnoise(x*.12,y*.12);v=WAT[clamp((n*2.6+r*.5)|0,0,2)];
         if(((x-z.x0-COPE)%12===11||(y-z.y0-COPE)%12===11)&&r>.25)v=WLINE;if(e===COPE)v=WEDGE;}}
     else if(z.type==='patio'){const tx=(x-z.x0)%10,ty=(y-z.y0)%10;v=TILE[(((x-z.x0)/10|0)+((y-z.y0)/10|0))%2?1:r<.1?2:0];if(tx===0||ty===0)v=GROUT;if(edge)v=PEDGE;}
@@ -1327,6 +1390,8 @@ function drawShrub(c,x,y,r){
 function drawLotDeco(c,L){
   for(const b of L.lshrubs||[])drawShrub(c,b.x,b.y,b.r);
   for(const z of L.lz){
+    if(z.above){const lx=Math.round(z.cx-3),ly=Math.round(z.cy+z.ry-5);c.fillStyle='#5d656d';c.fillRect(lx,ly,1,8);c.fillRect(lx+6,ly,1,8);c.fillStyle='#e8eef2';c.fillRect(lx,ly-1,1,8);c.fillRect(lx+6,ly-1,1,8);
+      c.fillStyle='rgba(232,238,242,.75)';for(let k=1;k<8;k+=3)c.fillRect(lx,ly+k,7,1);}
     if(z.shape!=='r')continue;
     if(z.type==='patio'){const cx=Math.round((z.x0+z.x1)/2),cy=Math.round((z.y0+z.y1)/2);
       c.fillStyle='rgba(0,0,0,.25)';pcircle(c,cx+2,cy+2,7);c.fillStyle='#5a3a24';pcircle(c,cx,cy,7);c.fillStyle='#8a5a36';pcircle(c,cx,cy,6);c.fillStyle='#a8744a';c.fillRect(cx-3,cy-4,3,1);
@@ -1384,10 +1449,14 @@ function drawFence(c,L){
         c.fillStyle='#6a7074';if(horiz)c.fillRect(f.x0,f.y0+1,fw,1);else c.fillRect(f.x0+1,f.y0,1,fh);
         c.fillStyle='#5d656d';const n=Math.max(1,Math.round((horiz?fw:fh)/40));for(let k=0;k<=n;k++){const t=Math.round(k*((horiz?fw:fh)-3)/n);if(horiz)c.fillRect(f.x0+t,f.y0,3,6);else c.fillRect(f.x0,f.y0+t,6,3);}
         c.fillStyle='#8f989e';for(let k=0;k<=n;k++){const t=Math.round(k*((horiz?fw:fh)-3)/n);if(horiz)c.fillRect(f.x0+t,f.y0,3,1);else c.fillRect(f.x0,f.y0+t,1,3);}}
+      // (fences drawn inside a Willow Heights yard are white pickets: a hedge there would vanish into the lawn)
+      else if(f.custom){c.fillStyle='rgba(0,0,0,.22)';c.fillRect(f.x0+1,f.y0+2,fw,fh);
+        if(horiz){c.fillStyle='#8f897d';c.fillRect(f.x0,f.y0+3,fw,1);for(let x=f.x0;x<f.x1;x+=3){c.fillStyle='#c8c2b4';c.fillRect(x+1,f.y0+1,1,5);c.fillStyle='#f4f1e8';c.fillRect(x,f.y0,1,5);}}
+        else{c.fillStyle='#8f897d';c.fillRect(f.x0+2,f.y0,1,fh);for(let y=f.y0;y<f.y1;y+=3){c.fillStyle='#c8c2b4';c.fillRect(f.x0+1,y+1,5,1);c.fillStyle='#f4f1e8';c.fillRect(f.x0,y,5,1);}}}
       else{for(let y=f.y0;y<f.y1;y++)for(let x=f.x0;x<f.x1;x++){const n=hash(x*5+L.k,y*3)+(horiz?(y-f.y0)/6:(x-f.x0)/6)*.4;c.fillStyle=n<.45?'#1f4a1c':n<.85?'#2f6a2a':n<1.15?'#3f7a34':'#5a9a40';c.fillRect(x,y,1,1);}
         c.fillStyle='#8fcb5f';for(let k=3;k<(horiz?fw:fh);k+=7){const a=horiz?f.x0+k:f.x0+1+(k%3),b=horiz?f.y0+1+(k%3):f.y0+k;c.fillRect(a,b,1,1);}}
     }
-    return;}
+    drawGates(c,L);return;}
   for(const f of L.lfences){const horiz=f.x1-f.x0>=f.y1-f.y0;
     c.fillStyle='#4f301b';c.fillRect(f.x0,f.y0,f.x1-f.x0,f.y1-f.y0);
     if(horiz){for(let x=f.x0+1;x<f.x1-1;x+=5){c.fillStyle='#b07a48';c.fillRect(x,f.y0,3,6);c.fillStyle='#d49c62';c.fillRect(x,f.y0,1,5);}
@@ -1395,8 +1464,12 @@ function drawFence(c,L){
     else{for(let y=f.y0+1;y<f.y1-1;y+=5){c.fillStyle='#b07a48';c.fillRect(f.x0,y,6,3);c.fillStyle='#d49c62';c.fillRect(f.x0,y,5,1);}
       for(let y=f.y0;y<f.y1-7;y+=48)post(f.x0,y);post(f.x0,f.y1-7);}
   }
-  // gates stand open: a short leaf swung back against one post
-  for(const g of L.gates||[]){c.fillStyle='#4f301b';c.fillRect(g.x0-1,g.y-9,3,10);c.fillStyle='#b07a48';c.fillRect(g.x0,g.y-9,2,9);c.fillStyle='#d49c62';c.fillRect(g.x0,g.y-9,1,8);}
+  drawGates(c,L);
+}
+// gates stand open: a short leaf swung back against one post (wood, or a chain-link frame on Birch Lane)
+function drawGates(c,L){
+  for(const g of L.gates||[]){const m=L.hood===0;c.fillStyle=m?'#5d656d':'#4f301b';c.fillRect(g.x0-1,g.y-9,3,10);c.fillStyle=m?'#9aa0a4':'#b07a48';c.fillRect(g.x0,g.y-9,2,9);c.fillStyle=m?'#c8ccd0':'#d49c62';c.fillRect(g.x0,g.y-9,1,8);
+    c.fillStyle=m?'#5d656d':'#4f301b';c.fillRect(g.x1-2,g.y-2,3,9);}
 }
 // vehicles (sprites face +x)
 let truckBase,truckTmp;
@@ -3873,6 +3946,7 @@ function drawPools(cx,cy){
     ctx.fillStyle='rgba(225,248,255,.5)';const n=(w*h/50)|0;
     for(let k=0;k<n;k++){const sp=.5+hash(k,k+pl.id*7)*.8;if(Math.sin(time*2.1*sp+k*1.7)<.3)continue;
       const x=pl.x0+1+((hash(k,pl.id*31)*w+time*3*sp)%(w-3)),y=pl.y0+1+clamp(hash(pl.id*17,k)*h+Math.sin(time*1.3+k)*1.5,0,h-3);
+      if(pl.e&&!wet(x,y))continue;
       ctx.fillRect(Math.round(x-cx),Math.round(y-cy),2,1);}
   }
   for(const rp of ripples){const k=1-rp.l/rp.m,r=rp.r0+k*rp.g;ctx.fillStyle=`rgba(225,248,255,${(rp.l/rp.m*.55).toFixed(2)})`;
@@ -4311,7 +4385,7 @@ function edLocal(e){const r=ED.can.getBoundingClientRect();return[(e.clientX-r.l
 function edHit(x,y){
   const L=ED.lot;
   for(let i=ED.items.length-1;i>=0;i--){const it=ED.items[i];
-    if(it.t==='car')continue;
+    if(it.t==='car'||it.t==='gate')continue;
     if(it.t==='tree'){if(Math.hypot(x-it.x,y-it.y)<Math.max(8,it.r*.7))return i;continue;}
     if(it.t==='pot'){if(Math.hypot(x-it.x,y-(it.y-3))<(it.big?8:6))return i;continue;}
     if(it.t==='shrub'){if(Math.hypot(x-it.x,y-it.y)<Math.max(6,it.r))return i;continue;}
@@ -4346,7 +4420,7 @@ function edDraw(){
   c.restore();
   // outlines of everything that was drawn, so it's clear what can be erased
   c.lineWidth=Math.max(1,Math.round(sc*.8));
-  ED.items.forEach((it,i)=>{if(it.t==='car')return;const hv=i===ED.hover;c.strokeStyle=hv?'#fff':edCol(it.t);c.setLineDash(hv?[]:[4,3]);
+  ED.items.forEach((it,i)=>{if(it.t==='car'||it.t==='gate')return;const hv=i===ED.hover;c.strokeStyle=hv?'#fff':edCol(it.t);c.setLineDash(hv?[]:[4,3]);
     if(it.t==='tree'){c.beginPath();c.arc(X(it.x),Y(it.y),it.r*sc,0,Math.PI*2);c.stroke();return;}
     if(it.t==='pot'){c.beginPath();c.arc(X(it.x),Y(it.y-3),(it.big?8:6)*sc,0,Math.PI*2);c.stroke();return;}
     if(it.t==='shrub'){c.beginPath();c.arc(X(it.x),Y(it.y),it.r*sc,0,Math.PI*2);c.stroke();return;}
