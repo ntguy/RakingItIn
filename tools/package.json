@@ -1,0 +1,1 @@
+{"name":"raking-it-in-tools","private":true,"description":"Headless test harness for the game (see run.js)","devDependencies":{"puppeteer-core":"^23.0.0"}}
