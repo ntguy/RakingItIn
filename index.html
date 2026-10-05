@@ -123,11 +123,29 @@ svg.px{shape-rendering:crispEdges;display:block;}
 #tutBox .ts{font-size:10px;color:var(--gold);margin-top:4px;letter-spacing:1px;}
 #tutBox .ts:empty{display:none;}
 #tutBox.done{border-color:var(--green);background:#2c5a3a;}
+/* for the first couple of goals, a red arrow under the goal box so nobody misses it */
+#tutArrow{position:fixed;z-index:4;display:none;pointer-events:none;animation:tutArrow .8s ease-in-out infinite;filter:drop-shadow(0 3px 0 rgba(0,0,0,.35));}
+@keyframes tutArrow{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,8px)}}
 .tutpop{width:min(520px,92vw);display:flex;flex-direction:column;align-items:center;gap:14px;padding:20px 22px;margin:auto;text-align:center;}
 .tutpop h2{margin:0;font-size:24px;color:var(--gold);text-shadow:0 3px 0 rgba(0,0,0,.4);}
 .tutpop .rl{display:flex;flex-direction:column;gap:9px;font-size:12px;line-height:1.5;text-align:left;width:100%;}
 .tutpop .rl b{display:inline-block;width:20px;} .tutpop .pos{color:var(--green);} .tutpop .neg{color:var(--red);}
 #menuBtn:active{transform:translateY(3px);box-shadow:0 3px 0 var(--shadow);}
+/* goals: top right under the menu button (in split screen, only on player 2's half, under their battery panel) */
+#goals{position:fixed;right:16px;top:76px;z-index:4;display:none;pointer-events:none;width:252px;box-sizing:border-box;padding:7px 10px 8px;border-radius:10px;}
+#goals .gh{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:11px;letter-spacing:2px;color:var(--gold);text-shadow:0 2px 0 rgba(0,0,0,.4);}
+#goals .gk{font-size:8px;letter-spacing:1px;color:#9fb5b8;white-space:nowrap;} #goals .gk .gb{font-size:10px;}
+#goals .gsub{font-size:9px;color:#9fb5b8;margin-top:5px;}
+#goals .grow{margin-top:7px;} #goals .gt{display:flex;justify-content:space-between;align-items:flex-start;gap:6px;font-size:10px;line-height:1.35;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.4);}
+#goals .gx{flex:1;min-width:0;} #goals .gp{font-size:9px;color:var(--gold);white-space:nowrap;margin-top:1px;}
+#goals .gi{display:inline-block;vertical-align:-1px;margin:0 1px;}
+#goals .gbar{height:2px;background:rgba(0,0,0,.45);margin-top:3px;overflow:hidden;} #goals .gbar b{display:block;height:100%;background:var(--green);}
+#goals .gn{font-size:8px;color:#9fb5b8;margin-top:2px;text-align:right;letter-spacing:1px;}
+#goals .grow.bad .gbar b{background:var(--red);} #goals .grow.bad .gn{color:var(--red);}
+#goals .grow.done .gt{color:var(--green);} #goals .grow.done .gn{color:var(--green);} #goals .grow.done .gbar b{background:var(--gold);}
+#goals .gmini{display:flex;gap:5px;margin-top:5px;} #goals .gmini i{flex:1;height:2px;background:rgba(0,0,0,.45);overflow:hidden;} #goals .gmini i b{display:block;height:100%;background:var(--green);}
+#goals .gmini i.bad b{background:var(--red);} #goals .gmini i.ok b{background:var(--gold);}
+body.coop #view1 #goals{width:236px;}
 .pause{width:min(780px,94vw);box-sizing:border-box;display:flex;flex-direction:column;align-items:center;gap:14px;padding:18px 20px 20px;margin:auto;}
 .pause h2{margin:0;font-size:26px;color:var(--gold);text-shadow:0 3px 0 rgba(0,0,0,.4);}
 .pause .sub{font-size:11px;max-width:560px;}
@@ -400,6 +418,7 @@ body.pad .padfocus.pf1{outline-color:#6fd18e;}
     <div class="lotbar"><div class="bar"><div id="lotBar"></div><i style="left:50%"></i><i style="left:70%"></i><i style="left:90%"></i><span class="barnum" id="lotGood">0</span></div><b class="bartot" id="lotTotal">0</b></div>
   </div>
 </div>
+<div id="goals" class="panel"></div>
 <div id="hotbar"></div>
 <div id="prompt"><div id="ptext"></div><div id="pbar"><div id="pfill"></div></div></div>
 </div>
@@ -408,6 +427,7 @@ body.pad .padfocus.pf1{outline-color:#6fd18e;}
 <div id="sharedLot"><div class="panel lotpanel" id="lotPanel"><div class="lotid"><div class="lotname" id="lotName">-</div><div class="lottag" id="lotTag">-</div></div><div class="lotbadge open" id="lotBadge"></div><div class="lotbar"><div class="bar"><div id="lotBar"></div><i style="left:50%"></i><i style="left:70%"></i><i style="left:90%"></i><span class="barnum" id="lotGood">0</span></div><b class="bartot" id="lotTotal">0</b></div></div></div>
 <button id="menuBtn" title="Menu (Esc)"><svg class="px" width="20" height="18" viewBox="0 0 10 9"><rect x="0" y="0" width="10" height="2" fill="#cfe3e6"/><rect x="0" y="3.5" width="10" height="2" fill="#cfe3e6"/><rect x="0" y="7" width="10" height="2" fill="#cfe3e6"/></svg></button>
 <div id="tutBox"><div class="tl" id="tutL"></div><div class="tt" id="tutT"></div><div class="ts" id="tutS"></div></div>
+<div id="tutArrow"><svg class="px" width="48" height="56" viewBox="0 0 12 14"><path d="M6 0h1v1h1v1h1v1h1v1h1v1h1v2H9v7H4V7H1V5h1V4h1V3h1V2h1V1h1z" fill="#5a0d0a"/><path d="M6 1h1v1h1v1h1v1h1v1h1v1H8v7H5V6H2V5h1V4h1V3h1V2h1z" fill="#fe5f55"/><path d="M6 2h1v2H6zM5 4h1v1H5z" fill="#ffb0a8"/></svg></div>
 <div id="padToast"></div>
 <div id="netBadge"></div>
 <div id="netBanner">THE HOST PAUSED THE GAME</div>
@@ -459,26 +479,19 @@ const RH=50,VERGE=8,SWW=14,FRONT=RH+VERGE+SWW,PED_OFF=RH+VERGE+7;
 // the tutorial (opened from the title screen as index.html#tutorial) is its own small map: one street, a corner, a
 // short side street with a turning circle, and just two houses to work
 const TUTORIAL=location.hash==='#tutorial';
-const Y1=420,XC=TUTORIAL?700:1160,Y2=TUTORIAL?960:1190,XB=TUTORIAL?1120:2110,BULB_R=90,WORLD_W=TUTORIAL?1260:2260,H=TUTORIAL?1100:1870;
-const ROADS=[{x0:0,y0:Y1-RH,x1:XC,y1:Y1+RH,h:1,c:Y1},{x0:XC-RH,y0:Y1,x1:XC+RH,y1:Y2,h:0,c:XC},{x0:XC,y0:Y2-RH,x1:XB,y1:Y2+RH,h:1,c:Y2}];
-const BULB={x:XB,y:Y2,r:BULB_R};
+// The street is one road with right-angle bends, given by its corners: in from the west edge of the map, ending in a
+// turning circle. The full game winds through three neighborhoods, one street each: Birch Lane (small, older houses),
+// then Maple Avenue, then Willow Heights (the big houses, ending in the cul-de-sac). HOODS gives each stretch of road
+// (and the bend at its far end) its neighborhood: 0 Birch, 1 Maple, 2 Willow
+const STREET=TUTORIAL?[[0,420],[700,420],[700,960],[1120,960]]:[[0,290],[1150,290],[1150,900],[200,900],[200,1720],[1980,1720]];
+const STREET_HOOD=TUTORIAL?[1,1,1]:[0,1,1,2,2];
+const HOOD_NAMES=['BIRCH LANE','MAPLE AVENUE','WILLOW HEIGHTS'];
+const Y1=STREET[0][1],XC=STREET[1][0],BULB_R=90,WORLD_W=TUTORIAL?1260:2140,H=TUTORIAL?1100:2380;
+const ROADS=STREET.slice(1).map(([x1,y1],i)=>{const [x0,y0]=STREET[i],h=y0===y1?1:0;
+  return h?{x0:Math.min(x0,x1),y0:y0-RH,x1:Math.max(x0,x1),y1:y0+RH,h,c:y0,hood:STREET_HOOD[i]}:{x0:x0-RH,y0:Math.min(y0,y1),x1:x0+RH,y1:Math.max(y0,y1),h,c:x0,hood:STREET_HOOD[i]};});
+const BULB={x:STREET[STREET.length-1][0],y:STREET[STREET.length-1][1],r:BULB_R,hood:STREET_HOOD[STREET_HOOD.length-1]};
 // round pads at each bend give the turns a curved outside edge
-const CIRCLES=[{x:XC,y:Y1,r:RH},{x:XC,y:Y2,r:RH},BULB];
-// face = the side of the lot that looks onto the street
-const LAYOUT=TUTORIAL?[
-  // the starter house beside the truck, and round the corner a tiny house with a pool (sizes given here, not by tier)
-  {k:0,face:'S',x:190,y:Y1-FRONT-180,w:220,d:180},{k:1,face:'E',x:XC-FRONT-190,y:560,w:210,d:190},
-]:[
-  {k:0,face:'S',x:190,y:Y1-FRONT-170},{k:1,face:'N',x:220,y:Y1+FRONT},{k:2,face:'S',x:408,y:Y1-FRONT-220},{k:3,face:'N',x:468,y:Y1+FRONT},
-  {k:4,face:'S',x:696,y:Y1-FRONT-310},{k:5,face:'E',x:XC-FRONT-380,y:762},{k:6,face:'W',x:XC+FRONT,y:520},{k:7,face:'N',x:1120,y:Y2+FRONT},
-];
-const FILLERS=TUTORIAL?[
-  {s:0,face:'S',x:12,y:Y1-FRONT-160,w:160,d:160},{s:0,face:'N',x:20,y:Y1+FRONT,w:182,d:180},
-  {s:1,face:'S',x:430,y:Y1-FRONT-180,w:200,d:180},{s:2,face:'W',x:XC+FRONT,y:520,w:240,d:220},
-]:[
-  {s:0,face:'S',x:12,y:Y1-FRONT-160,w:160,d:160},{s:0,face:'N',x:20,y:Y1+FRONT,w:182,d:180},
-  {s:3,face:'N',x:806,y:Y1+FRONT,w:272,d:240},{s:4,face:'S',x:1712,y:Y2-FRONT-300,w:300,d:300},
-];
+const CIRCLES=[...STREET.slice(1,-1).map(([x,y],i)=>({x,y,r:RH,hood:STREET_HOOD[i]})),BULB];
 // the tutorial's two yards, laid out around wherever each house ends up (lot-local: the street runs along y=d)
 const TUT_YARDS={
   // a rounded mulch bed in the front corner with a tree over it, and flowerpots to tiptoe round
@@ -489,9 +502,113 @@ const TUT_YARDS={
   1:L=>{const {w}=L,h=L.lhouse;return[
     {t:'pool',x0:w-96,y0:10,x1:w-18,y1:Math.min(h.y0-6,60)},{t:'tree',x:w-112,y:34,r:22,pal:1}];},
 };
-const TIERS=[[200,170],[230,190],[270,220],[320,260],[380,310],[460,380],[580,470],[900,585]];
-const NAMES=['THE COOPERS','THE WANGS','THE MORGANS','THE SMITHS','THE PETROVS','THE PATELS','THE WHITFORDS','THE VANDERMEERS'];
-const TAGS=['STARTER HOME','COZY BUNGALOW','RANCH HOUSE','SPLIT LEVEL','COLONIAL','CRAFTSMAN','MANOR','THE ESTATE'];
+// The houses you can work, smallest first (the index is the house's number everywhere else). face = the side of the
+// lot that looks onto the street; s = style (roof, trim, how fast its trees drop leaves); hood = neighborhood;
+// level = the reputation level it needs before it pays. Each yard is laid out by hand in the lot's own frame (street
+// along y=d), with the house at h:[x,y,w,h] and its front door at x=dx, so each one suits different goals: the
+// Wangs' matching beds, the Duffys' one bed under the trees, the Okafors' pool and no mulch at all...
+// Yard items are the editor's: beds and paving are rough boxes that get snapped into place, fl marks a bed planted with
+// flowers, cars sit where they're put (dir is the way the nose points)
+const P_=(x,y,big)=>({t:'pot',x,y,big:!!big}),T_=(x,y,r,pal)=>({t:'tree',x,y,r,pal}),B_=(t,x0,y0,x1,y1,fl)=>({t,x0,y0,x1,y1,fl:!!fl}),S_=(x,y,r)=>({t:'shrub',x,y,r}),C_=(x,y,vert,dir)=>({t:'car',x,y,vert,dir});
+const HOUSES=TUTORIAL?[
+  // the starter house beside the truck, and round the corner a tiny house with a pool
+  {face:'S',x:190,y:Y1-FRONT-180,w:220,d:180,s:0,hood:1,level:0,name:'THE COOPERS',tag:'STARTER HOME',yard:TUT_YARDS[0]},
+  {face:'E',x:XC-FRONT-190,y:560,w:210,d:190,s:1,hood:1,level:0,name:'THE WANGS',tag:'COZY BUNGALOW',yard:TUT_YARDS[1]},
+]:[
+  // ---- Birch Lane
+  // a corner bed out front and one out back, a tree by each
+  {face:'S',x:190,y:48,w:200,d:170,s:0,hood:0,level:0,name:'THE COOPERS',tag:'STARTER HOME',h:[60,40,84,52],dx:102,yard:[
+    B_('path',97,98,107,170),B_('drive',150,92,180,170),C_(165,128,true,-1),
+    B_('mulch',6,112,72,170),B_('mulch',62,95,92,108),B_('mulch',6,6,52,44),
+    T_(40,96,20,0),T_(168,40,22,2),P_(118,101)]},
+  // everything in pairs: two matching beds by the door, two matching corner beds out back
+  {face:'N',x:230,y:362,w:220,d:180,s:1,hood:0,level:0,name:'THE WANGS',tag:'COZY BUNGALOW',h:[62,44,96,54],dx:110,yard:[
+    B_('path',105,104,115,180),
+    B_('mulch',66,103,100,121),B_('mulch',120,103,154,121),B_('mulch',6,6,50,40),B_('mulch',170,6,214,40),
+    T_(40,128,20,1),T_(180,128,20,3),T_(110,22,18,0),P_(60,152),P_(160,152)]},
+  // a tiny yard: one long bed down the side fence, and both trees hang over it
+  {face:'S',x:410,y:43,w:210,d:175,s:0,hood:0,level:0,name:'THE DUFFYS',tag:'FIXER-UPPER',h:[70,36,80,48],dx:96,yard:[
+    B_('path',91,90,101,175),B_('drive',156,84,186,175),C_(171,122,true,-1),
+    B_('mulch',6,40,40,170),T_(54,70,22,0),T_(56,140,20,2),P_(112,95)]},
+  // no mulch anywhere: two patches gone to wildflowers, and an above-ground pool out back
+  {face:'N',x:480,y:362,w:230,d:190,s:1,hood:0,level:1,name:'THE OKAFORS',tag:'COTTAGE',h:[50,70,100,54],dx:86,yard:[
+    B_('path',81,130,91,190),B_('pool',120,12,200,62),
+    B_('natural',140,140,224,190),B_('natural',6,6,60,50),
+    T_(190,98,22,1),T_(30,100,20,0),P_(40,142),P_(104,136)]},
+  // ---- Maple Avenue
+  // a big open lawn with a long bed along the back fence, and hardly any flowerpots
+  {face:'S',x:300,y:608,w:270,d:220,s:2,hood:1,level:1,name:'THE MORGANS',tag:'RANCH HOUSE',h:[40,70,110,60],dx:80,yard:[
+    B_('path',75,136,85,220),B_('drive',160,130,194,220),C_(177,172,true,-1),
+    B_('mulch',40,6,230,26),B_('mulch',200,160,264,220),B_('mulch',44,134,72,152),
+    T_(120,42,24,0),T_(232,108,22,2),T_(30,176,20,3),P_(94,142)]},
+  // three corner beds the same size, and a patio out back with pots round it
+  {face:'N',x:300,y:972,w:300,d:240,s:3,hood:1,level:2,name:'THE SMITHS',tag:'SPLIT LEVEL',h:[90,70,120,64],dx:133,yard:[
+    B_('path',128,140,138,240),B_('drive',216,134,250,240),C_(233,182,true,-1),B_('patio',110,20,190,64),
+    B_('mulch',6,180,66,240),B_('mulch',6,6,66,66),B_('mulch',234,6,294,66),
+    T_(60,122,24,0),T_(262,122,24,2),T_(182,196,20,1),
+    P_(114,26,1),P_(186,26),P_(121,148),P_(146,148)]},
+  // a vegetable garden out back, and one huge rounded bed taking up the whole front corner
+  {face:'S',x:640,y:578,w:320,d:250,s:3,hood:1,level:2,name:'THE GARCIAS',tag:'CAPE COD',h:[30,80,120,66],dx:73,yard:[
+    B_('path',68,152,78,250),B_('drive',156,146,190,250),C_(173,192,true,-1),B_('garden',170,14,300,70),
+    B_('mulch',222,100,314,250),B_('mulch',34,150,62,168),
+    S_(92,158,6),S_(112,158,6),S_(132,158,6),
+    T_(60,42,24,0),T_(204,108,24,3),T_(118,214,20,1),P_(166,76),P_(40,200),P_(148,182)]},
+  // a pool and patio out back with pots all round, a bed down each side fence and a two-car driveway
+  {face:'N',x:660,y:972,w:360,d:290,s:4,hood:1,level:3,name:'THE PETROVS',tag:'COLONIAL',h:[110,120,140,74],dx:160,yard:[
+    B_('path',155,200,165,290),B_('drive',256,194,310,290),C_(270,242,true,-1),C_(296,236,true,-1),
+    B_('patio',130,76,230,114),B_('pool',140,14,240,64),
+    B_('mulch',6,40,30,250),B_('mulch',330,30,354,180),B_('mulch',114,198,148,216),
+    T_(70,92,26,0),T_(300,100,26,3),T_(70,222,22,1),T_(212,252,20,2),
+    P_(134,80,1),P_(226,80),P_(132,40),P_(248,40),P_(148,206),P_(172,206)]},
+  // ---- Willow Heights
+  // flower beds everywhere, a hedge of shrubs, and one enormous bed along the back fence
+  {face:'S',x:300,y:1288,w:440,d:360,s:5,hood:2,level:3,name:'THE PATELS',tag:'CRAFTSMAN',h:[140,150,160,90],dx:198,yard:[
+    B_('path',193,246,203,360),B_('drive',306,240,346,360),C_(326,292,true,-1),
+    B_('mulch',6,6,434,70,1),B_('mulch',6,280,90,360,1),B_('mulch',144,244,186,262,1),B_('mulch',210,244,296,262,1),
+    B_('garden',350,100,430,180),
+    S_(112,196,8),S_(112,232,8),S_(118,160,7),S_(330,214,7),
+    T_(60,130,28,0),T_(396,262,24,2),T_(240,110,26,3),
+    P_(178,274,1),P_(220,274,1),P_(342,96),P_(346,188),P_(120,300),P_(272,300)]},
+  // a big pool with a tree hanging over it, a stone patio and two wildflower meadows
+  {face:'S',x:1180,y:1248,w:500,d:400,s:5,hood:2,level:4,name:'THE NAKAMURAS',tag:'TUDOR',h:[60,170,170,92],dx:121,yard:[
+    B_('path',116,268,126,400),B_('drive',236,262,276,400),C_(256,312,true,-1),
+    B_('pool',270,30,450,140),B_('patio',300,152,470,200),
+    B_('natural',6,6,140,120),B_('natural',380,290,494,400),
+    B_('mulch',64,266,110,284,1),B_('mulch',130,266,226,284,1),B_('mulch',6,180,50,330),
+    S_(300,236,8),S_(340,236,8),S_(380,236,8),
+    T_(200,64,30,0),T_(470,242,26,1),T_(332,330,24,2),T_(66,360,22,3),
+    P_(262,32),P_(458,30),P_(476,214),P_(104,300),P_(146,300,1),P_(296,206,1)]},
+  // the manor: a formal garden by the front walk, a meadow behind, a pool and patio, and a bed in every corner
+  {face:'N',x:300,y:1792,w:560,d:450,s:6,hood:2,level:4,name:'THE WHITFORDS',tag:'MANOR',h:[170,140,190,112],dx:238,yard:[
+    B_('path',233,258,243,450),B_('drive',380,252,430,450),C_(405,302,true,-1),C_(405,360,true,-1),
+    B_('garden',270,326,362,404),B_('pool',380,20,540,120),B_('patio',380,130,540,170),B_('natural',180,20,340,100),
+    B_('mulch',6,330,130,450,1),B_('mulch',6,6,130,110),B_('mulch',174,256,226,276,1),B_('mulch',250,256,356,276,1),B_('mulch',500,190,554,440),
+    S_(150,172,9),S_(150,226,9),S_(150,282,8),S_(370,206,6),
+    T_(60,200,30,0),T_(462,230,28,3),T_(150,400,24,1),T_(468,400,22,2),
+    P_(374,18),P_(546,22),P_(222,294,1),P_(254,294,1),P_(264,322),P_(266,414),P_(150,130)]},
+  // the estate: a loop drive, gardens either side of the front walk, a huge pool, a meadow and beds all round
+  {face:'N',x:1000,y:1792,w:860,d:560,s:7,hood:2,level:5,name:'THE VANDERMEERS',tag:'THE ESTATE',h:[280,170,280,130],dx:420,yard:[
+    B_('path',415,306,425,560),B_('drive',290,330,330,560),B_('drive',510,330,550,560),B_('drive',290,330,550,360),
+    C_(352,345,false,1),C_(476,345,false,1),C_(530,430,true,-1),
+    B_('garden',340,392,400,500),B_('garden',440,392,500,500),B_('garden',30,30,180,110),
+    B_('pool',560,30,800,150),B_('patio',560,160,800,210),B_('patio',320,112,520,162),B_('natural',600,240,780,380),
+    B_('mulch',6,420,200,560,1),B_('mulch',660,420,854,560,1),B_('mulch',200,6,540,30,1),B_('mulch',6,140,40,400),B_('mulch',820,240,854,410),
+    B_('mulch',284,304,404,322,1),B_('mulch',436,304,556,322,1),
+    S_(250,200,10),S_(250,262,10),S_(232,330,9),S_(578,236,9),S_(578,290,9),S_(620,410,8),
+    T_(120,250,34,0),T_(820,100,30,1),T_(240,470,26,2),T_(620,470,26,3),T_(450,62,30,0),T_(200,74,26,2),T_(720,300,28,1),T_(110,420,26,3),
+    P_(324,116,1),P_(516,116,1),P_(556,26),P_(804,26),P_(556,214),P_(804,214),P_(404,334),P_(436,334),P_(336,388),P_(504,388)]},
+];
+// the other lots along the street: someone else's yard, filled in at random (s = style)
+const FILLERS=TUTORIAL?[
+  {s:0,face:'S',x:12,y:Y1-FRONT-160,w:160,d:160},{s:0,face:'N',x:20,y:Y1+FRONT,w:182,d:180},
+  {s:1,face:'S',x:430,y:Y1-FRONT-180,w:200,d:180},{s:2,face:'W',x:XC+FRONT,y:520,w:240,d:220},
+]:[
+  {s:0,hood:0,face:'S',x:12,y:58,w:160,d:160},{s:1,hood:0,face:'S',x:640,y:48,w:200,d:170},{s:0,hood:0,face:'S',x:860,y:58,w:190,d:160},{s:1,hood:0,face:'S',x:1070,y:38,w:200,d:180},
+  {s:0,hood:0,face:'N',x:20,y:362,w:182,d:180},{s:1,hood:0,face:'N',x:730,y:362,w:190,d:180},
+  {s:2,hood:1,face:'W',x:1222,y:400,w:240,d:220},{s:1,hood:1,face:'W',x:1222,y:670,w:160,d:200},
+  {s:2,hood:1,face:'S',x:20,y:608,w:250,d:220},
+  {s:4,hood:2,face:'S',x:760,y:1318,w:400,d:330},{s:5,hood:2,face:'S',x:1700,y:1348,w:170,d:300},{s:4,hood:2,face:'N',x:20,y:1792,w:250,d:240},
+];
 const DRIVE_CFG=[null,{w:30,cars:1,p:.7},null,{w:32,cars:1,p:.8},{w:34,cars:1,p:1},{w:52,cars:2,p:1},{w:56,cars:2,p:1},{loop:true}];
 const DAY_SECONDS=320,DAY_START=7,DAY_END=22;
 const FANCY_PEN=3,TIPS=[[.9,.3],[.7,.2],[.5,.1]];
@@ -501,14 +618,12 @@ const tipFor=pct=>(TIPS.find(t=>pct>=t[0])||[0,0])[1];
 const REP_HOUSE=[[.9,40],[.7,20],[.5,10]],REP_PED=3,REP_ROAD_PER=10,REP_ROAD_CAP=25,LATE_HOUR=20,REP_LATE_PER_SEC=1;
 // reputation levels 0-5: total reputation needed for each, and what the neighborhood calls you
 const REP_LEVELS=[0,50,100,200,300,500],REP_NAMES=['NEW IN TOWN','GETTING NOTICED','RELIABLE','WELL LIKED','IN DEMAND','NEIGHBORHOOD LEGEND'];
-// the level each house (smallest to largest) needs before it will pay you
-const LOT_LEVEL=[0,0,1,1,2,3,4,5];
 const repForPct=pct=>(REP_HOUSE.find(t=>pct>=t[0])||[0,0])[1];
 const repLevel=r=>{let l=0;for(let i=1;i<REP_LEVELS.length;i++)if(r>=REP_LEVELS[i])l=i;return l;};
 const repRank=r=>r<0?'SKETCHY':REP_NAMES[repLevel(r)];
 // a house too grand for your reputation won't pay yet (checked against reputation banked at the start of the day)
-const lotNeed=L=>REP_LEVELS[LOT_LEVEL[L.k]||0];
-const lotLocked=L=>!!L&&!L.filler&&!TUTORIAL&&repLevel(rep)<(LOT_LEVEL[L.k]||0);
+const lotNeed=L=>REP_LEVELS[L.level||0];
+const lotLocked=L=>!!L&&!L.filler&&!TUTORIAL&&repLevel(rep)<(L.level||0);
 const TRUCK_HL=26,TRUCK_HW=12;
 // pools: COPE px of stone deck ring the water. The net is a stick NET_STICK long; held, its head sits NET_REACH from the player
 const COPE=3,NET_STICK=24,NET_REACH=26,NET_CAP=50,NET_R=5.5;
@@ -636,8 +751,8 @@ function buildLots(){
     const [d,bi]=roadDist(x+.5,y+.5),i=y*WORLD_W+x;
     REG[i]=d<=0?1:d<=VERGE?2:d<=VERGE+SWW?3:0;NEAR[i]=bi;if(REG[i])SURF[i]=1;
   }
-  for(const c of LAYOUT){const [w,d]=c.w?[c.w,c.d]:TIERS[c.k];const L=makeLot(c.k,c.k,w,d,mulberry(1000+c.k*7919),false,TUTORIAL?TUT_YARDS[c.k]:YARDS[c.k]);orient(L,c.face,c.x,c.y);LOTS.push(L);}
-  FILLERS.forEach((c,i)=>{const L=makeLot(LOTS.length+i,c.s,c.w,c.d,mulberry(5000+i*131),true);orient(L,c.face,c.x,c.y);});
+  HOUSES.forEach((c,k)=>{const L=makeLot(k,c,mulberry(1000+k*7919),false,YARDS[k]||c.yard);orient(L,c.face,c.x,c.y);LOTS.push(L);});
+  FILLERS.forEach((c,i)=>{const L=makeLot(LOTS.length+i,{hood:1,...c},mulberry(5000+i*131),true);orient(L,c.face,c.x,c.y);});
   ALL_LOTS.push(...LOTS,...FILLER_LOTS);
   ALL_LOTS.forEach((L,li)=>{L.li=li;
     for(let y=L.y0;y<L.y1;y++)for(let x=L.x0;x<L.x1;x++){const i=y*WORLD_W+x;REG[i]=4;LOT_AT[i]=li;SURF[i]=0;}
@@ -671,7 +786,7 @@ function buildLots(){
         if(MOUTHS.some(m=>rectsHit(m,box,6)))continue;
         if(r===ROADS[0]&&cx<230)continue;
         const dir=r.h?(side>0?1:-1):(side<0?1:-1);
-        STREET_CARS.push(makeCarObj(cx,cy,!r.h,R()<.8?dir:-dir,CAR_COLS[(R()*CAR_COLS.length)|0]));
+        STREET_CARS.push(makeCarObj(cx,cy,!r.h,R()<.8?dir:-dir,carCol(r.hood,R())));
       }
     }
   }
@@ -680,14 +795,34 @@ function buildLots(){
   for(const c of STREET_CARS)for(let by=Math.floor(c.y0/GC);by<=Math.floor(c.y1/GC);by++)for(let bx=Math.floor(c.x0/GC);bx<=Math.floor(c.x1/GC);bx++)CAR_GRID[by*GW+bx].push(c);
   buildPedPath();
 }
-// sidewalk loop for pedestrians: north/east side out to the cul-de-sac, around it, and back along the south/west side
+// The street's corners as a list of turns: for each bend, the corner point and the unit headings in and out
+const segDir=(a,b)=>{const dx=b[0]-a[0],dy=b[1]-a[1],l=Math.hypot(dx,dy)||1;return[dx/l,dy/l];};
+// one side of the street, offset o to the left (side=-1) or right (side=1) of the way it runs, from its start out to
+// where it meets the turning circle (circle radius rb). At each bend the outside of the turn rounds off on an arc, the
+// inside just cuts the corner. Returns the points, ending at the circle
+function streetSide(pts,list,o,side,rb,arcN){
+  const nrm=([dx,dy])=>side>0?[-dy,dx]:[dy,-dx];
+  const n0=nrm(segDir(list[0],list[1]));pts.push([list[0][0]+n0[0]*o,list[0][1]+n0[1]*o]);
+  for(let i=1;i<list.length-1;i++){const di=segDir(list[i-1],list[i]),dn=segDir(list[i],list[i+1]),ni=nrm(di),nn=nrm(dn),[vx,vy]=list[i];
+    // turning away from this side (it's the outside of the bend): an arc round the corner
+    const cross=di[0]*dn[1]-di[1]*dn[0],outside=side>0?cross<0:cross>0;
+    if(outside&&arcN){let a0=Math.atan2(ni[1],ni[0]),a1=Math.atan2(nn[1],nn[0]);if(a1-a0>Math.PI)a1-=Math.PI*2;if(a1-a0<-Math.PI)a1+=Math.PI*2;
+      for(let k=0;k<=arcN;k++){const a=a0+(a1-a0)*k/arcN;pts.push([vx+Math.cos(a)*o,vy+Math.sin(a)*o]);}}
+    else pts.push([vx+(ni[0]+nn[0])*o,vy+(ni[1]+nn[1])*o]);}
+  const n=list.length,dl=segDir(list[n-2],list[n-1]),nl=nrm(dl),ax=Math.sqrt(Math.max(0,rb*rb-o*o)),[cx,cy]=list[n-1];
+  pts.push([cx-dl[0]*ax+nl[0]*o,cy-dl[1]*ax+nl[1]*o]);
+  return pts;
+}
+// round the far side of the turning circle (radius rb), from lateral offset o on one side of the street to the other
+function bulbArc(pts,o,side,rb,N){
+  const n=STREET.length,d=segDir(STREET[n-2],STREET[n-1]),w=side>0?[-d[1],d[0]]:[d[1],-d[0]],u=[-d[0],-d[1]],a0=Math.atan2(o,Math.sqrt(Math.max(0,rb*rb-o*o)));
+  for(let k=1;k<N;k++){const a=a0+(Math.PI*2-2*a0)*k/N;pts.push([BULB.x+rb*(Math.cos(a)*u[0]+Math.sin(a)*w[0]),BULB.y+rb*(Math.cos(a)*u[1]+Math.sin(a)*w[1])]);}
+}
+// sidewalk loop for pedestrians: out along the left-hand sidewalk to the cul-de-sac, around it, and back along the other
 function buildPedPath(){
-  const o=PED_OFF,rb=BULB.r+(PED_OFF-RH),ax=Math.sqrt(rb*rb-o*o);
-  const pts=[[0,Y1-o]];
-  const arc=(cx,cy,r,a0,a1,n)=>{for(let k=0;k<=n;k++){const a=a0+(a1-a0)*k/n;pts.push([cx+Math.cos(a)*r,cy+Math.sin(a)*r]);}};
-  arc(XC,Y1,o,-Math.PI/2,0,8);pts.push([XC+o,Y2-o],[XB-ax,Y2-o]);
-  arc(BULB.x,BULB.y,rb,Math.atan2(-o,-ax),Math.atan2(o,-ax),24);
-  pts.push([XC,Y2+o]);arc(XC,Y2,o,Math.PI/2,Math.PI,8);pts.push([XC-o,Y1+o],[0,Y1+o]);
+  const o=PED_OFF,rb=BULB.r+(PED_OFF-RH);
+  const pts=streetSide([],STREET,o,-1,rb,8);bulbArc(pts,o,-1,rb,24);
+  const back=streetSide([],STREET,o,1,rb,8).reverse();pts.push(...back);
   for(let i=0;i<pts.length-1;i++){const [x0,y0]=pts[i],[x1,y1]=pts[i+1],n=Math.max(1,Math.round(Math.hypot(x1-x0,y1-y0)/3));
     for(let k=0;k<n;k++)PATH.push({x:x0+(x1-x0)*k/n,y:y0+(y1-y0)*k/n});}
   PATH.push({x:pts[pts.length-1][0],y:pts[pts.length-1][1]});
@@ -731,14 +866,17 @@ function zoneOutline(z,house){
 }
 // side fences closing off the backyard, with a gate each side; switched off but kept for later
 const BACKYARD_FENCES=false;
-function makeLot(k,s,w,d,R,filler,custom){
-  const L={k,style:s,w,d,filler:!!filler,lshrubs:[],lz:[],lpaved:[],lcars:[],ltrees:[],lpots:[],lnets:[],deco:[],name:filler?'':NAMES[k],tag:filler?'':TAGS[k],done:false,hauled:0,paidAmt:0};
+// cfg: {w,d,s (style),hood,level,name,tag, and optionally h:[x,y,w,h] for the house and dx for the door}
+function makeLot(k,cfg,R,filler,custom){
+  const {w,d,s}=cfg;
+  const L={k,style:s,hood:cfg.hood??1,level:cfg.level||0,w,d,filler:!!filler,lshrubs:[],lz:[],lpaved:[],lcars:[],ltrees:[],lpots:[],lnets:[],deco:[],name:filler?'':cfg.name,tag:filler?'':cfg.tag,done:false,hauled:0,paidAmt:0};
   L.lfences=[{x0:0,y0:0,x1:6,y1:d},{x0:w-6,y0:0,x1:w,y1:d},{x0:0,y0:0,x1:w,y1:6}];
-  // the house sits toward the street with a modest front lawn, leaving a real backyard behind it
-  const hw=Math.round(clamp(w*.42,72,190)),hh=Math.round(clamp(d*.28,46,122)),F=Math.round(clamp(d*.34,64,150)+R()*8);
-  const hx=Math.round(14+(w-28-hw)*(s===7?.12:.2+R()*.6)),hy=d-F-hh;
+  // the house sits toward the street with a modest front lawn, leaving a real backyard behind it (unless it's placed)
+  let hw=Math.round(clamp(w*.42,72,190)),hh=Math.round(clamp(d*.28,46,122)),F=Math.round(clamp(d*.34,64,150)+R()*8);
+  let hx=Math.round(14+(w-28-hw)*(s===7?.12:.2+R()*.6)),hy=d-F-hh;
+  if(cfg.h){[hx,hy,hw,hh]=cfg.h;F=d-hy-hh;}
   L.lhouse={x0:hx,y0:hy,x1:hx+hw,y1:hy+hh};
-  L.ldoor={x:hx+Math.round(hw*(s>=1?.36:.5)),y:hy+hh};
+  L.ldoor={x:cfg.dx??hx+Math.round(hw*(s>=1?.36:.5)),y:hy+hh};
   const door=L.ldoor,occ=[{x0:hx-4,y0:hy-4,x1:hx+hw+4,y1:hy+hh+8}];
   L.lpaved.push({x0:door.x-5,y0:hy+hh+6,x1:door.x+5,y1:d,kind:'path'});
   occ.push({x0:door.x-8,y0:hy+hh,x1:door.x+8,y1:d});
@@ -776,13 +914,13 @@ function makeLot(k,s,w,d,R,filler,custom){
       const sy=hy+hh+28,aw=30;
       const left={x0:hx-6,y0:sy,x1:hx-6+aw,y1:d,kind:'drive'},right={x0:hx+hw-aw+6,y0:sy,x1:hx+hw+6,y1:d,kind:'drive'},strip={x0:hx-6,y0:sy,x1:hx+hw+6,y1:sy+26,kind:'strip'};
       L.lpaved.push(left,right,strip);occ.push({x0:left.x0-4,y0:sy-4,x1:right.x1+4,y1:sy+30},{x0:left.x0-4,y0:sy,x1:left.x1+4,y1:d},{x0:right.x0-4,y0:sy,x1:right.x1+4,y1:d});
-      car(hx+hw*.58,sy+13,false,1,CAR_COLS[(R()*10)|0]);car(hx+hw*.82,sy+13,false,1,'#1e2226');car((right.x0+right.x1)/2,sy+70,true,-1,CAR_COLS[(R()*10)|0]);
+      car(hx+hw*.58,sy+13,false,1,carCol(L.hood,R()));car(hx+hw*.82,sy+13,false,1,carCol(L.hood,R()));car((right.x0+right.x1)/2,sy+70,true,-1,carCol(L.hood,R()));
     }else{
       const dw=dc.w,dx=hx+hw-dw-2,dr={x0:dx,y0:hy+hh,x1:dx+dw,y1:d,kind:'drive'};
       L.lpaved.push(dr);occ.push({x0:dx-4,y0:hy+hh,x1:dx+dw+4,y1:d});
       const cy=()=>hy+hh+21+R()*Math.max(0,F-46);
-      if(dc.cars===2){car(dx+dw*.27,hy+hh+21,true,-1,CAR_COLS[(R()*10)|0]);car(dx+dw*.73,cy(),true,-1,CAR_COLS[(R()*10)|0]);}
-      else if(R()<.85)car(dx+dw/2,cy(),true,R()<.7?-1:1,CAR_COLS[(R()*10)|0]);
+      if(dc.cars===2){car(dx+dw*.27,hy+hh+21,true,-1,carCol(L.hood,R()));car(dx+dw*.73,cy(),true,-1,carCol(L.hood,R()));}
+      else if(R()<.85)car(dx+dw/2,cy(),true,R()<.7?-1:1,carCol(L.hood,R()));
     }
   }
   const yard={x0:10,y0:10,x1:w-10,y1:d-8};
@@ -883,7 +1021,8 @@ function placePots(L,R){
   for(const [x,y,big] of cand){if(L.lpots.length>=want)break;if(ok(x,y,big?5:3))L.lpots.push(makePot(x,y,big));}
 }
 // ============================================================ custom yards (editor layouts, local lot frame)
-const YARD_KEY='leafblower-yards-v1';
+// (v1 yards were drawn for the old eight houses, which have all changed size and place)
+const YARD_KEY='rakingitin-yards-v2';
 let YARDS={};try{YARDS=JSON.parse(localStorage.getItem(YARD_KEY))||{};}catch(e){YARDS={};}
 // joining an online game whose host has custom yards: use theirs for this visit (never saved over yours)
 try{const ov=sessionStorage.getItem('curbNetYards');if(ov&&location.hash.startsWith('#join='))YARDS=JSON.parse(ov);}catch(e){}
@@ -926,23 +1065,24 @@ function applyYard(L,items){
     if(it.t==='shrub'){if(!inRect(L.lhouse,it.x,it.y,it.r))L.lshrubs.push({x:Math.round(it.x),y:Math.round(it.y),r:it.r});continue;}
     if(it.t==='tree'){if(!inRect(L.lhouse,it.x,it.y,4))L.ltrees.push({x:Math.round(it.x),y:Math.round(it.y),r:it.r,pal:it.pal,rate:.22+s*.1});continue;}
     if(it.t==='pot'){if(!inRect(L.lhouse,it.x,it.y,3))L.lpots.push(makePot(it.x,it.y,it.big));continue;}
+    if(it.t==='car'){L.lcars.push({cx:it.x,cy:it.y,vert:!!it.vert,dir:it.dir||1,col:carCol(L.hood,hash(it.x+L.k*31,it.y*7))});continue;}
     if(!YARD_TYPES[it.t])continue;
     const z=resolveYardRect(L,it);if(!z)continue;
     if(it.t==='drive'||it.t==='path'){L.lpaved.push({...z,kind:it.t});continue;}
-    L.lz.push({shape:'r',...z,type:it.t,good:it.t==='mulch'||it.t==='natural'});
+    L.lz.push({shape:'r',...z,type:it.t,good:it.t==='mulch'||it.t==='natural',fl:!!it.fl});
   }
-  // park a car or two on any driveway long enough to hold one
-  for(const p of L.lpaved){if(p.kind!=='drive')continue;
+  // park a car or two on any driveway long enough to hold one (unless the yard says where they go)
+  if(!L.lcars.length)for(const p of L.lpaved){if(p.kind!=='drive')continue;
     const pw=p.x1-p.x0,ph=p.y1-p.y0,vert=ph>=pw,len=vert?ph:pw,wid=vert?pw:ph,hv=hash(p.x0*7+L.k,p.y0*13);
     if(len<44||wid<18||hv<.15)continue;
     const n=wid>=46?2:1;
-    for(let i=0;i<n;i++){const col=CAR_COLS[(hash(i+p.x0,p.y1+L.k)*10)|0],off=n===2?(i?.73:.27):.5;
+    for(let i=0;i<n;i++){const col=carCol(L.hood,hash(i+p.x0,p.y1+L.k)),off=n===2?(i?.73:.27):.5;
       L.lcars.push(vert?{cx:p.x0+pw*off,cy:p.y0+20,vert:true,dir:-1,col}:{cx:p.x0+22,cy:p.y0+ph*off,vert:false,dir:1,col});}
   }
 }
 function yardFromLot(L){
   return[...L.lpaved.map(p=>({t:p.kind==='path'?'path':'drive',x0:p.x0,y0:p.y0,x1:p.x1,y1:p.y1})),
-    ...L.lz.filter(z=>z.shape!=='e').map(z=>({t:z.type,x0:z.x0,y0:z.y0,x1:z.x1,y1:z.y1})),
+    ...L.lz.filter(z=>z.shape!=='e').map(z=>({t:z.type,x0:z.x0,y0:z.y0,x1:z.x1,y1:z.y1,fl:!!z.fl})),
     ...L.ltrees.map(t=>({t:'tree',x:t.x,y:t.y,r:t.r,pal:t.pal})),
     ...L.lpots.map(p=>({t:'pot',x:p.x,y:p.y,big:p.big})),
     ...(L.lshrubs||[]).map(b=>({t:'shrub',x:b.x,y:b.y,r:b.r})),
@@ -950,7 +1090,8 @@ function yardFromLot(L){
 }
 
 // ============================================================ leaves (SoA)
-const MAX=26000;
+// (the bigger neighborhood starts the day with ~18k leaves, and its trees keep dropping more)
+const MAX=34000;
 const LX=new Float32Array(MAX),LY=new Float32Array(MAX),LZ=new Float32Array(MAX);
 const VX=new Float32Array(MAX),VY=new Float32Array(MAX),VZ=new Float32Array(MAX);
 const ROT=new Float32Array(MAX),VR=new Float32Array(MAX),PH=new Float32Array(MAX);
@@ -981,7 +1122,7 @@ function okLeafSpot(L,x,y){
   return true;
 }
 function spawnLot(L){
-  const n=Math.round((L.w-12)*(L.d-10)*(.0075+L.k*.001));
+  const n=Math.round((L.w-12)*(L.d-10)*(.0075+L.style*.001));
   let placed=0,guard=0;
   while(placed<n&&guard++<n*25){
     let x,y,col;
@@ -998,33 +1139,69 @@ function spawnLot(L){
 
 // ============================================================ background
 let bg;
+// litter, cracks and potholes along Birch Lane; flowers and little clipped boxwoods along the Willow Heights verges.
+// Painted straight into the background, so it's just scenery
+function decorateStreets(px,WW,hoodN){
+  const put=(x,y,col)=>{x|=0;y|=0;if(x>=0&&y>=0&&x<WW&&y<H&&REG[y*WW+x]&&REG[y*WW+x]!==4)px[y*WW+x]=hexA(col);};
+  const LITTER=[[[0,0,'#c9352b'],[1,0,'#c9352b'],[2,0,'#c8ccd0']],[[0,0,'#e8e4d8'],[1,0,'#d8d4c8'],[0,1,'#b8b4a8'],[1,1,'#e8e4d8']],
+    [[0,0,'#ff9800'],[1,0,'#ffcf4a'],[2,0,'#ff9800'],[0,1,'#c86a00'],[1,1,'#ff9800'],[2,1,'#c86a00']],[[0,0,'#2f6a34'],[1,0,'#3a7a3a'],[2,0,'#8fcb8f']],
+    [[0,0,'#f4f1e8'],[1,0,'#f4f1e8'],[0,1,'#c9352b'],[1,1,'#f4f1e8']],[[0,0,'#2a5d9f'],[1,0,'#c8ccd0']]];
+  const FLW=['#ff5f8f','#ffd84a','#fff3d6','#b06cff','#ff8a3a'];
+  for(let y=3;y<H-3;y+=5)for(let x=3;x<WW-3;x+=5){
+    const i=y*WW+x,g=REG[i];if(!g||g===4)continue;const hd=hoodN(NEAR[i]),r=hash(x*13+5,y*7+11),r2=hash(y*3+1,x*5+9);
+    if(hd===0){
+      if(g===3&&r<.07){let cx=x,cy=y;const rd=ROADS[NEAR[i]],ax=rd&&rd.h?1:0;for(let k=0;k<4+r2*7;k++){put(cx,cy,'#7f796f');const q=hash(cx*3+k,cy*7);if(ax){cx+=q<.6?1:0;cy+=q<.3?-1:q>.8?1:0;}else{cy+=q<.6?1:0;cx+=q<.3?-1:q>.8?1:0;}}}
+      else if((g===3||g===2)&&r<.105){for(const [dx,dy,c] of LITTER[(r2*LITTER.length)|0])put(x+dx,y+dy,c);}
+      else if(g===2&&r<.15){put(x,y,'#ffd84a');put(x,y+1,'#4f8a3c');}
+      else if(g===1&&r<.008){const near=[-6,6].some(o=>REG[(y+o)*WW+x]!==1||REG[y*WW+x+o]!==1);if(!near){for(let dy=-1;dy<=1;dy++)for(let dx=-2;dx<=2;dx++)if(Math.abs(dx)+Math.abs(dy)<3)put(x+dx,y+dy,dy<0?'#1e2023':'#26282c');put(x-1,y+1,'#55585e');put(x+1,y+1,'#55585e');}}
+    }else if(hd===2&&g===2){
+      if(r<.05){for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++)if(dx*dx+dy*dy<=5)put(x+dx,y+dy,dy<0&&dx<1?'#5aa848':dy>0?'#1f4a1c':'#2f6a2a');put(x-1,y-1,'#8fcb5f');}
+      else if(r<.16){const c=FLW[(r2*FLW.length)|0];put(x,y,c);put(x+1,y+1,c);put(x-1,y+1,'#3a7a30');put(x+1,y,'#fff3d6');}
+    }
+  }
+}
 function buildBackground(){
   const WW=WORLD_W;bg=mk(WW,H);const c=bg.getContext('2d');c.imageSmoothingEnabled=false;
   let img=c.createImageData(WW,H),px=new Uint32Array(img.data.buffer);
   const WOOD=['#16291a','#1c3320','#23402a','#2c4f30','#355c36'].map(h=>hexA(h)),WOODA=[hexA('#5a2e16'),hexA('#7a4020'),hexA('#8a6a1c')];
   const HEDGE=['#244a24','#2f5a2a','#3d7334','#4d8a3e'].map(h=>hexA(h));
-  const SW=[hexA('#bdb6aa'),hexA('#b3ac9f'),hexA('#c7c0b4')],SWJ=hexA('#8f897f');
-  const RD=[hexA('#3b3f46'),hexA('#42464e'),hexA('#34383e')],DASH=hexA('#e8c24a'),CURB=hexA('#d8d2c6'),PLINE=hexA('#8a8e96');
-  const VG=[hexA('#3a6a30'),hexA('#447a36'),hexA('#4f8a3c')];
+  // each neighborhood's street: Birch Lane's is worn (faded paint, patched asphalt, slabs gone dark, scrubby verges),
+  // Maple Avenue's is as it was, and Willow Heights' is fresh (dark smooth asphalt with edge lines, pale pavers, lush grass)
+  const HV=[
+    {SW:['#b8b2a6','#aca598','#c1baae'],SWJ:'#87817a',RD:['#464950','#4d5057','#3f4248'],VG:['#56682e','#617436','#4c6a2c'],dash:'#c8ad52',pline:'#7c8088'},
+    {SW:['#bdb6aa','#b3ac9f','#c7c0b4'],SWJ:'#8f897f',RD:['#3b3f46','#42464e','#34383e'],VG:['#3a6a30','#447a36','#4f8a3c'],dash:'#e8c24a',pline:'#8a8e96'},
+    {SW:['#d4cec2','#ccc5b8','#dcd6ca'],SWJ:'#a8a296',RD:['#2c3036','#31353b','#292d32'],VG:['#3f8a38','#4a9a3e','#56a844'],dash:'#f2cf4a',pline:'#e8e4d8'},
+  ].map(h=>({SW:h.SW.map(v=>hexA(v)),SWJ:hexA(h.SWJ),RD:h.RD.map(v=>hexA(v)),VG:h.VG.map(v=>hexA(v)),DASH:hexA(h.dash),PLINE:hexA(h.pline)}));
+  const CURB=hexA('#d8d2c6'),PATCH=hexA('#35383d'),PATCHE=hexA('#2c2f33'),SLAB=hexA('#a39c8f'),DIRT=[hexA('#6a5a3a'),hexA('#7a6842')],EDGE=hexA('#e8e4d8');
   const DR=[hexA('#aaa398'),hexA('#a19a8f'),hexA('#b4ada2')];
   const LANE=Math.round(RH*.45),reg=(x,y)=>x<0||y<0||x>=WW||y>=H?0:REG[y*WW+x];
+  const hoodN=n=>n<ROADS.length?ROADS[n].hood:CIRCLES[n-ROADS.length].hood;
   for(let y=0;y<H;y++)for(let x=0;x<WW;x++){
     const i=y*WW+x,g=REG[i],r=hash(x*7+1,y*13+3);let v;
-    if(g===1){
-      v=RD[r<.15?1:r<.3?2:0];
-      if(reg(x-1,y)!==1||reg(x+1,y)!==1||reg(x,y-1)!==1||reg(x,y+1)!==1)v=CURB;
-      else{const ni=NEAR[i],rd=ROADS[ni];
-        // lane markings only on the straight runs, not in intersections or the cul-de-sac
-        if(rd&&!ROADS.some(o=>o!==rd&&x>=o.x0&&x<o.x1&&y>=o.y0&&y<o.y1)){
-          const q=rd.h?y-rd.c:x-rd.c,t=rd.h?x:y;
-          if((q===-1||q===0)&&(t%28)<14)v=DASH;
-          if((q===-LANE||q===LANE)&&(t%10)<2)v=PLINE;
-        }}
-    }else if(g===2)v=VG[r<.3?0:r<.7?1:2];
-    else if(g===3){v=SW[r<.2?1:r<.3?2:0];const rd=ROADS[NEAR[i]];
-      if(rd&&((rd.h?x:y)%26===0))v=SWJ;
-      if(!rd){const cc=CIRCLES[NEAR[i]-ROADS.length];if((Math.round(Math.atan2(y-cc.y,x-cc.x)*cc.r*.55))%6===0)v=SWJ;}
-      const o=[reg(x-1,y),reg(x+1,y),reg(x,y-1),reg(x,y+1)];if(o.includes(0)||o.includes(4))v=SWJ;}
+    if(g&&g!==4){const hd=hoodN(NEAR[i]),K=HV[hd];
+      if(g===1){
+        v=K.RD[r<.15?1:r<.3?2:0];
+        // Birch Lane: squares of patched asphalt
+        if(hd===0){const cx=Math.floor(x/22),cy=Math.floor(y/16),hp=hash(cx*7+3,cy*11+5);
+          if(hp<.12){const ix=x-cx*22,iy=y-cy*16,w2=8+((hp*120)|0)%12,h2=5+((hp*530)|0)%9;if(ix>=2&&iy>=2&&ix<2+w2&&iy<2+h2)v=ix===2||iy===2||ix===1+w2||iy===1+h2?PATCHE:PATCH;}}
+        if(reg(x-1,y)!==1||reg(x+1,y)!==1||reg(x,y-1)!==1||reg(x,y+1)!==1)v=CURB;
+        else{const ni=NEAR[i],rd=ROADS[ni];
+          // lane markings only on the straight runs, not in intersections or the cul-de-sac (worn away in places on Birch Lane)
+          if(rd&&!ROADS.some(o=>o!==rd&&x>=o.x0&&x<o.x1&&y>=o.y0&&y<o.y1)){
+            const q=rd.h?y-rd.c:x-rd.c,t=rd.h?x:y,worn=hd===0&&hash(t>>3,q*3+11)<.3;
+            if((q===-1||q===0)&&(t%28)<14&&!worn)v=K.DASH;
+            if((q===-LANE||q===LANE)&&(t%10)<2&&!worn)v=K.PLINE;
+            // Willow Heights: a crisp white line just in from each curb
+            if(hd===2&&(q===-(RH-5)||q===RH-5))v=EDGE;
+          }}
+      }else if(g===2){v=K.VG[r<.3?0:r<.7?1:2];if(hd===0&&vnoise(x*.12+31,y*.12)>.66)v=DIRT[r<.5?0:1];}
+      else{v=K.SW[r<.2?1:r<.3?2:0];const rd=ROADS[NEAR[i]];
+        const t=rd?(rd.h?x:y):0,slab=rd?Math.floor(t/26):0;
+        if(hd===0&&rd&&hash(slab*7+3,rd.c)<.22)v=r<.5?SLAB:K.SW[1];
+        if(rd&&(t%26===0||(hd===2&&t%13===0)))v=K.SWJ;
+        if(!rd){const cc=CIRCLES[NEAR[i]-ROADS.length];if((Math.round(Math.atan2(y-cc.y,x-cc.x)*cc.r*.55))%(hd===2?3:6)===0)v=K.SWJ;}
+        const o=[reg(x-1,y),reg(x+1,y),reg(x,y-1),reg(x,y+1)];if(o.includes(0)||o.includes(4))v=K.SWJ;}
+    }
     else{const n=vnoise(x*.07,y*.07)*.7+vnoise(x*.2,y*.2)*.3+BAYER[(y&3)*4+(x&3)]*.12;v=WOOD[clamp(((n-.15)*5)|0,0,4)];
       if(vnoise(x*.05+40,y*.05)>.72&&r<.6)v=WOODA[(r*5|0)%3];}
     px[i]=v;
@@ -1035,6 +1212,7 @@ function buildBackground(){
       if(REG[y*WW+x]!==0)continue;const n=vnoise(x*.3,y*.3)*.7+hash(x,y)*.3;px[y*WW+x]=HEDGE[clamp((n*4)|0,0,3)];}
     for(const a of L.aprons)for(let y=a.y0;y<a.y1;y++)for(let x=a.x0;x<a.x1;x++){const i=y*WW+x;if(REG[i]===2){const r=hash(x*3,y*11);px[i]=DR[r<.2?1:r<.3?2:0];}}
   }
+  decorateStreets(px,WW,hoodN);
   c.putImageData(img,0,0);
   const layers=ALL_LOTS.map(L=>renderLot(L));
   ALL_LOTS.forEach((L,i)=>blitLot(c,layers[i][0],L));
@@ -1056,15 +1234,18 @@ function buildBackground(){
 // paint a lot in its local frame: [ground layer, overlay layer (house, fence, props)]
 function renderLot(L){
   const {w,d}=L,g=mk(w,d),gc=g.getContext('2d'),img=gc.createImageData(w,d),px=new Uint32Array(img.data.buffer);
-  const G=['#3d7532','#478537','#51943d','#5ca343','#69b04b'].map(h=>hexA(h));
-  const TUFT=hexA('#33662b'),TUFTL=hexA('#8fcb5f'),FL1=hexA('#fff3d6'),FL2=hexA('#ffd84a');
+  // Birch Lane lawns are tired (yellowing, with bare patches and dandelions); Willow Heights lawns are deep green and
+  // mown in sharp stripes
+  const hd=L.hood??1,G=(hd===0?['#4a7032','#557a36','#62853c','#6e8e40','#7c9846']:hd===2?['#3a7a32','#438a38','#4d983e','#58a846','#64b450']:['#3d7532','#478537','#51943d','#5ca343','#69b04b']).map(h=>hexA(h));
+  const TUFT=hexA('#33662b'),TUFTL=hexA('#8fcb5f'),FL1=hexA('#fff3d6'),FL2=hexA('#ffd84a'),BARE=[hexA('#7a6a44'),hexA('#6a5a3a'),hexA('#8a7a4e')];
   const DR=[hexA('#aaa398'),hexA('#a19a8f'),hexA('#b4ada2')],DRJ=hexA('#8a847a');
-  const sw=20+L.style*2,ox=L.ox*3+L.li*977,oy=L.oy*3;
+  const sw=20+L.style*2,ox=L.ox*3+L.li*977,oy=L.oy*3,stripe=hd===2?.16:hd===0?.05:.1;
   for(let y=0;y<d;y++)for(let x=0;x<w;x++){
     const r=hash(x*7+1+ox,y*13+3+oy);let n=fbm((x+ox)*.025,(y+oy)*.025)*.75+r*.3;
-    if(((x/sw)|0)&1)n+=.1;
+    if(((x/sw)|0)&1)n+=stripe;
     let v=G[clamp(((n-.2+BAYER[(y&3)*4+(x&3)]*.14)*4.2)|0,0,4)];
     if(r>.985)v=TUFT;else if(r>.978)v=TUFTL;if(r<.0007)v=FL1;else if(r<.0012)v=FL2;
+    if(hd===0){const b=vnoise((x+ox)*.06+5,(y+oy)*.06);if(b>.77)v=BARE[r<.4?0:r<.8?1:2];else if(r<.004)v=FL2;}
     px[y*w+x]=v;
   }
   const P=L.lpaved;
@@ -1100,7 +1281,10 @@ function paintZone(px,WW,HH,z){
     else if(z.shape==='q'){const dx=(x+.5-z.ax)/(z.x1-z.x0),dy=(y+.5-z.ay)/(z.y1-z.y0);edge=(1-Math.sqrt(dx*dx+dy*dy))*Math.min(z.x1-z.x0,z.y1-z.y0)<1.5;}
     else edge=x===z.x0||x===z.x1-1||y===z.y0||y===z.y1-1;
     const r=hash(x*3+7,y*5+1);let v;
-    if(z.type==='mulch'){v=MUL[r<.25?0:r<.6?1:r<.85?2:3];if(r>.97)v=CHIP;if(edge)v=MEDGE;}
+    if(z.type==='mulch'){v=MUL[r<.25?0:r<.6?1:r<.85?2:3];if(r>.97)v=CHIP;
+      // a planted bed: little leafy clumps dotted with flowers
+      if(z.fl){const cx=x%9,cy=(y+((x/9|0)&1)*4)%8;if(cx<3&&cy<2)v=LEAFG[(cx+cy)%3];if(cx===1&&cy===0)v=GF[((x/9|0)+(y/8|0))%5];}
+      if(edge)v=MEDGE;}
     else if(z.type==='natural'){const n=vnoise(x*.25,y*.25);v=NAT[clamp((n*3+r*1.2)|0,0,3)];if(((x+y*3)%7===0)&&r>.5)v=NATD;if(r>.992)v=NF[(r*1000|0)%4];if(edge&&(x+y)%3===0)v=STONE;}
     else if(z.type==='pool'){const e=Math.min(x-z.x0,z.x1-1-x,y-z.y0,z.y1-1-y);
       if(e<COPE)v=e===0?DECKE:(x+y*2)%7===0?DECK[1]:DECK[r<.15?2:0];
@@ -1136,6 +1320,13 @@ function drawLotDeco(c,L){
   const pumpkin=(x,y,r)=>{c.fillStyle='#8a3d0c';pcircle(c,x,y+1,r);c.fillStyle='#ea7a1c';pcircle(c,x,y,r);c.fillStyle='#ffab4d';c.fillRect(x-r+2,y-r+1,2,1);
     c.fillStyle='#b8560f';c.fillRect(x-1,y-r+1,1,r*2-1);c.fillRect(x+2,y-r+2,1,r*2-3);c.fillStyle='#3d6a24';c.fillRect(x,y-r-1,2,2);};
   for(const d of L.deco)if(d.t==='pumpkin')pumpkin(d.x,d.y,4);
+  // Birch Lane: a wheelie bin out by the mailbox with junk round it, and a few bits of litter blown into the yard.
+  // Willow Heights: little lamps lining the front walk
+  if(L.hood===0){const bx=L.lmailbox.x+14,by=L.d-12;if(bx<L.w-12){c.fillStyle='rgba(0,0,0,.3)';c.fillRect(bx+1,by+1,7,9);c.fillStyle='#1d2f3a';c.fillRect(bx,by,7,9);c.fillStyle='#2f4a5a';c.fillRect(bx,by,7,2);c.fillStyle='#3d5a6a';c.fillRect(bx+1,by,5,1);
+      c.fillStyle='#e8e4d8';c.fillRect(bx+8,by+7,2,2);c.fillStyle='#c9352b';c.fillRect(bx-3,by+8,2,1);}
+    for(let k=0;k<4;k++){const lx=10+Math.floor(hash(k,L.k*5+3)*(L.w-20)),ly=10+Math.floor(hash(L.k*9+1,k*3)*(L.d-20));if(inRect(L.lhouse,lx,ly,3)||L.lz.some(z=>z.type==='pool'&&inRect(zoneBox(z),lx,ly,2)))continue;
+      c.fillStyle=['#e8e4d8','#c9352b','#ff9800','#2a5d9f'][k];c.fillRect(lx,ly,2,1);c.fillStyle='#b8b4a8';c.fillRect(lx,ly+1,1,1);}}
+  if(L.hood===2&&!L.filler){const p=L.lpaved.find(q=>q.kind==='path');if(p)for(let y=p.y0+10;y<p.y1-6;y+=22)for(const x of [p.x0-3,p.x1+2]){c.fillStyle='rgba(0,0,0,.3)';c.fillRect(x,y+1,2,2);c.fillStyle='#1d2326';c.fillRect(x,y-3,2,4);c.fillStyle='#ffe38a';c.fillRect(x,y-4,2,1);}}
   const m=L.lmailbox;c.fillStyle='#5a3a24';c.fillRect(m.x+2,m.y+4,2,5);c.fillStyle='#2a2e33';c.fillRect(m.x-1,m.y-1,10,7);c.fillStyle=['#2a5d9f','#c9352b','#2f5a4a','#e8e0d0'][L.k%4];c.fillRect(m.x,m.y,8,5);c.fillStyle='#fff';c.fillRect(m.x+1,m.y+1,3,1);
   const dx=L.ldoor.x,dy=L.ldoor.y;c.fillStyle='#a79e8c';c.fillRect(dx-9,dy+1,18,7);c.fillStyle='#cfc6b3';c.fillRect(dx-9,dy+1,18,5);c.fillStyle='#fe5f55';c.fillRect(dx-5,dy+2,10,2);
 }
@@ -1149,6 +1340,9 @@ function drawHouse(c,L){
     if(ry<4){c.fillStyle=top?P[1]:P[3];for(let xx=x+((row&1)?4:0);xx<x+w;xx+=8)c.fillRect(xx,yy,1,1);}
   }
   c.fillStyle=P[1];c.fillRect(x,mid-2,w,4);c.fillStyle=P[5];c.fillRect(x,mid+2,w,1);
+  // Birch Lane roofs are patched with odd shingles, and one has a blue tarp tied over a leak
+  if(L.hood===0){for(let k=0;k<6;k++){const px=x+2+Math.floor(hash(k,L.k*7+1)*(w-10)),py=y+2+Math.floor(hash(L.k*3+2,k)*(hh-8));c.fillStyle=k%2?shadeHex(P[0],1.25):shadeHex(P[2],.75);c.fillRect(px,py,6,3);}
+    if(!L.filler&&L.k===2){const tx=x+Math.round(w*.18),ty=y+3;c.fillStyle='#1b4a8a';c.fillRect(tx-1,ty-1,22,14);c.fillStyle='#2a6fc9';c.fillRect(tx,ty,20,12);c.fillStyle='#3d86e0';for(let k=2;k<12;k+=4)c.fillRect(tx,ty+k,20,1);c.fillStyle='#d0d0d0';for(const [a,b] of [[0,0],[19,0],[0,11],[19,11]])c.fillRect(tx+a,ty+b,1,1);}}
   c.fillStyle='#e8e0d0';c.fillRect(x-2,y+hh+1,w+4,2);
   const cx=x+w-Math.round(w*.25),cy=y+Math.round(hh*.12);c.fillStyle='#3a1f18';c.fillRect(cx-1,cy-1,16,14);c.fillStyle='#7a4a3a';c.fillRect(cx,cy,14,12);
   c.fillStyle='#935a45';for(let r=0;r<4;r++)for(let k=0;k<3;k++)c.fillRect(cx+k*5+(r&1)*2,cy+r*3,3,2);c.fillStyle='#1c1210';c.fillRect(cx+3,cy+3,8,6);
@@ -1158,6 +1352,19 @@ function drawHouse(c,L){
 }
 function drawFence(c,L){
   const post=(x,y)=>{c.fillStyle='#3a2314';c.fillRect(x-1,y-1,9,9);c.fillStyle='#8a5a36';c.fillRect(x,y,7,7);c.fillStyle='#a8744a';c.fillRect(x,y,7,2);};
+  // Birch Lane: sagging chain-link on grey posts. Willow Heights: clipped hedges. Maple Avenue: wooden board fences
+  if(L.hood===0||L.hood===2){
+    for(const f of L.lfences){const horiz=f.x1-f.x0>=f.y1-f.y0,fw=f.x1-f.x0,fh=f.y1-f.y0;
+      if(L.hood===0){c.fillStyle='rgba(0,0,0,.18)';c.fillRect(f.x0+1,f.y0+1,fw,fh);
+        c.fillStyle='#9aa0a4';for(let k=0;k<(horiz?fw:fh);k++){const a=horiz?f.x0+k:f.x0,b=horiz?f.y0:f.y0+k;
+          for(let q=0;q<6;q++){if(((k+q)&3)===0||((k-q)&3)===0)c.fillRect(horiz?a:a+q,horiz?b+q:b,1,1);}}
+        c.fillStyle='#6a7074';if(horiz)c.fillRect(f.x0,f.y0+1,fw,1);else c.fillRect(f.x0+1,f.y0,1,fh);
+        c.fillStyle='#5d656d';const n=Math.max(1,Math.round((horiz?fw:fh)/40));for(let k=0;k<=n;k++){const t=Math.round(k*((horiz?fw:fh)-3)/n);if(horiz)c.fillRect(f.x0+t,f.y0,3,6);else c.fillRect(f.x0,f.y0+t,6,3);}
+        c.fillStyle='#8f989e';for(let k=0;k<=n;k++){const t=Math.round(k*((horiz?fw:fh)-3)/n);if(horiz)c.fillRect(f.x0+t,f.y0,3,1);else c.fillRect(f.x0,f.y0+t,1,3);}}
+      else{for(let y=f.y0;y<f.y1;y++)for(let x=f.x0;x<f.x1;x++){const n=hash(x*5+L.k,y*3)+(horiz?(y-f.y0)/6:(x-f.x0)/6)*.4;c.fillStyle=n<.45?'#1f4a1c':n<.85?'#2f6a2a':n<1.15?'#3f7a34':'#5a9a40';c.fillRect(x,y,1,1);}
+        c.fillStyle='#8fcb5f';for(let k=3;k<(horiz?fw:fh);k+=7){const a=horiz?f.x0+k:f.x0+1+(k%3),b=horiz?f.y0+1+(k%3):f.y0+k;c.fillRect(a,b,1,1);}}
+    }
+    return;}
   for(const f of L.lfences){const horiz=f.x1-f.x0>=f.y1-f.y0;
     c.fillStyle='#4f301b';c.fillRect(f.x0,f.y0,f.x1-f.x0,f.y1-f.y0);
     if(horiz){for(let x=f.x0+1;x<f.x1-1;x+=5){c.fillStyle='#b07a48';c.fillRect(x,f.y0,3,6);c.fillStyle='#d49c62';c.fillRect(x,f.y0,1,5);}
@@ -1186,7 +1393,11 @@ function buildTruck(){
   c.fillStyle='#fff';c.fillRect(34,9,6,6);c.fillStyle='#4bc26a';c.fillRect(35,10,4,4);
   truckTmp=mk(52,24);
 }
-function makeCar(col){
+// a car's colour string can carry its kind: 'o:#hex' is an old beater (Birch Lane), 'l:#hex' a luxury car (Willow
+// Heights), a plain '#hex' an ordinary car
+function makeCar(spec){
+  const kind=spec[1]===':'?spec[0]:'',col=kind?spec.slice(2):spec;
+  if(kind==='o')return makeOldCar(col);if(kind==='l')return makeLuxCar(col);
   const c=mk(34,16),g=c.getContext('2d'),dk=shadeHex(col,.6),lt=shadeHex(col,1.25);
   g.fillStyle='#0d0d10';for(const [x,y] of [[5,0],[23,0],[5,14],[23,14]])g.fillRect(x,y,7,2);
   g.fillStyle=dk;g.fillRect(0,1,34,14);g.fillStyle=col;g.fillRect(1,2,32,12);
@@ -1198,6 +1409,35 @@ function makeCar(col){
   g.fillStyle=dk;g.fillRect(16,0,2,1);g.fillRect(16,15,2,1);
   return c;
 }
+// boxy and faded: a long flat roof, a primer-grey hood, rust round the wheel arches, a cracked windshield
+function makeOldCar(col){
+  const c=mk(34,16),g=c.getContext('2d'),dk=shadeHex(col,.55),lt=shadeHex(col,1.1);
+  g.fillStyle='#0d0d10';for(const [x,y] of [[4,0],[24,0],[4,14],[24,14]])g.fillRect(x,y,7,2);
+  g.fillStyle='#8f989e';g.fillRect(26,0,2,1);
+  g.fillStyle=dk;g.fillRect(0,1,34,14);g.fillStyle=col;g.fillRect(1,2,32,12);
+  g.fillStyle=lt;g.fillRect(1,2,32,1);
+  g.fillStyle='#1a2a3a';g.fillRect(6,3,2,10);g.fillRect(22,3,3,10);
+  g.fillStyle=shadeHex(col,1.04);g.fillRect(8,3,14,10);g.fillStyle='#e8eef2';g.fillRect(23,5,1,1);g.fillRect(24,6,1,1);g.fillRect(23,7,1,1);
+  g.fillStyle='#8a8a82';g.fillRect(26,4,5,8);g.fillStyle='#9a9a92';g.fillRect(26,4,5,1);
+  g.fillStyle='#7a3a18';for(const [x,y] of [[4,2],[11,2],[24,13],[31,2],[2,12],[12,13],[30,12]])g.fillRect(x,y,2,1);g.fillStyle='#a0582a';for(const [x,y] of [[5,13],[25,2],[3,3]])g.fillRect(x,y,1,1);
+  g.fillStyle='#d8c98a';g.fillRect(33,3,1,2);g.fillStyle='#5a5a52';g.fillRect(33,11,1,2);g.fillStyle='#b8352b';g.fillRect(0,3,1,2);g.fillRect(0,11,1,2);
+  return c;
+}
+// low and glossy: rounded corners, a long hood, a short cabin with a glass roof, chrome along the sides
+function makeLuxCar(col){
+  const c=mk(34,16),g=c.getContext('2d'),dk=shadeHex(col,.5),lt=shadeHex(col,1.45);
+  g.fillStyle='#0d0d10';for(const [x,y] of [[5,0],[24,0],[5,14],[24,14]])g.fillRect(x,y,6,2);
+  g.fillStyle='#c8ccd0';for(const [x,y] of [[7,0],[26,0],[7,15],[26,15]])g.fillRect(x,y,2,1);
+  g.fillStyle=dk;g.fillRect(1,1,32,14);g.fillRect(0,2,34,12);g.fillStyle=col;g.fillRect(1,2,32,12);g.fillRect(2,1,30,1);g.fillRect(2,14,30,1);
+  g.fillStyle='#e8eef2';g.fillRect(2,2,30,1);g.fillRect(2,13,30,1);
+  g.fillStyle='#14202c';g.fillRect(9,3,2,10);g.fillRect(19,3,3,10);g.fillStyle='#22364a';g.fillRect(11,4,8,8);g.fillStyle='#4a6a88';g.fillRect(12,5,3,1);
+  g.fillStyle=lt;g.fillRect(23,4,8,1);g.fillRect(3,4,5,1);g.fillStyle='#6fb3d9';g.fillRect(20,4,1,2);
+  g.fillStyle='#eaf6ff';g.fillRect(33,3,1,3);g.fillRect(33,10,1,3);g.fillStyle='#ff2a2a';g.fillRect(0,3,1,3);g.fillRect(0,10,1,3);
+  return c;
+}
+// a car colour for each neighborhood (r is 0..1)
+const OLD_COLS=['#8a7a5a','#6a7a6a','#7a5a4a','#5a6a7a','#9a8a6a','#7a3a2a','#6a6a5a','#4a5a4a'],LUX_COLS=['#15171a','#f4f4f0','#c8ccd0','#1d3a6a','#6a1a24','#2a2e33','#e8e0d0','#0f3a2a'];
+const carCol=(hood,r)=>hood===0?'o:'+OLD_COLS[(r*OLD_COLS.length)|0]:hood===2?'l:'+LUX_COLS[(r*LUX_COLS.length)|0]:CAR_COLS[(r*CAR_COLS.length)|0];
 
 // ============================================================ trees
 function makeCanopy(t,seed){
@@ -1483,6 +1723,7 @@ function playPad(dt){
   if(state!=='play')return;
   if(padHit(BTN.tarp))tarpAction();
   if(driving&&padHit(BTN.honk))honk();
+  else if(!driving&&!cur.riding&&padHit(BTN.honk))toggleGoals();
   if(driving&&padHit(BTN.end)){endDay();return;}
   if(!driving&&padHit(BTN.rake))toggleRake();
   if(padHit(BTN.prev))cycleNozzle(-1);if(padHit(BTN.next))cycleNozzle(1);
@@ -1538,8 +1779,8 @@ function focusRestore(f){
   setFocus(el);
 }
 // ---------- button glyphs for prompts: keycaps, Xbox letters or PlayStation shapes
-const KB_GLY={ls:'WASD',rs:'MOUSE',use:'E',tarp:'Q',rake:'R',honk:'SPACE',end:'N',pause:'ESC',back:'ESC',ok:'ENTER',start:'ENTER',low:'L-CLICK',high:'R-CLICK',prev:'WHEEL',next:'WHEEL'};
-const PAD_GLY={use:'a',ok:'a',honk:'b',back:'b',tarp:'x',end:'y',rake:'y',prev:'lb',next:'rb',tabL:'lb',tabR:'rb',low:'lt',high:'rt',pause:'menu',start:'menu',ls:'ls',rs:'rs'};
+const KB_GLY={goals:'G',ls:'WASD',rs:'MOUSE',use:'E',tarp:'Q',rake:'R',honk:'SPACE',end:'N',pause:'ESC',back:'ESC',ok:'ENTER',start:'ENTER',low:'L-CLICK',high:'R-CLICK',prev:'WHEEL',next:'WHEEL'};
+const PAD_GLY={goals:'b',use:'a',ok:'a',honk:'b',back:'b',tarp:'x',end:'y',rake:'y',prev:'lb',next:'rb',tabL:'lb',tabR:'rb',low:'lt',high:'rt',pause:'menu',start:'menu',ls:'ls',rs:'rs'};
 const PS_FACE={a:'<path d="M3.5 3.5l7 7M10.5 3.5l-7 7" stroke="#8ab4ff"/>',b:'<circle cx="7" cy="7" r="4" stroke="#ff7070"/>',x:'<rect x="3.2" y="3.2" width="7.6" height="7.6" stroke="#ff8fd6"/>',y:'<path d="M7 2.8l4.6 8H2.4z" stroke="#4fe0b0"/>'};
 const PS_NAME={lb:'L1',rb:'R1',lt:'L2',rt:'R2',menu:'OPTIONS'};
 const MENU_ICON='<svg width="11" height="9" viewBox="0 0 11 9"><path d="M0 1h11M0 4.5h11M0 8h11" stroke="#fff" stroke-width="2"/></svg>';
@@ -1579,12 +1820,12 @@ const PAD_BACK={
   xbox:[['M58 28C60 14 70 4 84 4C98 4 106 12 106 26Z','M242 28C240 14 230 4 216 4C202 4 194 12 194 26Z'],['M36 44C44 30 62 20 102 20L106 30C76 28 58 34 46 48Z','M264 44C256 30 238 20 198 20L194 30C224 28 242 34 254 48Z']]};
 // where each callout lands on the pad (pad-local coordinates), and how far out from that point the line stops
 const PAD_TGT={
-  ps:{low:[80,9],prev:[70,24],ls:[112,110,19],high:[220,9],next:[230,24],pause:[202,40,7],rake:[230,54,10],tarp:[214,70,10],use:[230,86,10],rs:[188,110,19]},
-  xbox:{low:[82,11],prev:[68,27],ls:[78,72,19],high:[218,11],next:[232,27],pause:[170,72,6],rake:[222,56,10],tarp:[206,72,10],use:[222,88,10],rs:[186,112,19]}};
+  ps:{low:[80,9],prev:[70,24],ls:[112,110,19],high:[220,9],next:[230,24],pause:[202,40,7],rake:[230,54,10],goals:[246,70,10],tarp:[214,70,10],use:[230,86,10],rs:[188,110,19]},
+  xbox:{low:[82,11],prev:[68,27],ls:[78,72,19],high:[218,11],next:[232,27],pause:[170,72,6],rake:[222,56,10],goals:[238,72,10],tarp:[206,72,10],use:[222,88,10],rs:[186,112,19]}};
 const PAD_FACE={ps:[230,70],xbox:[222,72]};
-const PAD_LBL={low:['LOW SPEED','b'],prev:['PREV NOZZLE','p'],ls:['MOVE','g'],high:['HIGH SPEED','r'],next:['NEXT NOZZLE','p'],tarp:['TARP','o'],rake:['RAKE','y'],use:['USE','b'],rs:['AIM','w','TURN TO FACE'],pause:['PAUSE','w']};
-const PAD_ROWS={ps:{L:[['low',56],['prev',92],['ls',176]],R:[['pause',18],['high',46],['next',76],['rake',108],['tarp',140],['use',172],['rs',210]]},
-  xbox:{L:[['low',56],['prev',92],['ls',136]],R:[['pause',18],['high',46],['next',76],['rake',108],['tarp',140],['use',172],['rs',210]]}};
+const PAD_LBL={goals:['GOALS','r','IN THE TRUCK: HONK'],low:['LOW SPEED','b'],prev:['PREV NOZZLE','p'],ls:['MOVE','g'],high:['HIGH SPEED','r'],next:['NEXT NOZZLE','p'],tarp:['TARP','o'],rake:['RAKE','y'],use:['USE','b'],rs:['AIM','w','TURN TO FACE'],pause:['PAUSE','w']};
+const PAD_ROWS={ps:{L:[['low',56],['prev',92],['ls',176]],R:[['pause',14],['high',38],['next',62],['rake',88],['goals',114],['tarp',146],['use',172],['rs',212]]},
+  xbox:{L:[['low',56],['prev',92],['ls',136]],R:[['pause',14],['high',38],['next',62],['rake',88],['goals',114],['tarp',146],['use',172],['rs',212]]}};
 const FACE_COL={a:'#4bc26a',b:'#fe5f55',x:'#009dff',y:'#ffcf4a'};
 // a button glyph drawn in SVG for the callout labels: [markup, width]
 function svgGlyph(a,st,cx,cy){
@@ -1602,9 +1843,8 @@ function padSVG(st){
   const back=PAD_BACK[st],trig=back[0].map((d,i)=>`<path class="${i?'trR':'trL'}" d="${d}" fill="#464f54" stroke="#161e20" stroke-width="2"/>`).join('')
     +back[1].map(d=>`<path d="${d}" fill="#59646a" stroke="#161e20" stroke-width="2"/>`).join('');
   const stick=(x,y,cls)=>`<circle cx="${x}" cy="${y}" r="19" fill="${well}"/><g class="${cls}"><circle cx="${x}" cy="${y}" r="14" fill="${cap}" stroke="#161e20" stroke-width="1.5"/><circle cx="${x}" cy="${y}" r="9.5" fill="none" stroke="#2c3438" stroke-width="2"/></g>`;
-  // B only does things in the truck, so it sits dimmed here
   const face=`<circle cx="${fx}" cy="${fy}" r="25" fill="#20262a"/>`+[['y',0,-16],['x',-16,0],['b',16,0],['a',0,16]].map(([k,dx,dy])=>{
-    const x=fx+dx,y=fy+dy,cls=(k==='b'?'pdim ':'')+(k==='a'?'fpA':k==='x'?'fpX':'');
+    const x=fx+dx,y=fy+dy,cls=k==='a'?'fpA':k==='x'?'fpX':'';
     const mark=ps?`<g transform="translate(${x-7} ${y-7})" fill="none" stroke-width="2">${PS_FACE[k]}</g>`:`<text x="${x}" y="${y+3.5}" class="ptx" style="fill:${FACE_COL[k]}">${k.toUpperCase()}</text>`;
     return`<g class="${cls}"><circle cx="${x}" cy="${y}" r="9" fill="#343e43" stroke="#161e20" stroke-width="1.5"/>${mark}</g>`;}).join('');
   const parts=ps
@@ -1682,7 +1922,7 @@ addEventListener('keydown',e=>{
   if(state==='play'&&NET.role==='guest'){
     // on the guest, actions go to the host
     if(e.code==='Escape'){openMenu(false,cur);return;}
-    if(e.repeat)return;const m={KeyE:'use',KeyQ:'tarp',KeyR:'rake',Space:'honk',KeyN:'end'}[e.code];if(m)NET.evOut.push(m);
+    if(e.repeat)return;if(e.code==='KeyG'){toggleGoals();return;}const m={KeyE:'use',KeyQ:'tarp',KeyR:'rake',Space:'honk',KeyN:'end'}[e.code];if(m)NET.evOut.push(m);
     const d=/^Digit([1-9])$/.exec(e.code);if(d)NET.evOut.push('eq:'+(+d[1]-1));return;
   }
   if(state==='joinpad'){const d=/^Digit(\d)$|^Numpad(\d)$/.exec(e.code);if(d)kpPress(d[1]||d[2]);else if(e.code==='Backspace')kpPress('<');else if(e.code==='Enter')kpPress('>');else if(e.code==='Escape')closeKeypad();return;}
@@ -1690,6 +1930,7 @@ addEventListener('keydown',e=>{
     const pl=kbmPl();
     if(e.code==='Escape'){openMenu(false,pl||players[0]);return;}
     if(e.code==='Enter'&&!e.repeat)enterDownAt=performance.now();
+    if(e.code==='KeyG'&&!e.repeat)toggleGoals();
     if(pl)withPl(pl,()=>{
       if(e.code==='KeyE')interact();
       if(e.code==='KeyQ')tarpAction();
@@ -1742,14 +1983,14 @@ function equip(id){if(equipped===id)return;equipped=id;rumble(0,.25,45);const a=
 const SAVE_KEY='leafblower-save-v3';
 function save(){if(TUT.on)return;try{const p1=players[0],p2=players[1];if(cur===p1)storePl();
   const prof=p2?{money:p2.money,upg:p2.upg,owned:p2.owned,equipped:p2.equipped}:p2Profile;
-  localStorage.setItem(SAVE_KEY,JSON.stringify({money:p1.money,day,rep,upg:p1.upg,owned:p1.owned,equipped:p1.equipped,p2:prof||null}));}catch(e){}}
+  localStorage.setItem(SAVE_KEY,JSON.stringify({money:p1.money,day,rep,upg:p1.upg,owned:p1.owned,equipped:p1.equipped,p2:prof||null,goals:goalsSave()}));}catch(e){}}
 function loadSave(){try{const s=JSON.parse(localStorage.getItem(SAVE_KEY));if(s&&typeof s.money==='number')return s;}catch(e){}return null;}
 function setupTitle(){
   const s=loadSave(),b=document.getElementById('titleBtns');
   b.innerHTML='';
   const mkb=(txt,cls,fn)=>{const el=document.createElement('button');el.className='btn '+cls;el.textContent=txt;el.onclick=e=>{e.stopPropagation();fn();};b.appendChild(el);};
-  if(s){mkb(`CONTINUE - DAY ${s.day}`,'bounce',()=>{money=s.money;day=s.day;rep=s.rep||0;upg=clampUpg({...upg,...s.upg});owned=s.owned||['std'];equipped=s.equipped||'std';p2Profile=s.p2||null;beginGame();});mkb('NEW GAME','red',()=>{try{localStorage.removeItem(SAVE_KEY);}catch(e){}money=0;rep=0;day=1;beginGame(true);});}
-  else mkb('START DAY 1','bounce',()=>beginGame(true));
+  if(s){mkb(`CONTINUE - DAY ${s.day}`,'bounce',()=>{money=s.money;day=s.day;rep=s.rep||0;upg=clampUpg({...upg,...s.upg});owned=s.owned||['std'];equipped=s.equipped||'std';p2Profile=s.p2||null;goalsLoad(s.goals);beginGame();});mkb('NEW GAME','red',()=>{try{localStorage.removeItem(SAVE_KEY);}catch(e){}money=0;rep=0;day=1;goalsLoad(null);beginGame(true);});}
+  else mkb('START DAY 1','bounce',()=>{goalsLoad(null);beginGame(true);});
   mkb('TUTORIAL','',()=>{location.hash='tutorial';location.reload();});
   mkb('JOIN ONLINE','',openKeypad);
   mkb('YARD EDITOR','gold',openEditor);
@@ -1772,7 +2013,8 @@ function applyVolumes(){if(!AC)return;const t=AC.currentTime;sfxBus.gain.setTarg
 function ensureAudio(){
   if(AC){if(AC.state==='suspended')AC.resume();return;}
   try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){return;}
-  master=AC.createGain();master.gain.value=.7;master.connect(AC.destination);
+  // (the whole mix sits 40% louder than it used to at the same slider settings)
+  master=AC.createGain();master.gain.value=.98;master.connect(AC.destination);
   sfxBus=AC.createGain();sfxBus.gain.value=sfxGain();sfxBus.connect(master);musicBus=AC.createGain();musicBus.gain.value=settings.music;musicBus.connect(master);
   const len=AC.sampleRate*2,buf=AC.createBuffer(1,len,AC.sampleRate),d=buf.getChannelData(0);
   let b0=0,b1=0,b2=0;for(let i=0;i<len;i++){const w=Math.random()*2-1;b0=.99765*b0+w*.099;b1=.963*b1+w*.2965;b2=.57*b2+w*1.0526;d[i]=(b0+b1+b2+w*.1848)*.18;}
@@ -1823,7 +2065,7 @@ function updateAudio(){
 // before any repeats, remembered across sessions) and the evening track on the end-of-day and store screens. Tracks
 // crossfade when they change. Silent on the title screen
 const DAY_TRACKS=['apple_cider_loop','flowerbed_fields','hush_hamlet_loop','shepherd_dog','the_way_it_is'],NIGHT_TRACK='course_1_loop';
-const MUSIC_KEY='rakingitin-music-v1',MUSIC_GAIN=.075,MUSIC_FADE=1;
+const MUSIC_KEY='rakingitin-music-v1',MUSIC_GAIN=.105,MUSIC_FADE=1;
 const music={els:{},want:null,dayTrack:null,dayFor:null,last:0,retry:0};
 function musicEl(id){let a=music.els[id];if(!a){a=new Audio(`music/${id}.m4a`);a.loop=true;a.preload='auto';a.volume=0;a.fade=0;music.els[id]=a;}return a;}
 // the next day track from the shuffled bag, refilled (never starting with the track just played) when it runs out
@@ -1900,7 +2142,8 @@ function interact(){
     for(const side of [1,-1]){const [x,y]=fromTruck(4,side*(TRUCK_HW+8));P.x=x;P.y=y;P.vx=P.vy=0;collidePlayer();if(walkable(P.x,P.y))break;}dropInputs();blip(200,.06);return;}
   if(driving){if(Math.abs(TR.v)>35)return;driving=false;TR.v=0;
     for(const side of [-1,1]){const [x,y]=fromTruck(4,side*(TRUCK_HW+8));P.x=x;P.y=y;P.vx=P.vy=0;collidePlayer();if(walkable(P.x,P.y))break;}dropInputs();blip(200,.06);return;}
-  if(heldNet){putNetDown();return;}
+  if(heldNet){if(TUT.on&&heldNet.n>0){floatText(P.x,P.y-14,'EMPTY THE NET FIRST','#fe5f55');blip(150,.12,'sawtooth',.04,90);return;}putNetDown();return;}
+  if(carryPkg&&truckPart()==='back'&&!TUT.on){stealPkg();return;}
   if(carryPkg){putDownPkg();return;}
   const pk=nearPkg();if(pk&&!bundle&&pk.far){pickUpPkg(pk);return;}
   const L=tutOk('knock')&&nearDoor();if(L){if(lotLocked(L)){floatText(P.x,P.y-14,'NOT HIRING YOU YET','#fe5f55');blip(150,.15,'sawtooth',.04,90);return;}if(!L.done){if(cur.dev.t==='net'){const s0=lotStats(L),p0=calcPay(L,s0);pendingLot=L;pendingPay=p0;L.pct=s0.pct;const st=state;confirmCloseout();state=st;}else openCloseout(L);}return;}
@@ -1911,7 +2154,7 @@ function interact(){
     if(bundle){
       // the tied tarp goes in the truck whole, and that tarp is done for the day
       const n=bundle.total;for(const k in bundle.counts){LOTS[k].hauled+=bundle.counts[k];}
-      today.hauled+=n;today.bundles++;truckBundles.push(n);tarpsUsed++;
+      today.hauled+=n;today.bundles++;truckBundles.push(n);tarpsUsed++;goalAdd('dep1000',n);
       floatText(P.x,P.y-14,`TARP LOADED · ${n} LEAVES`,'#4bc26a');blip(260,.08,'triangle',.06);setTimeout(()=>blip(390,.1,'triangle',.05),70);rumble(.35,.2,120);bundle=null;statsT=1;
       if(tarpsLeft()<=0&&!TUT.on)setTimeout(()=>floatText(P.x,P.y-24,'THAT WAS YOUR LAST TARP','#ffcf4a'),500);tutEv('load');
     }else if(tutOk('swap'))trySwap();
@@ -1971,7 +2214,7 @@ function finishTie(t){
   for(const i of t.pins){if(i<N&&ST[i]===2){counts[HOME[i]]=(counts[HOME[i]]||0)+1;total++;removeLeaf(i);}}
   for(let i=0;i<N;i++)if(ST[i]===1&&UN[i]===t.id)ST[i]=0;
   tarps.splice(tarps.indexOf(t),1);
-  if(total>0){stopRake(true);bundle={counts,total};rumble(.1,.4,90);floatText(P.x,P.y-14,`BUNDLED ${total}`,'#009dff');blip(260,.1,'triangle',.07,420);}
+  if(total>0){for(const id of ['tarp100','tarp200','tarp300'])goalBest(id,total);stopRake(true);bundle={counts,total};rumble(.1,.4,90);floatText(P.x,P.y-14,`BUNDLED ${total}`,'#009dff');blip(260,.1,'triangle',.07,420);}
   else{floatText(P.x,P.y-14,'TARP PACKED','#cfe3e6');blip(300,.06);}
   statsT=1;
 }
@@ -2014,6 +2257,7 @@ function toggleRake(){
   if(state!=='play'||driving||cur.riding||tieT>0||swapT>0)return;
   if(cur.raking){stopRake();return;}
   if(bundle||carryPkg){floatText(P.x,P.y-14,'HANDS FULL','#fe5f55');blip(150,.12,'sawtooth',.04,90);return;}
+  if(heldNet&&TUT.on&&heldNet.n>0){floatText(P.x,P.y-14,'EMPTY THE NET FIRST','#fe5f55');blip(150,.12,'sawtooth',.04,90);return;}
   if(heldNet)putNetDown();
   const k=cur.rake;cur.raking=true;cur.rakeN=0;k.eff=RAKE_REACH;k.vL=-rakeHW(cur);k.vR=rakeHW(cur);k.prev=null;k.drop=null;k.contact=0;k.load=0;
   dropInputs();rumble(0,.3,60);floatText(P.x,P.y-16,'RAKE','#e0a85a');blip(420,.05,'square',.05);setTimeout(()=>blip(560,.06,'square',.04),60);
@@ -2091,12 +2335,13 @@ function closeModal(){modalEl.classList.add('hide');state='play';document.body.s
 function confirmCloseout(){
   const L=pendingLot,p=pendingPay;if(!L)return;
   L.done=true;L.paidAmt=p.total;L.paidPct=L.pct;L.paidTip=p.tipPct;earn(p.total);today.houseEarn+=p.total;today.houses++;statsT=1;
+  if(!TUT.on)goalsHouse(L,L.pct);
   closeModal();floatText(L.door.x,L.door.y-10,'+'+fmt$(p.total),'#ffcf4a',true);chaChing();rumble(.15,.5,110);setTimeout(()=>rumble(.15,.6,140),170);
   for(let k=0;k<30;k++){const a=rnd()*Math.PI*2,s=30+rnd()*60;sparks.push({x:L.door.x,y:L.door.y+6,z:8,vx:Math.cos(a)*s,vy:Math.sin(a)*s*.7,vz:60+rnd()*80,l:.7+rnd()*.6,c:rnd()<.5?'#ffcf4a':'#4bc26a'});}
 }
 
 // ============================================================ day cycle + night screens
-const newToday=()=>({coop:players.length>1,pot:0,houseEarn:0,hauled:0,bundles:0,houses:0,complaints:0,damage:0,pots:0,potDamage:0,crashes:0,damageRep:0,lateHigh:0,tickets:0,ticketCost:0,mailSent:false,copSent:false,vanSent:false,vanHour:7+rnd()*4,courierHits:0,pkgReturns:0,copHour:9.5+rnd()*9,carHour:DAY_START+.4+rnd()*.8,startMoney:money});
+const newToday=()=>({coop:players.length>1,pot:0,goalEarn:0,goals:0,stolen:0,stealEarn:0,h90:0,houseEarn:0,hauled:0,bundles:0,houses:0,complaints:0,damage:0,pots:0,potDamage:0,crashes:0,damageRep:0,lateHigh:0,tickets:0,ticketCost:0,mailSent:false,copSent:false,vanSent:false,vanHour:7+rnd()*4,courierHits:0,pkgReturns:0,copHour:9.5+rnd()*9,carHour:DAY_START+.4+rnd()*.8,startMoney:money});
 function resetDay(){
   N=0;for(const L of ALL_LOTS)L.potsBroken=0;
   for(const p of POTS){p.broken=false;p.stress=0;p.wob=0;p.touch=false;}
@@ -2114,6 +2359,7 @@ function resetDay(){
     const v=pl.view||views[0];pl.cam.x=clamp(P.x-v.w/2,0,WORLD_W-v.w);pl.cam.y=clamp(P.y-v.h/2,0,H-v.h);});
   camX=players[0].cam.x;camY=players[0].cam.y;
   statsCache=null;statsT=1;for(const v of views)v.cache.hot=null;
+  goalsDayStart();
 }
 const menuBtn=document.getElementById('menuBtn');
 menuBtn.addEventListener('mousedown',e=>e.stopPropagation());
@@ -2131,7 +2377,7 @@ function kbmHTML(){
           <div class="kc"><span class="klab b">USE</span>${k('E','E','b')}</div>
           <div class="kc"><span class="klab y">RAKE</span>${k('R','R','y')}</div>
         </div>
-        <div class="krow home">${k('A','A','g',.6)}${k('S','S','g',1.2)}${k('D','D','g',1.8)}</div>
+        <div class="krow home">${k('A','A','g',.6)}${k('S','S','g',1.2)}${k('D','D','g',1.8)}<i class="key" style="visibility:hidden"></i><div class="kc"><span class="klab r">GOALS</span>${k('G','G')}</div></div>
         <div class="klab g">MOVE</div>
       </div>
       <div class="krow" style="gap:4px;margin-top:4px">${[1,2,3,4,5,6].map(n=>sk(n,'p')).join('')}</div>
@@ -2206,10 +2452,11 @@ function closeMenu(){if(state!=='menu')return;menuPage='main';NET.localMenu=fals
 function endDay(){
   if(state!=='play'||TUT.on)return;
   state='shop';storePl();for(const pl of players)withPl(pl,()=>{dropInputs();driving=false;cur.riding=false;});document.body.style.cursor='default';
+  goalsDayEnd();
   // co-op: the day's pot is split down the middle (a loss comes out of both banks, never below zero)
   if(today.coop){const half=Math.round(today.pot/2),sh=[half,today.pot-half];today.shares=sh;
     players.forEach((pl,i)=>withPl(pl,()=>{money=Math.max(0,money+sh[i]);}));if(players.length<2&&p2Profile)p2Profile.money=Math.max(0,p2Profile.money+sh[1]);}
-  daySummary=LOTS.map(L=>{const s=lotStats(L);return{name:L.name,tag:L.tag,k:L.k,done:L.done,paid:L.paidAmt,pct:L.done?L.paidPct:s.pct,hauled:L.hauled,rep:L.done?repForPct(L.paidPct):0};});
+  daySummary=LOTS.map(L=>{const s=lotStats(L);return{name:L.name,tag:L.tag,k:L.k,s:L.style,done:L.done,paid:L.paidAmt,pct:L.done?L.paidPct:s.pct,hauled:L.hauled,rep:L.done?repForPct(L.paidPct):0};});
   scoreRep();
   blip(523,.15,'triangle',.06);setTimeout(()=>blip(392,.15,'triangle',.06),150);setTimeout(()=>blip(262,.3,'triangle',.06),300);
   nightTab='sum';renderNight();modalEl.classList.remove('hide');
@@ -2227,8 +2474,9 @@ function repTally(){
     tickets:-today.tickets*REP_TICKET,ticketN:today.tickets,
     courier:-today.courierHits*REP_COURIER,courierN:today.courierHits,
     pkgBack:today.pkgReturns*REP_PKG_RETURN,pkgBackN:today.pkgReturns,
-    pkg:-astray*REP_PACKAGE,pkgN:astray};
-  r.total=r.houses+r.damage+r.peds+r.road+r.late+r.tickets+r.courier+r.pkgBack+r.pkg;
+    pkg:-astray*REP_PACKAGE,pkgN:astray,
+    steal:-(today.stolen||0)*REP_STEAL,stealN:today.stolen||0};
+  r.total=r.houses+r.damage+r.peds+r.road+r.late+r.tickets+r.courier+r.pkgBack+r.pkg+r.steal;
   return r;
 }
 function scoreRep(){
@@ -2253,6 +2501,8 @@ function renderNight(){
       today.damage&&['crash',today.crashes>1?`DENTS &times;${today.crashes}`:'DENT',fmt$(-today.damage),'neg'],
       today.potDamage&&['pot',today.pots>1?`POTS &times;${today.pots}`:'POT',fmt$(-today.potDamage),'neg'],
       today.ticketCost&&['ticket','TICKET',fmt$(-today.ticketCost),'neg'],
+      today.goalEarn&&['flag',today.goals>1?`GOALS &times;${today.goals}`:'GOAL','+'+fmt$(today.goalEarn),'pos'],
+      today.stealEarn&&['box',today.stolen>1?`STOLEN &times;${today.stolen}`:'STOLEN','+'+fmt$(today.stealEarn),'pos'],
     ].filter(Boolean);
     const x=n=>n>1?` &times;${n}`:'';
     const repC=[
@@ -2265,14 +2515,15 @@ function renderNight(){
       r.tickets&&['ticket','TICKET'+x(r.ticketN),sg(r.tickets),'neg'],
       r.courier&&['courier','COURIER'+x(r.courierN),sg(r.courier),'neg'],
       r.pkg&&['lostbox','LOST'+x(r.pkgN),sg(r.pkg),'neg'],
+      r.steal&&['lostbox','STOLEN'+x(r.stealN),sg(r.steal),'neg'],
     ].filter(Boolean);
     // where reputation sits in its rank, and how far to the next one
     const lv=repLevel(rep),lv0=repLevel(r.before),lo=rep<0?-100:REP_LEVELS[lv],nxt=REP_LEVELS[lv+1],fill=v=>nxt!=null?clamp((v-lo)/(nxt-lo),0,1):1;
     // newly reached levels open up bigger houses
-    const opened=lv>lv0?LOTS.filter(L=>LOT_LEVEL[L.k]>lv0&&LOT_LEVEL[L.k]<=lv):[];
+    const opened=lv>lv0?LOTS.filter(L=>L.level>lv0&&L.level<=lv):[];
     const worked=daySummary.filter(h=>h.done||h.pct>=.01);
     const tiles=worked.map((h,i)=>{const pct=Math.round(h.pct*100),col=pct>=90?'#4bc26a':pct>=70?'#ffcf4a':pct>=50?'#ff9800':'#fe5f55';
-      return`<div class="htile ${h.done?'paid':''}" style="animation-delay:${.4+i*.08}s">${pxIcon(h.done?'house':'housegray',4+Math.round(h.k/2.5))}
+      return`<div class="htile ${h.done?'paid':''}" style="animation-delay:${.4+i*.08}s">${pxIcon(h.done?'house':'housegray',4+Math.round((h.s??h.k)/2.5))}
         <div class="hn">${h.name.replace(/^THE /,'')}</div>
         ${h.done?`<div class="hp"><span class="pos">${fmt$(h.paid)}</span>${h.rep?` <span class="gold">+${h.rep}&#9733;</span>`:''}</div>`:`<div class="hb"><i style="width:${pct}%;background:${col}"></i></div><div class="hp dim">${pct}%</div>`}</div>`;}).join('');
     body=`<div class="sum2">
@@ -2356,7 +2607,7 @@ function animateSummary(){
 // tiny pixel icons for the summary chips and house tiles: rows of palette letters, '.' is empty
 const STAR_ICON='<svg class="px" width="16" height="15" viewBox="0 0 11 10" style="display:inline-block;vertical-align:-2px"><path d="M5 0h1v1h1v2h4v1h-1v1H9v1H8v1h1v2h1v1H9v-1H8V8H7V7H4v1H3v1H2v1H1V9h1V7h1V6H2V5H1V4H0V3h4V1h1z" fill="#ffcf4a"/></svg>';
 const STAR_SVG='<svg class="px" width="40" height="36" viewBox="0 0 11 10"><rect x="5" y="0" width="1" height="1" fill="#fff1b0"/><rect x="4" y="1" width="1" height="1" fill="#ffcf4a"/><rect x="5" y="1" width="1" height="1" fill="#fff1b0"/><rect x="6" y="1" width="1" height="1" fill="#ffcf4a"/><rect x="4" y="2" width="1" height="1" fill="#ffcf4a"/><rect x="5" y="2" width="1" height="1" fill="#fff1b0"/><rect x="6" y="2" width="1" height="1" fill="#ffcf4a"/><rect x="0" y="3" width="1" height="1" fill="#b9861a"/><rect x="1" y="3" width="1" height="1" fill="#fff1b0"/><rect x="2" y="3" width="1" height="1" fill="#fff1b0"/><rect x="3" y="3" width="1" height="1" fill="#fff1b0"/><rect x="4" y="3" width="1" height="1" fill="#fff1b0"/><rect x="5" y="3" width="1" height="1" fill="#ffcf4a"/><rect x="6" y="3" width="1" height="1" fill="#ffcf4a"/><rect x="7" y="3" width="1" height="1" fill="#ffcf4a"/><rect x="8" y="3" width="1" height="1" fill="#ffcf4a"/><rect x="9" y="3" width="1" height="1" fill="#ffcf4a"/><rect x="10" y="3" width="1" height="1" fill="#b9861a"/><rect x="1" y="4" width="1" height="1" fill="#b9861a"/><rect x="2" y="4" width="1" height="1" fill="#ffcf4a"/><rect x="3" y="4" width="1" height="1" fill="#ffcf4a"/><rect x="4" y="4" width="1" height="1" fill="#ffcf4a"/><rect x="5" y="4" width="1" height="1" fill="#ffcf4a"/><rect x="6" y="4" width="1" height="1" fill="#ffcf4a"/><rect x="7" y="4" width="1" height="1" fill="#ffcf4a"/><rect x="8" y="4" width="1" height="1" fill="#ffcf4a"/><rect x="9" y="4" width="1" height="1" fill="#b9861a"/><rect x="2" y="5" width="1" height="1" fill="#b9861a"/><rect x="3" y="5" width="1" height="1" fill="#ffcf4a"/><rect x="4" y="5" width="1" height="1" fill="#ffcf4a"/><rect x="5" y="5" width="1" height="1" fill="#ffcf4a"/><rect x="6" y="5" width="1" height="1" fill="#ffcf4a"/><rect x="7" y="5" width="1" height="1" fill="#ffcf4a"/><rect x="8" y="5" width="1" height="1" fill="#b9861a"/><rect x="3" y="6" width="1" height="1" fill="#ffcf4a"/><rect x="4" y="6" width="1" height="1" fill="#ffcf4a"/><rect x="5" y="6" width="1" height="1" fill="#b9861a"/><rect x="6" y="6" width="1" height="1" fill="#ffcf4a"/><rect x="7" y="6" width="1" height="1" fill="#ffcf4a"/><rect x="2" y="7" width="1" height="1" fill="#ffcf4a"/><rect x="3" y="7" width="1" height="1" fill="#ffcf4a"/><rect x="4" y="7" width="1" height="1" fill="#b9861a"/><rect x="6" y="7" width="1" height="1" fill="#b9861a"/><rect x="7" y="7" width="1" height="1" fill="#ffcf4a"/><rect x="8" y="7" width="1" height="1" fill="#ffcf4a"/><rect x="2" y="8" width="1" height="1" fill="#ffcf4a"/><rect x="3" y="8" width="1" height="1" fill="#b9861a"/><rect x="7" y="8" width="1" height="1" fill="#b9861a"/><rect x="8" y="8" width="1" height="1" fill="#ffcf4a"/><rect x="1" y="9" width="1" height="1" fill="#b9861a"/><rect x="2" y="9" width="1" height="1" fill="#b9861a"/><rect x="8" y="9" width="1" height="1" fill="#b9861a"/><rect x="9" y="9" width="1" height="1" fill="#b9861a"/></svg>';
-const PX_PAL={r:'#c9352b',w:'#e9e2cf',d:'#6b4428',o:'#ff9800',s:'#f2c29a',k:'#2a3033',y:'#ffcf4a',t:'#d9774a',g:'#4bc26a',f:'#ff5f8f',b:'#2a6fc9',l:'#d9ab72',n:'#b98a54',e:'#efe2c4',m:'#7f9396',x:'#fe5f55',u:'#3d474c',v:'#5b6f73'};
+const PX_PAL={h:'#f4f1e8',r:'#c9352b',w:'#e9e2cf',d:'#6b4428',o:'#ff9800',s:'#f2c29a',k:'#2a3033',y:'#ffcf4a',t:'#d9774a',g:'#4bc26a',f:'#ff5f8f',b:'#2a6fc9',l:'#d9ab72',n:'#b98a54',e:'#efe2c4',m:'#7f9396',x:'#fe5f55',u:'#3d474c',v:'#5b6f73'};
 const PX_ICONS={
   house:['...r...','..rrr..','.rrrrr.','rrrrrrr','.wwwww.','.wwdww.','.wwdww.'],
   housegray:['...m...','..mmm..','.mmmmm.','mmmmmmm','.vvvvv.','.vvdvv.','.vvdvv.'],
@@ -2370,6 +2621,8 @@ const PX_ICONS={
   courier:['.bbbbb.','bbbbbbb','.sssss.','.skssk.','.sssss.','.skkks.','..sss..'],
   box:['.......','lllllll','nnnennn','nnnennn','nnnennn','nnnnnnn','.......'],
   lostbox:['x.....x','lxllxll','nnxexnn','nnnxnnn','nnxexnn','nxnnnxn','x.....x'],
+  flag:['.k.....','.kyyy..','.kyyyyy','.kyyy..','.k.....','.k.....','kkk....'],
+  blu:['.......','.....hh','h...hhk','.hhhhh.','.hbbhh.','.h..h..','.......'],
 };
 function pxIcon(name,sc=2){const g=PX_ICONS[name];let r='';g.forEach((row,y)=>[...row].forEach((c,x)=>{if(c!=='.')r+=`<rect x="${x}" y="${y}" width="1" height="1" fill="${PX_PAL[c]}"/>`;}));
   return`<svg class="px pxi" width="${7*sc}" height="${7*sc}" viewBox="0 0 7 7">${r}</svg>`;}
@@ -2427,10 +2680,11 @@ function updateLeaves(dt){
     const nx=pl.P.x+ax*tube,ny=pl.P.y+ay*tube,range=bp.R,cosH=bp.cosH;let tgx=0,tgy=0;
     if(bp.vortex){const d=pl.vortexD;tgx=nx+ax*d;tgy=ny+ay*d;}
     pl.bl={nx,ny,range,cosH,tx:tgx,ty:tgy,vort:bp.vortex};
-    if(p>.02)B.push({nx,ny,ax,ay,range,R2:range*range,F:bp.F,cosH,inv:1/(1-cosH),liftK:bp.lift,vort:bp.vortex,tgx,tgy});
+    const hi=(pl.mode||pl.lastMode)===2;
+    if(p>.02)B.push({nx,ny,ax,ay,range,R2:range*range,F:bp.F,cosH,inv:1/(1-cosH),liftK:bp.lift,vort:bp.vortex,tgx,tgy,hi});
     // the twin nozzle's second outlet points straight back from the pack
     if(bp.twin){const bx=pl.P.x-ax*tube,by=pl.P.y-ay*tube;pl.bl2={nx:bx,ny:by,range,cosH,ax:-ax,ay:-ay};
-      if(p>.02)B.push({nx:bx,ny:by,ax:-ax,ay:-ay,range,R2:range*range,F:bp.F,cosH,inv:1/(1-cosH),liftK:bp.lift,vort:false,tgx:0,tgy:0});}
+      if(p>.02)B.push({nx:bx,ny:by,ax:-ax,ay:-ay,range,R2:range*range,F:bp.F,cosH,inv:1/(1-cosH),liftK:bp.lift,vort:false,tgx:0,tgy:0,hi});}
     else pl.bl2=null;
     const sp=foot?Math.hypot(pl.P.vx,pl.P.vy):0;if(sp>12)WK.push({px:pl.P.x,py:pl.P.y,psp:sp,vx:pl.P.vx,vy:pl.P.vy});
   }
@@ -2459,6 +2713,7 @@ function updateLeaves(dt){
         if(c>cosH){
           const t=1-d/range,ang=(c-cosH)*inv,f=F*t*(.3+.7*ang)*(z>1?1.3:1);
           if(z>.3||f>THR[i]*(nDT&&z<1&&onTarp(x,y)?tThr:1)){
+            if(b.hi)UH[HOME[i]]=1;else UL[HOME[i]]=1;
             if(vort){
               // steer the leaf toward a speed and heading rather than shoving it: a spiral in toward the aim point that
               // slows to nothing at the middle, so leaves settle into a pile instead of overshooting. More power only
@@ -2667,7 +2922,7 @@ function updateRakes(dt){
         // one stops against whatever's in its way
         const bx=r.hx+r.tx*v,by=r.hy+r.ty*v;
         if(u>.5){const [qx,qy]=rakeReachPt(r.S,bx,by,x,y);if(Math.abs(qx-x)+Math.abs(qy-y)>.01)continue;}
-        r.n++;const nv=clamp(v+r.mv*.6,r.vL,r.vR),cx=r.hx+r.tx*nv,cy=r.hy+r.ty*nv;
+        r.n++;UR[HOME[i]]=1;const nv=clamp(v+r.mv*.6,r.vL,r.vR),cx=r.hx+r.tx*nv,cy=r.hy+r.ty*nv;
         [LX[i],LY[i]]=rakeReachPt(r.S,cx,cy,cx+r.ax*depth,cy+r.ay*depth);
         if(dt>0){VX[i]=r.mx/dt*.2;VY[i]=r.my/dt*.2;}VR[i]+=(PH[i]-.5)*4;
         break;
@@ -2677,16 +2932,19 @@ function updateRakes(dt){
       if(u<-2.5||u>(r.pulling?Math.min(1.7,-r.mu+.4):2.5)||(k.drop&&Math.hypot(x-k.drop.x,y-k.drop.y)<k.drop.r))continue;
       // going forward (or across): the tines only nudge the leaf a little the way they're moving, then pass over it
       if(!r.pulling){
-        if(r.hsp>8){r.nudge++;LX[i]+=r.mx*.35;LY[i]+=r.my*.35;if(dt>0){VX[i]=r.mx/dt*.15;VY[i]=r.my/dt*.15;}VR[i]+=(PH[i]-.5)*3;}
+        if(r.hsp>8){r.nudge++;UR[HOME[i]]=1;LX[i]+=r.mx*.35;LY[i]+=r.my*.35;if(dt>0){VX[i]=r.mx/dt*.15;VY[i]=r.my/dt*.15;}VR[i]+=(PH[i]-.5)*3;}
         continue;}
       if(r.hsp<14)continue;
-      if(r.pl.rakeN<r.cap){ST[i]=5;UN[i]=r.idx;r.pl.rakeN++;r.nudge+=3;VX[i]=VY[i]=VZ[i]=0;statsT=1;break;}
+      if(r.pl.rakeN<r.cap){ST[i]=5;UN[i]=r.idx;r.pl.rakeN++;UR[HOME[i]]=1;r.nudge+=3;VX[i]=VY[i]=VZ[i]=0;statsT=1;
+        // a full rake counts toward the fill goal (at most once every few seconds each, so it's fresh leaves)
+        if(r.pl.rakeN>=r.cap&&time-(r.pl.fillT??-99)>5){r.pl.fillT=time;goalAdd('fill10',1);}
+        break;}
       if(time-k.fullT>2){k.fullT=time;blip(150,.15,'sawtooth',.04,90);withPl(r.pl,()=>rumble(.3,.2,150));}
     }
   }
   // what the rake is hauling, as a share of a full one: carried leaves plus what it's shoving (eased, since the
   // shoved count jumps about from frame to frame). It slows the walk
-  for(const r of R){const k=r.k;k.contact=r.n;const want=(r.pl.rakeN+r.n*((r.pl.upg.rakeshovel||0)>1?RAKE_SHOVE_EASE:1))/r.cap;
+  for(const r of R){const k=r.k;k.contact=r.n;if(r.shoving&&r.n)goalBest('push200',r.n);const want=(r.pl.rakeN+r.n*((r.pl.upg.rakeshovel||0)>1?RAKE_SHOVE_EASE:1))/r.cap;
     k.load+=(want-k.load)*Math.min(1,dt*(want>k.load?6:2.5));
     // rustle: what it's shoving or brushing over, plus a little for what it carries, all while the head is moving
     rustleRake+=Math.min(1,r.hsp/30)*(r.n+r.nudge+r.pl.rakeN*.2);}
@@ -2743,7 +3001,7 @@ function updateTruck(dt,ix,iy){
   else{TR.v*=Math.exp(-1.3*dt);if(Math.abs(TR.v)<2)TR.v=0;}
   TR.steer+=(ix-TR.steer)*Math.min(1,dt*8);
   TR.a+=TR.steer*TR.v*dt*.88/(30+Math.abs(TR.v)*.3);
-  const [c,s]=tdir();TR.x+=c*TR.v*dt;TR.y+=s*TR.v*dt;
+  const [c,s]=tdir();TR.x+=c*TR.v*dt;TR.y+=s*TR.v*dt;goalAdd('mile',Math.abs(TR.v)*dt/MILE_PX);
   // collisions: 3 circles along the truck
   let hit=false,car=null,cpt=null,fresh=false,tHit={v:null,sp:0},carImp=0;const r=11,sp0=Math.abs(TR.v);
   for(let it=0;it<2;it++)for(const off of [-14,0,14]){
@@ -2851,7 +3109,7 @@ function drawCameo(p,cx,cy){
 function complain(p,msg){
   if(p.cool>0)return;rumble(.1,.3,90);p.cool=4;
   // the cameo doesn't stop to argue (or hold it against you): they grab the leash and run for it
-  if(p.cameo){p.run=8;bubble(p,'RUN BLU!');blip(520,.08,'square',.04);setTimeout(()=>blip(700,.1,'square',.04),90);return;}
+  if(p.cameo){p.run=8;goalAdd('blu',1);bubble(p,'RUN BLU!');blip(520,.08,'square',.04);setTimeout(()=>blip(700,.1,'square',.04),90);return;}
   p.stop=1.3;p.mad=1.6;today.complaints++;
   bubble(p,msg||COMPLAINTS[(rnd()*COMPLAINTS.length)|0]);blip(160,.18,'sawtooth',.05,90);
 }
@@ -2876,10 +3134,10 @@ const PARK_LANE=Math.round(RH*.45),TRAFFIC_LANE=11,TICKET_COST=50,REP_TICKET=10;
 const TPX=[],TPY=[],TPA=[],TPS=[];
 const traffic=[],officers=[],envelopes=[],MAILBOXES=[];let MAIL_STOPS=[],truckTicket=false,copCans=null,mailCan=null,vanCan=null;
 function buildTrafficPath(){
-  const L=TRAFFIC_LANE,b=BULB.r-40,ax=Math.sqrt(b*b-L*L),a0=Math.atan2(L,-ax),a1=Math.atan2(-L,-ax);
-  const raw=[[-90,Y1+L],[XC-L,Y1+L],[XC-L,Y2+L],[XB-ax,Y2+L]];
-  for(let k=1;k<=40;k++){const a=a0-(a0-a1)*k/40;raw.push([BULB.x+Math.cos(a)*b,BULB.y+Math.sin(a)*b]);}
-  raw.push([XC+L,Y2-L],[XC+L,Y1-L],[-90,Y1-L]);
+  const L=TRAFFIC_LANE,b=BULB.r-40;
+  // in along the right-hand lane (starting off the west edge), round the cul-de-sac, and back out in the other lane
+  const raw=streetSide([],STREET,L,1,b,0);raw[0][0]=-90;bulbArc(raw,L,1,b,40);
+  const back=streetSide([],STREET,L,-1,b,0).reverse();back[back.length-1][0]=-90;raw.push(...back);
   let pts=[];
   for(let i=0;i<raw.length-1;i++){const [x0,y0]=raw[i],[x1,y1]=raw[i+1],n=Math.max(1,Math.round(Math.hypot(x1-x0,y1-y0)/3));for(let k=0;k<n;k++)pts.push([x0+(x1-x0)*k/n,y0+(y1-y0)*k/n]);}
   pts.push(raw[raw.length-1]);
@@ -2964,7 +3222,7 @@ function findParkingSpot(){
     if(CIRCLES.some(q=>Math.hypot(x-q.x,y-q.y)<q.r+30))continue;
     const p={s:TPS[i],x,y,vert,dir:vert?(sn>0?1:-1):(c>0?1:-1)};if(spotFree(p))cand.push(p);}
   if(!cand.length)return null;
-  const p=cand[(rnd()*cand.length)|0];p.col=CAR_COLS[(rnd()*CAR_COLS.length)|0];return p;
+  const p=cand[(rnd()*cand.length)|0];p.col=carCol(hoodAt(p.x,p.y),rnd());return p;
 }
 // once it's pulled in, it becomes an ordinary parked car for the rest of the day, right where it stopped
 function parkVisitor(v){
@@ -3144,8 +3402,8 @@ function vanSpotOk(p,self){
 // which houses get parcels today. Smaller houses get most of them early on; as reputation grows the bigger
 // homes come into it. NOTE: keep this in step with the reputation system when that gets fleshed out
 function deliveryPick(){
-  const lvl=repLevel(Math.max(0,rep))/5,n=LOTS.length,pool=LOTS.slice(),out=[];
-  const w=L=>.08+Math.exp(-((L.k/(n-1)-lvl*.85)**2)/(2*.3*.3));
+  const lvl=repLevel(Math.max(0,rep))/5,pool=LOTS.slice(),out=[];
+  const w=L=>.08+Math.exp(-((L.level/5-lvl*.85)**2)/(2*.3*.3));
   while(pool.length){let tot=0;for(const L of pool)tot+=w(L);let r=rnd()*tot,i=0;for(;i<pool.length-1;i++){r-=w(pool[i]);if(r<=0)break;}out.push(pool.splice(i,1)[0]);}
   return out;
 }
@@ -3229,8 +3487,13 @@ function updatePackages(dt){
   }
 }
 // a package left short of the door by the driver earns a little goodwill when it's brought the rest of the way
-function pkgHome(k){if(!k.early||k.done)return;k.done=true;today.pkgReturns++;floatText(k.x,k.y-12,`+${REP_PKG_RETURN} REP`,'#4bc26a');blip(660,.06,'triangle',.05);setTimeout(()=>blip(880,.1,'triangle',.05),70);}
+function pkgHome(k){if(!k.early||k.done)return;k.done=true;today.pkgReturns++;goalAdd('pkg3',1);floatText(k.x,k.y-12,`+${REP_PKG_RETURN} REP`,'#4bc26a');blip(660,.06,'triangle',.05);setTimeout(()=>blip(880,.1,'triangle',.05),70);}
 const nearPkg=()=>{if(driving||cur.riding)return null;let best=null,bd=9;for(const k of packages){const d=Math.hypot(k.x-P.x,k.y-(P.y+1));if(d<bd&&!players.some(pl=>pl.carryPkg===k)){bd=d;best=k;}}return best;};
+// a parcel tossed in the back of the truck: a little cash on the side, and the neighbors will hear about it
+function stealPkg(){const k=carryPkg;carryPkg=null;const i=packages.indexOf(k);if(i>=0)packages.splice(i,1);
+  earn(STEAL_PAY);today.stolen=(today.stolen||0)+1;today.stealEarn=(today.stealEarn||0)+STEAL_PAY;statsT=1;
+  floatText(P.x,P.y-14,`+${fmt$(STEAL_PAY)} · -${REP_STEAL} REP`,'#ffcf4a');blip(300,.08,'triangle',.05);setTimeout(()=>blip(220,.12,'triangle',.05),90);rumble(.2,.2,90);
+  goalAdd('steal',1);}
 function pickUpPkg(k){stopRake(true);carryPkg=k;k.moved=true;dropInputs();blip(420,.05,'square',.05);rumble(0,.3,60);}
 function putDownPkg(){const k=carryPkg;carryPkg=null;k.x=P.x+aim.x*6;k.y=P.y+aim.y*4+2;if(pkgBlocked(k.x,k.y)){k.x=P.x;k.y=P.y+2;}k.z=4;k.vz=10;
   k.far=Math.hypot(k.x-k.hx,k.y-k.hy)>PKG_RANGE;blip(260,.06,'triangle',.05);if(!k.far)pkgHome(k);}
@@ -3395,6 +3658,7 @@ function update(dt){
   updateRakes(dt);updateLeaves(dt);updatePool(dt);updatePots(dt);updateTarps(dt);updateTrees(dt);updateParticles(dt);updatePeds(dt);
   for(const pl of players){usePl(pl);viewIn(pl);updateCamera(dt);viewOut(pl);storePl();}
   usePl(players[0]);
+  if(!TUT.on)goalsTick(dt);
   tutUpdate(dt);
 }
 // one player's own movement, aim, blower and battery
@@ -3430,12 +3694,12 @@ function updatePlayer(dt){
   let want=0;if(!driving&&!bundle&&!heldNet&&!carryPkg&&!cur.raking&&swapT<=0&&tieT<=0&&tutOk('blowLo')){if((usesKeys&&mouse.r)||(!pad.lock&&pad.rt>.3)||(ni&&ni.hi))want=2;else if((usesKeys&&mouse.l)||(!pad.lock&&pad.lt>.3)||(ni&&ni.lo))want=1;}
   if(want===2&&!tutOk('blowHi'))want=0;
   if(want&&battery<=0){want=0;if(time-lastEmptyBuzz>.45){lastEmptyBuzz=time;rumble(.25,0,60);blip(110,.12,'sawtooth',.05,70);}}
-  mode=want;
+  mode=want;if(mode)cur.lastMode=mode;
   if(mode===2&&hour>=LATE_HOUR)today.lateHigh+=dt;
   let target=mode;const bpct=battery/capacity();
   if(mode&&bpct<.12)target*=.55+.45*(Math.sin(time*37)>-.2?1:0);
   power+=(target-power)*Math.min(1,dt*(target>power?6:9));if(power<.005)power=0;
-  if(mode){battery-=drainRate(mode)*dt;if(battery<=0){battery=0;if(!wasEmpty){blip(440,.5,'square',.06,90);rumble(.7,.4,350);}}}
+  if(mode){const use=Math.min(battery,drainRate(mode)*dt);if(use>0)goalAdd('batt3',use/capacity());battery-=drainRate(mode)*dt;if(battery<=0){battery=0;if(!wasEmpty){blip(440,.5,'square',.06,90);rumble(.7,.4,350);}}}
   wasEmpty=battery<=0;
   // the vortex nozzle swirls leaves to a point: where the mouse is, or a set distance ahead on a controller
   if(att().vortex){const b=blowParams(Math.max(power,.01)),tube=att().tube,nx=P.x+aim.x*tube,ny=P.y+aim.y*tube;
@@ -3850,6 +4114,7 @@ function updateHUD(dt){
       if(repShown!=null&&state==='play'&&t!==repShown){const d=t-repShown,p=document.createElement('span');p.className='reppop';p.textContent=(d>0?'+':'\u2212')+Math.abs(d);p.style.color=d>0?'var(--green)':'var(--red)';RB.querySelectorAll('.reppop').forEach(q=>q.remove());RB.appendChild(p);setTimeout(()=>p.remove(),1500);}
       repShown=t;}}
   setIfG('menuShow',state==='play'||state==='menu',v=>{menuBtn.style.display=v?'flex':'none';});
+  if(TUT.on&&state!=='play')tutArrow();
   for(const v of views){HV=v;withPl(v.pl,()=>hudView(dt));}
   HV=views[0];
   // co-op, both at the same house (or only one of you at one): a single house panel along the bottom middle
@@ -3859,7 +4124,7 @@ function updateHUD(dt){
 }
 function paintLot(q,L,s){
   const pct=Math.round(s.pct*100);
-  q('lotName').textContent=L.name;q('lotTag').textContent=`#${L.k+1} · ${L.tag}`;
+  q('lotName').textContent=L.name;q('lotTag').textContent=TUTORIAL?L.tag:`${L.tag} · ${HOOD_NAMES[L.hood]}`;
   q('lotBar').style.width=pct+'%';q('lotBar').style.background=pct>=90?'#4bc26a':pct>=70?'#ffcf4a':pct>=50?'#ff9800':'#fe5f55';
   const marks=[50,70,90];q('lotPanel').querySelectorAll('.bar i').forEach((m,i)=>m.classList.toggle('hit',pct>=marks[i]));
   q('lotGood').textContent=s.good;q('lotTotal').textContent=s.total;
@@ -3910,8 +4175,9 @@ function hudView(dt){
     else if(mode===2&&hour>=LATE_HOUR){cls='dead';txt='QUIET DOWN!';}
     else if(cur.riding){if(Math.abs(TR.v)<=35){cls='info';txt=`RIDING ALONG  ·  ${G('use')} GET OUT`;}}
     else if(driving){if(Math.abs(TR.v)<=35){cls='info';txt=TUT.on?`${G('use')} GET OUT`:`${G('use')} GET OUT  ·  ${G('end')} END THE DAY`;}}
+    else if(carryPkg&&part==='back'&&!TUT.on){cls='dead calm';txt=`${G('use')} STEAL IT: +${fmt$(STEAL_PAY)} · &minus;${REP_STEAL} REP`;}
     else if(carryPkg){cls=carryPkg.far?'info':'swap';txt=carryPkg.far?`TAKE IT TO THE FRONT DOOR  ·  ${G('use')} PUT IT DOWN`:`${G('use')} LEAVE IT AT THE DOOR`;}
-    else if(heldNet){const full=heldNet.n>=NET_CAP;cls=full?'dead':'info';txt=full?`${G('tarp')} EMPTY NET ON LAND`:heldNet.n?`${G('tarp')} EMPTY THE NET  ·  ${G('use')} PUT IT DOWN`:`SWEEP NET THROUGH WATER  ·  ${G('use')} PUT IT DOWN`;}
+    else if(heldNet){const full=heldNet.n>=NET_CAP;cls=full?'dead':'info';txt=full?`${G('tarp')} EMPTY NET ON LAND`:heldNet.n?(TUT.on?`${G('tarp')} EMPTY THE NET`:`${G('tarp')} EMPTY THE NET  ·  ${G('use')} PUT IT DOWN`):`SWEEP NET THROUGH WATER  ·  ${G('use')} PUT IT DOWN`;}
     else if(lotLocked(curLot)){cls='dead calm';txt=`HOUSE REQUIRES REPUTATION ${lotNeed(curLot)} ${STAR_ICON}`;}
     else if(door&&tutOk('knock')){cls=door.done?'info':'swap';txt=door.done?`${door.name} ALREADY PAID TODAY`:`${G('use')} KNOCK ON THE DOOR`;}
     else if(nearNet()&&tutOk('net')){cls='swap';txt=bundle?'HANDS FULL  ·  LOAD THE TARP FIRST':`${G('use')} GRAB THE POOL NET`;}
@@ -3928,6 +4194,15 @@ function hudView(dt){
   }
   setIf('pcls',cls,v=>{E('prompt').className=v;});
   setIf('ptxt',txt,v=>{E('ptext').innerHTML=v;});
+  // the goals panel: on your own (or online) in this view; in split screen only on player 2's half
+  const gShow=!TUT.on&&(state==='play'||state==='menu'||state==='closeout')&&(!split()||HV===views[1]);
+  setIf('gShow',gShow,v=>{E('goals').style.display=v?'block':'none';});
+  if(gShow){const gc=HV.cache;
+    // under the menu button (and the online badge when there is one), or under this half's battery panel
+    const top=split()?Math.round(E('hud').getBoundingClientRect().bottom+12):NET.role?112:76;setIf('gTop',top,v=>{E('goals').style.top=v+'px';});
+    if((gc.goalT=(gc.goalT||0)-dt)<=0){gc.goalT=.25;
+      const rows=NET.role==='guest'?NET.gl||[]:goalRows(cur);
+      setIf('gHTML',goalsHTML(rows,GOALS.ui.open)+glyphStyle(),v=>{E('goals').innerHTML=goalsHTML(rows,GOALS.ui.open);});}}
 }
 
 // ============================================================ yard editor
@@ -3938,7 +4213,7 @@ function openEditor(){
   state='editor';titleEl.classList.add('hide');$('editor').classList.remove('hide');document.body.style.cursor='default';
   ED.can=$('ecan');ED.ctx=ED.can.getContext('2d');ED.changed=false;ED.undo=[];
   ED.all={};for(const k in YARDS)ED.all[k]=JSON.parse(JSON.stringify(YARDS[k]));
-  $('eHouses').innerHTML='<span class="label">HOUSE</span>'+LAYOUT.map((c,i)=>`<button class="ebtn" data-h="${i}" title="${NAMES[i]}"><span class="k">${i+1}</span>${NAMES[i].replace('THE ','')}</button>`).join('');
+  $('eHouses').innerHTML='<span class="label">HOUSE</span>'+HOUSES.map((c,i)=>`<button class="ebtn" data-h="${i}" title="${c.name}"><span class="k">${i+1}</span>${c.name.replace('THE ','')}</button>`).join('');
   $('eTools').innerHTML='<span class="label">DRAW</span>'+ED_TOOLS.map(([id,n,k,c])=>`<button class="ebtn" data-t="${id}"><span class="esw" style="background:${c}"></span><span class="k">${k}</span>${n}</button>`).join('');
   $('eHouses').querySelectorAll('[data-h]').forEach(b=>b.onclick=()=>edSelect(+b.dataset.h));
   $('eTools').querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>edTool(b.dataset.t));
@@ -3953,11 +4228,11 @@ function closeEditor(){$('editor').classList.add('hide');titleEl.classList.remov
 function edTool(t){ED.tool=t;$('eTools').querySelectorAll('[data-t]').forEach(b=>b.classList.toggle('on',b.dataset.t===t));}
 function edSelect(k){ED.k=k;ED.undo=[];$('eHouses').querySelectorAll('[data-h]').forEach(b=>b.classList.toggle('on',+b.dataset.h===k));edRebuild();}
 function edRebuild(){
-  const k=ED.k,[w,d]=TIERS[k],custom=ED.all[k]||null;
-  const L=makeLot(k,k,w,d,mulberry(1000+k*7919),false,custom);
-  L.li=k;L.ox=LAYOUT[k].x;L.oy=LAYOUT[k].y;
-  ED.lot=L;ED.items=custom?custom.slice():yardFromLot(L);ED.layers=renderLot(L);
-  $('eTag').innerHTML=`#${k+1} ${NAMES[k]} &middot; ${TAGS[k]}<br><span style="color:${custom?'var(--gold)':'#9fb5b8'}">${custom?'CUSTOM YARD':'DEFAULT YARD'}</span>`;
+  const k=ED.k,cfg=HOUSES[k],custom=ED.all[k]||null;
+  const L=makeLot(k,cfg,mulberry(1000+k*7919),false,custom||cfg.yard);
+  L.li=k;L.ox=cfg.x;L.oy=cfg.y;
+  ED.lot=L;ED.items=custom?custom.slice():Array.isArray(cfg.yard)?cfg.yard.map(o=>({...o})):yardFromLot(L);ED.layers=renderLot(L);
+  $('eTag').innerHTML=`#${k+1} ${cfg.name} &middot; ${cfg.tag}<br><span style="color:${custom?'var(--gold)':'#9fb5b8'}">${custom?'CUSTOM YARD':'DEFAULT YARD'}</span>`;
   edLayout();
 }
 function edLayout(){
@@ -3972,6 +4247,7 @@ function edLocal(e){const r=ED.can.getBoundingClientRect();return[(e.clientX-r.l
 function edHit(x,y){
   const L=ED.lot;
   for(let i=ED.items.length-1;i>=0;i--){const it=ED.items[i];
+    if(it.t==='car')continue;
     if(it.t==='tree'){if(Math.hypot(x-it.x,y-it.y)<Math.max(8,it.r*.7))return i;continue;}
     if(it.t==='pot'){if(Math.hypot(x-it.x,y-(it.y-3))<(it.big?8:6))return i;continue;}
     if(it.t==='shrub'){if(Math.hypot(x-it.x,y-it.y)<Math.max(6,it.r))return i;continue;}
@@ -4006,7 +4282,7 @@ function edDraw(){
   c.restore();
   // outlines of everything that was drawn, so it's clear what can be erased
   c.lineWidth=Math.max(1,Math.round(sc*.8));
-  ED.items.forEach((it,i)=>{const hv=i===ED.hover;c.strokeStyle=hv?'#fff':edCol(it.t);c.setLineDash(hv?[]:[4,3]);
+  ED.items.forEach((it,i)=>{if(it.t==='car')return;const hv=i===ED.hover;c.strokeStyle=hv?'#fff':edCol(it.t);c.setLineDash(hv?[]:[4,3]);
     if(it.t==='tree'){c.beginPath();c.arc(X(it.x),Y(it.y),it.r*sc,0,Math.PI*2);c.stroke();return;}
     if(it.t==='pot'){c.beginPath();c.arc(X(it.x),Y(it.y-3),(it.big?8:6)*sc,0,Math.PI*2);c.stroke();return;}
     if(it.t==='shrub'){c.beginPath();c.arc(X(it.x),Y(it.y),it.r*sc,0,Math.PI*2);c.stroke();return;}
@@ -4026,6 +4302,8 @@ function edDraw(){
     else{const x=Math.min(g.x0,g.x1),y=Math.min(g.y0,g.y1);c.fillRect(X(x),Y(y),Math.abs(g.x1-g.x0)*sc,Math.abs(g.y1-g.y0)*sc);c.strokeRect(X(x),Y(y),Math.abs(g.x1-g.x0)*sc,Math.abs(g.y1-g.y0)*sc);}}
 }
 const carCache={};function makeCarCached(col){return carCache[col]||(carCache[col]=makeCar(col));}
+// which neighborhood a spot in the street belongs to (by its nearest stretch of road)
+function hoodAt(x,y){const qx=clamp(x|0,0,WORLD_W-1),qy=clamp(y|0,0,H-1),n=NEAR[qy*WORLD_W+qx];return n<ROADS.length?ROADS[n].hood:CIRCLES[n-ROADS.length].hood;}
 {
   const cv=document.getElementById('ecan');
   cv.addEventListener('mousedown',e=>{if(state!=='editor')return;const [x,y]=edLocal(e);
@@ -4056,7 +4334,7 @@ const carCache={};function makeCarCached(col){return carCache[col]||(carCache[co
   addEventListener('keydown',e=>{if(state!=='editor')return;
     if((e.metaKey||e.ctrlKey)&&e.code==='KeyZ'){e.preventDefault();edUndo();return;}
     const tl=ED_TOOLS.find(x=>'Key'+x[2]===e.code);if(tl){edTool(tl[0]);return;}
-    const m=/^Digit([1-8])$/.exec(e.code);if(m){edSelect(+m[1]-1);return;}
+    const m=/^Digit([1-9])$/.exec(e.code);if(m&&+m[1]<=HOUSES.length){edSelect(+m[1]-1);return;}
     if(e.code==='Escape')$('eCancel').onclick();});
   addEventListener('resize',()=>{if(state==='editor')edLayout();});
 }
@@ -4120,7 +4398,7 @@ function hostLost(){if(NET.role!=='host')return;const p2=players.find(pl=>pl.dev
   padToast('YOUR ONLINE FRIEND LEFT');netBadge('ONLINE · '+NET.code);NET.status='WAITING FOR A FRIEND';refreshMenuNet();}
 function hostData(m){
   if(!m||!m.t)return;
-  if(m.t==='ready'){NET.ready=true;resetLeafShadow();joinPlayer({t:'net'});netBadge('ONLINE · 2 PLAYERS');NET.status='CONNECTED';refreshMenuNet();if(state==='shop')sendNight();return;}
+  if(m.t==='ready'){NET.ready=true;NET.glKey='';resetLeafShadow();joinPlayer({t:'net'});netBadge('ONLINE · 2 PLAYERS');NET.status='CONNECTED';refreshMenuNet();if(state==='shop')sendNight();return;}
   const p2=players.find(pl=>pl.dev.t==='net');if(!p2)return;
   if(m.t==='i'){Object.assign(NET.in,m);
     if(state==='play')for(const e of m.ev||[])withPl(p2,()=>{
@@ -4174,6 +4452,8 @@ function netHostTick(dt){
     sq:squirrels.map(q=>[R1(q.x),R1(q.y),q.dir,R2(q.ph),R2(q.pauseT)]),bd:birds.map(b=>[R1(b.x),R1(b.y),R1(b.z),R2(b.ph)]),
     vc:visitors.map(c=>[(c.x0+c.x1)/2,(c.y0+c.y1)/2,c.vert?1:0,c.dir,c.col]),
     lt:LOTS.map(L=>[L.done?1:0,R2(L.paidPct||0)]),ls:NET.ls,ev:NET.ev.splice(0)};
+  // the goals panel as the guest sees it (their own house's progress), only when it's changed
+  {NET.glT=(NET.glT||0)-.05;if(NET.glT<=0){NET.glT=.25;const gl=goalRows(p2),k=JSON.stringify(gl);if(k!==NET.glKey){NET.glKey=k;j.gl=gl;}}}
   netSend({t:'s',j,lv:encodeLeaves()});
 }
 function sendNight(){if(NET.role!=='host'||!NET.ready)return;storePl();
@@ -4242,7 +4522,7 @@ function guestData(m){
 function reloadPl(){const c=cur;cur=null;usePl(c);}
 function applySnapshot(j,lv){
   storePl();
-  hour=j.h;day=j.d;rep=j.rep;NET.repT=j.rt;truckTicket=!!j.tr[4];bed=j.bed;truckBundles.length=0;truckBundles.push(...j.tb);NET.ls=j.ls;
+  hour=j.h;day=j.d;rep=j.rep;NET.repT=j.rt;if(j.gl)NET.gl=j.gl;truckTicket=!!j.tr[4];bed=j.bed;truckBundles.length=0;truckBundles.push(...j.tb);NET.ls=j.ls;
   smooth(TR,j.tr[0],j.tr[1]);TR._a=j.tr[2];TR.v=j.tr[3];if(TR.a==null||Math.abs(TR.a-j.tr[2])>1)TR.a=j.tr[2];
   // small things: rebuilt from the snapshot, keeping per-object smoothing where they have an id
   const keep=(arr,rows,mk)=>{const old=new Map(arr.map(o=>[o.nid,o]));arr.length=0;for(const r of rows){const o=old.get(r[0])||mk(r);arr.push(o);}};
@@ -4297,6 +4577,7 @@ function guestFrame(dt){
     else{const [mwx,mwy]=mouseWorld(),adx=mwx-P.x,ady=mwy-(P.y-3),al=Math.hypot(adx,ady);if(al>4){const k=Math.min(1,dt*25);aim.x+=(adx/al-aim.x)*k;aim.y+=(ady/al-aim.y)*k;const n=Math.hypot(aim.x,aim.y)||1;aim.x/=n;aim.y/=n;}}
     if(padHit(BTN.pause)||padHit(BTN.view))openMenu(false,cur);
     for(const [b,e] of [[BTN.use,'use'],[BTN.tarp,'tarp'],[BTN.honk,'honk'],[BTN.end,'end'],[BTN.rake,'rake'],[BTN.prev,'prev'],[BTN.next,'next']])if(padHit(b))NET.evOut.push(e);
+    if(padHit(BTN.honk)&&!cur.driving&&!cur.riding)toggleGoals();
     if(pad.b.some((b,i)=>b&&!pad.pb[i]))ensureAudio();
     NET.acc+=dt;if(NET.acc>=1/30){NET.acc=0;const lo=mouse.l||(!pad.lock&&pad.lt>.3),hi=mouse.r||(!pad.lock&&pad.rt>.3);
       netSend({t:'i',mx:R2(clamp(ix,-1,1)),my:R2(clamp(iy,-1,1)),th:R2(clamp(th,-1,1)),ax:R2(aim.x),ay:R2(aim.y),lo:lo?1:0,hi:hi?1:0,cam:[Math.round(camX),Math.round(camY),VW,VH],ev:NET.evOut.splice(0)});}
@@ -4318,9 +4599,9 @@ const tutPark=()=>{const L=LOTS[1];return{x:XC-38,y:(L.y0+L.y1)/2};};
 const tutParked=()=>Math.hypot(TR.x-tutPark().x,TR.y-tutPark().y)<40&&Math.abs(TR.v)<3&&!illegalPark();
 const TUT_STEPS=[
   {id:'move',text:()=>`MOVE WITH ${G('ls')}`,done:()=>TUT.moved>70},
-  {id:'turn',text:()=>`TURN WITH ${G('rs')}`,done:()=>TUT.turned>Math.PI*1.5},
-  {id:'lo',text:()=>`LOW SPEED: HOLD ${G('low')}`,done:()=>TUT.lo>1.2},
-  {id:'hi',text:()=>`HIGH SPEED: HOLD ${G('high')}`,done:()=>TUT.hi>1.2},
+  {id:'turn',text:()=>`TURN WITH ${G('rs')}`,done:()=>TUT.turned>Math.PI*.75},
+  {id:'lo',text:()=>`LOW SPEED: HOLD ${G('low')}`,done:()=>TUT.lo>.5},
+  {id:'hi',text:()=>`HIGH SPEED: HOLD ${G('high')}`,done:()=>TUT.hi>.5},
   {id:'mulch',text:()=>'BLOW 50% OF THE LEAVES INTO THE MULCH BED',sub:()=>`${Math.round(TUT.pct*100)}% · DON'T BREAK THE FLOWERPOTS!`,done:()=>TUT.pct>=.5,
     at:()=>{const z=LOTS[0].zones.find(z=>z.type==='mulch');return z&&{x:(z.x0+z.x1)/2,y:(z.y0+z.y1)/2};}},
   {id:'knock',text:()=>`KNOCK ON THE DOOR ${G('use')} TO GET PAID`,done:()=>LOTS[0].done,at:()=>({x:LOTS[0].door.x,y:LOTS[0].door.y+4}),after:()=>tutModal('rep')},
@@ -4353,12 +4634,13 @@ function startTutorial(){
 }
 function exitTutorial(){history.replaceState(null,'',location.pathname+location.search);location.reload();}
 function tutUpdate(dt){
+  tutArrow();
   if(!TUT.on||TUT.i>=TUT_STEPS.length||state!=='play')return;
   if(TUT.flashT>0){TUT.flashT-=dt;if(TUT.flashT<=0)tutShow();return;}
   // what the current goal is watching for
   if(!driving&&!cur.riding)TUT.moved+=Math.hypot(P.vx,P.vy)*dt;
   const a=Math.atan2(aim.y,aim.x);if(TUT.lastA!=null){let d=a-TUT.lastA;d=((d+Math.PI*3)%(Math.PI*2))-Math.PI;TUT.turned+=Math.abs(d);}TUT.lastA=a;
-  if(mode===1&&power>.3)TUT.lo+=dt;if(mode===2&&power>1.2)TUT.hi+=dt;
+  if(mode===1&&power>.1)TUT.lo+=dt;if(mode===2&&power>1.05)TUT.hi+=dt;
   if((TUT.pctT-=dt)<=0){TUT.pctT=.25;TUT.pct=lotStats(LOTS[0]).pct;}
   const st=TUT_STEPS[TUT.i];
   if(st.done()){
@@ -4374,6 +4656,12 @@ function tutUpdate(dt){
   tutShow();
 }
 let tutShown='';
+// the red arrow points up at the goal box during the first two goals (hidden while a finished one flashes green)
+function tutArrow(){
+  const a=$('tutArrow'),box=$('tutBox'),on=TUT.on&&TUT.i<2&&TUT.flashT<=0&&state==='play'&&box.style.display!=='none';
+  if(a.style.display!==(on?'block':'none'))a.style.display=on?'block':'none';
+  if(on){const r=box.getBoundingClientRect(),x=Math.round(r.left+r.width/2)+'px',y=Math.round(r.bottom+8)+'px';if(a.style.left!==x)a.style.left=x;if(a.style.top!==y)a.style.top=y;}
+}
 function tutShow(){
   const box=$('tutBox');box.style.display=TUT.on&&TUT.i<TUT_STEPS.length?'block':'none';if(box.style.display==='none')return;
   const st=TUT_STEPS[TUT.i],key=TUT.i+'|'+st.text()+'|'+(st.sub?st.sub():'');if(key===tutShown)return;tutShown=key;
@@ -4411,6 +4699,150 @@ function drawTutMarker(cx,cy){
     ctx.fillStyle='#1a0f0a';ctx.fillRect(ex-1,ey-4,2,5);ctx.fillRect(ex-1,ey+2,2,2);
   }
 }
+
+// ============================================================ goals
+// A list of things to try, in roughly this order (each lands within a place or so of its spot, shuffled once per save).
+// Three are on the go at a time; finishing one pays out (more the further down the list) and the next one takes its
+// place. Everyone shares the list, and in co-op a few of them ask for more. Running totals count from when the goal
+// shows up. A house symbol means "finish a house (get paid at 50% or better)", with the percentage when it's more
+const MILE_PX=9000,GOAL_SLOTS=3,STEAL_PAY=50,REP_STEAL=10,GOAL_UI_KEY='rakingitin-goals-ui-v1';
+const HICON=()=>pxIcon('house',1.5).replace('class="px pxi"','class="px pxi gi"');
+const BLU_ICON=()=>pxIcon('blu',1.5).replace('class="px pxi"','class="px pxi gi"');
+// per house, today: blown at low speed, blown at high speed, raked (by anyone)
+const UL=new Uint8Array(256),UH=new Uint8Array(256),UR=new Uint8Array(256);
+let playT=0;
+// why a house can't count toward a goal right now ('' if it still can)
+const usedWhy=(L,lo,hi,rk)=>lo&&UL[L.k]?'LOW SPEED USED':hi&&UH[L.k]?(lo?'BLOWER USED':'HIGH SPEED USED'):rk&&UR[L.k]?'RAKE USED':'';
+const GOAL_DEFS=[
+  {id:'rake50',pct:.5,txt:()=>`${HICON()} USING ONLY THE RAKE`,why:L=>usedWhy(L,1,1,0)},
+  {id:'tarp100',n:100,best:'tarp',txt:n=>`TIE ${n} LEAVES IN ONE TARP`},
+  {id:'h90',pct:.9,txt:()=>`${HICON()}90%`},
+  {id:'pkg3',n:3,co:5,txt:n=>`BRING ${n} PACKAGES TO THEIR DOORS`},
+  {id:'pool',pool:1,txt:()=>'CLEAR EVERY LEAF FROM A POOL'},
+  {id:'high50',pct:.5,txt:()=>`${HICON()} USING ONLY HIGH SPEED`,why:L=>usedWhy(L,1,0,1)},
+  {id:'batt3',n:3,co:5,txt:n=>`USE ${n} FULL BATTERIES OF CHARGE`,num:(v,n)=>`${Math.floor(v*100)}% / ${n*100}%`},
+  {id:'rake90',pct:.9,txt:()=>`${HICON()}90% USING ONLY THE RAKE`,why:L=>usedWhy(L,1,1,0)},
+  {id:'bed200',n:200,best:'bed',txt:n=>`${n} LEAVES IN ONE MULCH BED`},
+  {id:'fast',pct:.5,secs:20,co:15,txt:n=>`${HICON()} IN UNDER ${n} SECONDS`},
+  {id:'two90',n:2,co:4,txt:n=>`${n} &times; ${HICON()}90% IN ONE DAY`,day:1},
+  {id:'mile',n:1,txt:()=>'DRIVE 1 MILE',num:(v,n)=>`${v.toFixed(2)} / ${n} MI`},
+  {id:'tarp200',n:200,best:'tarp',txt:n=>`TIE ${n} LEAVES IN ONE TARP`},
+  {id:'late',pct:.5,txt:()=>`${HICON()} STARTED AFTER 8PM`},
+  {id:'dep1000',n:1000,co:2000,txt:n=>`PUT ${n.toLocaleString('en-US')} LEAVES IN THE TRUCK`},
+  {id:'steal',n:1,txt:()=>'STEAL A PACKAGE',num:()=>'TAKE ONE TO THE TRUCK BED'},
+  {id:'low10',pct:.5,txt:()=>`${HICON()} WITH UNDER 10 LEAVES IN MULCH BEDS`},
+  {id:'blu',n:1,txt:()=>`MAKE ${BLU_ICON()} BLU RUN`,num:()=>''},
+  {id:'even',pct:.5,txt:()=>`${HICON()} WITH EVERY MULCH BED WITHIN 10 LEAVES`},
+  {id:'fill10',n:10,co:20,txt:n=>`FILL THE RAKE ${n} TIMES`},
+  {id:'nopots',txt:()=>'BREAK NO FLOWERPOTS TODAY',day:1},
+  {id:'tarp300',n:300,best:'tarp',txt:n=>`TIE ${n} LEAVES IN ONE TARP`},
+  {id:'norake90',pct:.9,txt:()=>`${HICON()}90% WITHOUT THE RAKE`,why:L=>usedWhy(L,0,0,1)},
+  {id:'push200',n:200,best:'push',txt:n=>`PUSH ${n} LEAVES AT ONCE`,avail:()=>players.some(pl=>(pl.upg.rakeshovel||0)>0)},
+  {id:'bed500',n:500,best:'bed',txt:n=>`${n} LEAVES IN ONE MULCH BED`},
+  {id:'nopot5',n:5,txt:n=>`${n} &times; ${HICON()} WITHOUT BREAKING A POT`},
+  {id:'pool200',n:200,pool:2,txt:n=>`GET ${n} LEAVES IN A POOL, THEN CLEAN IT`},
+];
+GOAL_DEFS.forEach((g,i)=>{g.i=i;g.pay=Math.round((50+450*i/(GOAL_DEFS.length-1))/10)*10;});
+const GDEF=Object.fromEntries(GOAL_DEFS.map(g=>[g.id,g]));
+const GOALS={order:[],done:[],act:[],prog:{},fresh:[],ui:{open:true}};
+try{Object.assign(GOALS.ui,JSON.parse(localStorage.getItem(GOAL_UI_KEY))||{});}catch(e){}
+const goalN=g=>g.secs?(coop()&&g.co?g.co:g.secs):coop()&&g.co?g.co:g.n;
+const goalOn=id=>!TUT.on&&NET.role!=='guest'&&GOALS.act.includes(id);
+// a fresh shuffle for a new game, or what the save had
+function goalsLoad(sv){
+  const ids=GOAL_DEFS.map(g=>g.id);
+  if(sv&&Array.isArray(sv.order)&&sv.order.length===ids.length&&sv.order.every(id=>GDEF[id])){
+    GOALS.order=sv.order.slice();GOALS.done=(sv.done||[]).filter(id=>GDEF[id]);GOALS.act=(sv.act||[]).filter(id=>GDEF[id]&&!GOALS.done.includes(id));GOALS.prog={...(sv.prog||{})};}
+  else{GOALS.order=GOAL_DEFS.map(g=>[g.id,g.i+(rnd()-.5)*2.6]).sort((a,b)=>a[1]-b[1]).map(e=>e[0]);GOALS.done=[];GOALS.act=[];GOALS.prog={};}
+  GOALS.fresh=[];goalFill();
+}
+const goalsSave=()=>({order:GOALS.order,done:GOALS.done,act:GOALS.act,prog:GOALS.prog});
+// top the list back up to three, skipping any that can't happen yet (they wait their turn)
+function goalFill(){
+  for(const id of GOALS.order){if(GOALS.act.length>=GOAL_SLOTS)break;
+    if(GOALS.done.includes(id)||GOALS.act.includes(id))continue;const g=GDEF[id];if(g.avail&&!g.avail())continue;
+    GOALS.act.push(id);GOALS.prog[id]=0;}
+}
+function goalDone(id){
+  const g=GDEF[id];if(!goalOn(id))return;
+  GOALS.act.splice(GOALS.act.indexOf(id),1);GOALS.done.push(id);delete GOALS.prog[id];
+  earn(g.pay);today.goalEarn=(today.goalEarn||0)+g.pay;today.goals=(today.goals||0)+1;
+  GOALS.fresh.push({id,until:performance.now()+2600});
+  const who=cur&&onFoot(cur)?cur.P:{x:TR.x,y:TR.y};
+  floatText(who.x,who.y-24,`GOAL! +${fmt$(g.pay)}`,'#ffcf4a',true);chaChing();setTimeout(()=>blip(1568,.3,'square',.045),260);rumble(.2,.6,160);
+  goalFill();
+}
+// running totals, and bests (the biggest single tarp, bed, push...)
+function goalAdd(id,v){if(!goalOn(id))return;GOALS.prog[id]=(GOALS.prog[id]||0)+v;if(GOALS.prog[id]>=goalN(GDEF[id])-1e-9)goalDone(id);}
+function goalBest(id,v){if(!goalOn(id))return;if(v>(GOALS.prog[id]||0))GOALS.prog[id]=v;if(v>=goalN(GDEF[id]))goalDone(id);}
+// a house just paid up
+function goalsHouse(L,pct){
+  if(pct>=.9)today.h90=(today.h90||0)+1;
+  goalBest('two90',today.h90||0);
+  if(pct>=.5&&!L.potsBroken)goalAdd('nopot5',1);
+  for(const id of GOALS.act.slice()){const g=GDEF[id];if(!g.pct||pct<g.pct)continue;if(houseWhy(g,L,true))continue;goalDone(id);}
+}
+// why this house won't count toward a house goal ('' if it will, as things stand). final: it's being paid right now
+function houseWhy(g,L,final){
+  if(g.why){const w=g.why(L);if(w)return w;}
+  if(g.secs){const t=L.startT==null?0:playT-L.startT;if(t>goalN(g))return'TOO SLOW';}
+  if(g.id==='late'){if(L.startH==null?hour<LATE_HOUR:L.startH<LATE_HOUR)return L.startH==null||final?'START IT AFTER 8PM':'STARTED BEFORE 8PM';}
+  if(g.id==='low10'){const n=mulchCounts(L).reduce((a,v)=>a+v,0);if(n>=10)return`${n} IN MULCH`;}
+  if(g.id==='even'){const c=mulchCounts(L);if(c.length<2)return'NEEDS 2+ MULCH BEDS';const sp=Math.max(...c)-Math.min(...c);if(sp>10)return`BEDS ${sp} APART`;}
+  return'';
+}
+// leaves sitting in each house's mulch beds, recounted a few times a second
+let BEDC=[],bedT=0,tarpLive=0;
+function countBeds(){
+  BEDC=LOTS.map(L=>L.zones.map(()=>0));
+  for(let i=0;i<N;i++){const st=ST[i];if(st>1||LZ[i]>3)continue;const x=LX[i],y=LY[i],li=LOT_AT[(y|0)*WORLD_W+(x|0)];if(li<0||li>=LOTS.length)continue;
+    const zs=LOTS[li].zones;for(let q=0;q<zs.length;q++)if(zs[q].type==='mulch'&&inZone(zs[q],x,y)){BEDC[li][q]++;break;}}
+  // and the leaves lying on each tarp that's down (what tying it up would bundle)
+  tarpLive=0;for(const t of tarps){if(t.st!=='down')continue;let n=0;for(let i=0;i<N;i++)if(ST[i]===0&&LZ[i]<4&&LX[i]>=t.x0&&LX[i]<t.x1&&LY[i]>=t.y0&&LY[i]<t.y1)n++;tarpLive=Math.max(tarpLive,n);}
+}
+const mulchCounts=L=>(BEDC[L.li]||[]).filter((_,q)=>L.zones[q].type==='mulch');
+// every frame of play: who's started which house, beds, pools
+function goalsTick(dt){
+  playT+=dt;
+  for(const pl of players){if(!onFoot(pl))continue;const li=LOT_AT[(pl.P.y|0)*WORLD_W+(pl.P.x|0)];if(li>=0&&li<LOTS.length){const L=LOTS[li];if(L.startT==null&&!L.done){L.startT=playT;L.startH=hour;}}}
+  if((bedT-=dt)<=0){bedT=.3;countBeds();let best=0;for(const c of BEDC)for(const v of c)best=Math.max(best,v);goalBest('bed200',best);goalBest('bed500',best);}
+  for(const pl of POOLS){
+    if(goalOn('pool')){if(pl.cnt>0)pl.gHad=true;else if(pl.gHad)goalDone('pool');}
+    if(goalOn('pool200')){pl.gPeak=Math.max(pl.gPeak||0,pl.cnt);if(pl.gPeak>=goalN(GDEF.pool200)&&pl.cnt===0)goalDone('pool200');}}
+  // the shovel rake turns up later: let its goal in once someone has one
+  if(GOALS.act.length<GOAL_SLOTS)goalFill();
+}
+// the end of the day: anything that needed the whole day
+function goalsDayEnd(){if(goalOn('nopots')&&!today.pots&&today.houses>0)goalDone('nopots');}
+function goalsDayStart(){UL.fill(0);UH.fill(0);UR.fill(0);for(const L of LOTS){L.startT=null;L.startH=null;}for(const p of POOLS){p.gHad=false;p.gPeak=0;}BEDC=[];bedT=0;tarpLive=0;}
+// what each active goal's line in the panel shows, as seen by one player: progress 0..1, the number, and whether
+// the house they're at has already ruled itself out
+function goalRows(pl){
+  const L=pl?(pl.driving||pl.riding?null:lotAtPoint(pl.P.x,pl.P.y,0)):null,st=L&&!L.done?lotStats(L):null,now=performance.now();
+  const rows=GOALS.act.map(id=>{const g=GDEF[id],n=goalN(g),v=GOALS.prog[id]||0;let f=0,num='',bad='';
+    if(g.pct){if(L&&L.done)num='PAID';else if(L&&lotLocked(L))bad='NOT HIRING YET';else if(st){f=st.pct/g.pct;num=Math.round(st.pct*100)+'%';bad=houseWhy(g,L,false);
+        if(g.secs&&!bad)num=`${Math.floor(L.startT==null?0:playT-L.startT)}S / ${n}S · `+num;}
+      else num='AT A HOUSE';}
+    else if(g.best==='tarp'){const b=Math.max(v,tarpLive);f=b/n;num=!b&&players.every(q=>!q.upg.tarp)?'BUY TARPS AT THE STORE':`${b} / ${n}`;}
+    else if(g.best){f=v/n;num=`${v} / ${n}`;if(g.best==='bed'&&L&&BEDC[L.li]){const m=Math.max(0,...mulchCounts(L));if(m>v){f=m/n;num=`${m} / ${n}`;}}}
+    else if(g.pool){const pp=POOLS.filter(p=>L&&p.lot===L),p=pp[0];
+      if(!p)num='AT A POOL';else if(g.pool===2&&(p.gPeak||0)<n){f=p.cnt/n;num=`${p.cnt} / ${n}`;}else{f=p.cnt?1-p.cnt/Math.max(p.cnt,p.gPeak||0,1):1;num=`${p.cnt} LEFT`;}}
+    else if(id==='nopots'){f=clamp((hour-DAY_START)/(DAY_END-DAY_START),0,1);if(today.pots)bad='BROKE ONE · TRY TOMORROW';else num=today.houses?'NONE YET':'FINISH A HOUSE TOO';}
+    else if(g.day){f=(today.h90||0)/n;num=`${today.h90||0} / ${n}`;}
+    else{f=v/n;num=g.num?g.num(v,n):`${Math.floor(v)} / ${n}`;}
+    return{id,txt:g.txt(n),f:bad?Math.max(f,.04):clamp(f,0,1),num,bad,pay:g.pay};});
+  for(let k=GOALS.fresh.length-1;k>=0;k--){const fr=GOALS.fresh[k];if(now>fr.until){GOALS.fresh.splice(k,1);continue;}const g=GDEF[fr.id];rows.unshift({id:fr.id,txt:g.txt(goalN(g)),f:1,num:'DONE!',bad:'',pay:g.pay,done:1});}
+  return rows;
+}
+function goalsHTML(rows,open){
+  const k=`<span class="gk">${glyphInner('goals')} TO ${open?'COLLAPSE':'EXPAND'}</span>`;
+  const left=GOAL_DEFS.length-GOALS.done.length;
+  if(!rows.length)return`<div class="gh"><b>GOALS</b>${k}</div><div class="gsub">${left?'NOTHING TO DO YET':'ALL GOALS DONE!'}</div>`;
+  if(!open)return`<div class="gh"><b>GOALS</b>${k}</div><div class="gmini">${rows.map(r=>`<i class="${r.done?'ok':r.bad?'bad':''}"><b style="width:${(r.f*100).toFixed(1)}%"></b></i>`).join('')}</div>`;
+  return`<div class="gh"><b>GOALS</b>${k}</div>`+rows.map(r=>`<div class="grow${r.done?' done':''}${r.bad?' bad':''}"><div class="gt"><span class="gx">${r.done?'&#10003; ':''}${r.txt}</span><span class="gp">${fmt$(r.pay)}</span></div>
+    <div class="gbar"><b style="width:${(r.f*100).toFixed(1)}%"></b></div>${r.bad||r.num?`<div class="gn">${r.bad||r.num}</div>`:''}</div>`).join('');
+}
+function toggleGoals(){if(TUT.on)return;GOALS.ui.open=!GOALS.ui.open;try{localStorage.setItem(GOAL_UI_KEY,JSON.stringify(GOALS.ui));}catch(e){}blip(GOALS.ui.open?620:480,.04,'square',.04);for(const v of views)v.cache.goalT=0;}
 
 // ============================================================ boot
 buildLots();buildBackground();buildTruck();buildTrafficSprites();buildTrafficPath();buildMail();initTrees();resize();
