@@ -328,6 +328,7 @@ body.pad .ucard:has(.padfocus){transform:translateY(-6px) rotate(0);}
 .shopcol.p1{border-color:#2f9a5a;}
 .shopcol .cards{grid-template-columns:repeat(auto-fill,minmax(132px,1fr));}
 .colhead{display:flex;justify-content:space-between;align-items:center;font-size:14px;margin-bottom:8px;letter-spacing:1px;} .colhead b{color:var(--gold);}
+.shnote{font-size:9px;color:#9fb5b8;letter-spacing:1px;line-height:1.5;margin:-6px 0 10px;}
 .buy2{display:flex;gap:6px;flex-wrap:wrap;} .buy2 .btn{flex:1;padding:8px 4px;font-size:12px;}
 body.pad .padfocus.pf1{outline-color:#6fd18e;}
 .sum2{display:flex;flex-direction:column;gap:18px;width:100%;}
@@ -689,7 +690,7 @@ const UPG={
   cap:{name:'BIG BATTERY',ic:'B',col:'#2a9a5a',desc:'+20% battery capacity. Heavier: -5% move speed.',max:5,price:n=>[100,200,400,700,1200][n]},
   tune:{name:'ENGINE TUNE-UP',ic:'~',col:'#fe5f55',desc:'More power for every nozzle; drains a bit faster.',max:4,price:n=>[250,500,1000,2000][n]},
   boots:{name:'WORK BOOTS',ic:'>',col:'#009dff',desc:'+7% move speed.',max:5,price:n=>[150,200,275,375,500][n]},
-  tarp:{name:'TARP COUNT',ic:'#',col:'#3d86e0',desc:'Number of tarps per day.',max:5,price:n=>[200,400,600,800,1000][n]},
+  tarp:{name:'TARP COUNT',ic:'#',col:'#3d86e0',desc:'+1 tarp per day (you start with one).',max:4,price:n=>[400,600,800,1000][n]},
   bigtarp:{name:'BIG TARP',ic:'[]',col:'#8a5ae0',desc:'+25% tarp area.',max:2,price:n=>[300,500][n]},
   solar:{name:'SOLAR PANEL',ic:'S',col:'#e0a82a',desc:'Charge drained batteries with the sun; strongest at midday.',max:1,price:n=>[1000][n]},
   light:{name:'FLASHLIGHT',ic:'!',col:'#ffcf4a',desc:n=>['Mounted flashlight lets you see after 8PM.','Upgrade to a brighter and wider beam.','Add a full-body light suit to illuminate in a circle.','Mounted flashlight, bright wide beam and a full-body light suit.'][n],max:3,price:n=>[49,199,449][n]},
@@ -715,7 +716,8 @@ const att=()=>ATT.find(a=>a.id===equipped)||ATT[0];
 const capacity=()=>100*(1+.2*upg.cap);
 const spareMax=()=>1+upg.spare;
 const moveMul=()=>(1-.05*upg.cap)*(1+.07*upg.boots);
-const tarpsOwned=()=>upg.tarp;
+// everyone starts with one tarp a day; each Tarp Count level adds another
+const tarpsOwned=()=>1+upg.tarp;
 const tarpDims=()=>{const k=1+.25*upg.bigtarp;return[Math.round(44*k),Math.round(32*k)];};
 const DRAIN_LO=1.25,DRAIN_HI=3.6;
 const drainRate=m=>m===0?0:(m===2?DRAIN_HI:DRAIN_LO)*att().drain*TUNE.drain[upg.tune];
@@ -1779,8 +1781,8 @@ function focusRestore(f){
   setFocus(el);
 }
 // ---------- button glyphs for prompts: keycaps, Xbox letters or PlayStation shapes
-const KB_GLY={goals:'G',ls:'WASD',rs:'MOUSE',use:'E',tarp:'Q',rake:'R',honk:'SPACE',end:'N',pause:'ESC',back:'ESC',ok:'ENTER',start:'ENTER',low:'L-CLICK',high:'R-CLICK',prev:'WHEEL',next:'WHEEL'};
-const PAD_GLY={goals:'b',use:'a',ok:'a',honk:'b',back:'b',tarp:'x',end:'y',rake:'y',prev:'lb',next:'rb',tabL:'lb',tabR:'rb',low:'lt',high:'rt',pause:'menu',start:'menu',ls:'ls',rs:'rs'};
+const KB_GLY={gas:'W',brake:'S',steer:'A',steer2:'D',goals:'G',ls:'WASD',rs:'MOUSE',use:'E',tarp:'Q',rake:'R',honk:'SPACE',end:'N',pause:'ESC',back:'ESC',ok:'ENTER',start:'ENTER',low:'L-CLICK',high:'R-CLICK',prev:'WHEEL',next:'WHEEL'};
+const PAD_GLY={gas:'rt',brake:'lt',steer:'ls',goals:'b',use:'a',ok:'a',honk:'b',back:'b',tarp:'x',end:'y',rake:'y',prev:'lb',next:'rb',tabL:'lb',tabR:'rb',low:'lt',high:'rt',pause:'menu',start:'menu',ls:'ls',rs:'rs'};
 const PS_FACE={a:'<path d="M3.5 3.5l7 7M10.5 3.5l-7 7" stroke="#8ab4ff"/>',b:'<circle cx="7" cy="7" r="4" stroke="#ff7070"/>',x:'<rect x="3.2" y="3.2" width="7.6" height="7.6" stroke="#ff8fd6"/>',y:'<path d="M7 2.8l4.6 8H2.4z" stroke="#4fe0b0"/>'};
 const PS_NAME={lb:'L1',rb:'R1',lt:'L2',rt:'R2',menu:'OPTIONS'};
 const MENU_ICON='<svg width="11" height="9" viewBox="0 0 11 9"><path d="M0 1h11M0 4.5h11M0 8h11" stroke="#fff" stroke-width="2"/></svg>';
@@ -1823,9 +1825,9 @@ const PAD_TGT={
   ps:{low:[80,9],prev:[70,24],ls:[112,110,19],high:[220,9],next:[230,24],pause:[202,40,7],rake:[230,54,10],goals:[246,70,10],tarp:[214,70,10],use:[230,86,10],rs:[188,110,19]},
   xbox:{low:[82,11],prev:[68,27],ls:[78,72,19],high:[218,11],next:[232,27],pause:[170,72,6],rake:[222,56,10],goals:[238,72,10],tarp:[206,72,10],use:[222,88,10],rs:[186,112,19]}};
 const PAD_FACE={ps:[230,70],xbox:[222,72]};
-const PAD_LBL={goals:['GOALS','r','IN THE TRUCK: HONK'],low:['LOW SPEED','b'],prev:['PREV NOZZLE','p'],ls:['MOVE','g'],high:['HIGH SPEED','r'],next:['NEXT NOZZLE','p'],tarp:['TARP','o'],rake:['RAKE','y'],use:['USE','b'],rs:['AIM','w','TURN TO FACE'],pause:['PAUSE','w']};
-const PAD_ROWS={ps:{L:[['low',56],['prev',92],['ls',176]],R:[['pause',14],['high',38],['next',62],['rake',88],['goals',114],['tarp',146],['use',172],['rs',212]]},
-  xbox:{L:[['low',56],['prev',92],['ls',136]],R:[['pause',14],['high',38],['next',62],['rake',88],['goals',114],['tarp',146],['use',172],['rs',212]]}};
+const PAD_LBL={goals:['GOALS','r','IN THE TRUCK: HONK'],low:['LOW SPEED','b','IN THE TRUCK: BRAKE / REVERSE'],prev:['PREV NOZZLE','p'],ls:['MOVE','g','IN THE TRUCK: STEER'],high:['HIGH SPEED','r','IN THE TRUCK: GAS'],next:['NEXT NOZZLE','p'],tarp:['TARP','o'],rake:['RAKE','y'],use:['USE','b'],rs:['AIM','w','TURN TO FACE'],pause:['PAUSE','w']};
+const PAD_ROWS={ps:{L:[['low',56],['prev',92],['ls',176]],R:[['pause',12],['high',34],['next',62],['rake',88],['goals',114],['tarp',146],['use',172],['rs',212]]},
+  xbox:{L:[['low',56],['prev',92],['ls',136]],R:[['pause',12],['high',34],['next',62],['rake',88],['goals',114],['tarp',146],['use',172],['rs',212]]}};
 const FACE_COL={a:'#4bc26a',b:'#fe5f55',x:'#009dff',y:'#ffcf4a'};
 // a button glyph drawn in SVG for the callout labels: [markup, width]
 function svgGlyph(a,st,cx,cy){
@@ -2378,7 +2380,7 @@ function kbmHTML(){
           <div class="kc"><span class="klab y">RAKE</span>${k('R','R','y')}</div>
         </div>
         <div class="krow home">${k('A','A','g',.6)}${k('S','S','g',1.2)}${k('D','D','g',1.8)}<i class="key" style="visibility:hidden"></i><div class="kc"><span class="klab r">GOALS</span>${k('G','G')}</div></div>
-        <div class="klab g">MOVE</div>
+        <div class="klab g">MOVE<small>IN THE TRUCK: W GAS &middot; S BRAKE</small></div>
       </div>
       <div class="krow" style="gap:4px;margin-top:4px">${[1,2,3,4,5,6].map(n=>sk(n,'p')).join('')}</div>
       <div class="klab p" style="margin-top:-6px">NOZZLES</div>
@@ -2578,15 +2580,14 @@ function storeCards(pl,ids,withAtts){
       <div class="sect">UPGRADES</div><div class="cards">${cards}</div>
       <div class="sect">BLOWER ATTACHMENTS &middot; SWAP ANYTIME WITH ${G('nozzles')}</div><div class="cards">${atts}</div>`;
 }
-// co-op store: truck upgrades both players share across the top (either can pay), then each player's own column
+// co-op store: one column per player. Each starts with a copy of the truck's upgrades, which the two of you share
+// (either can pay, and buying one in either column buys it for both), then that player's own gear
 function coopStore(){
-  const shared=SHARED_UPG.filter(id=>UPG[id]).map(id=>{const u=UPG[id],lvl=players[0].upg[id],maxed=lvl>=u.max,price=maxed?0:u.price(lvl);
-    const btns=maxed?'<button class="btn small" disabled>MAXED</button>':players.map(pl=>`<button class="btn small ${pl.money>=price?'green':''} pb${pl.i}" data-up="${id}" data-pl="${pl.i}" ${pl.money>=price?'':'disabled'}>P${pl.i+1} ${fmt$(price)}</button>`).join('');
-    return `<div class="ucard"><div class="t"><span>${u.name}</span><span class="ic" style="background:${u.col}">${u.ic}</span></div><div class="d">${upDesc(u,lvl)}</div>
-      <div class="pips">${Array.from({length:u.max},(_,i)=>`<i class="${i<lvl?'on':''}"></i>`).join('')}</div><div class="buy2">${btns}</div></div>`;}).join('');
-  const personal=Object.keys(UPG).filter(id=>!SHARED_UPG.includes(id));
-  const col=pl=>withPl(pl,()=>`<div class="shopcol p${pl.i}"><div class="colhead"><span>PLAYER ${pl.i+1}</span><b>${fmt$(money)}</b></div>${storeCards(pl,personal,true)}</div>`);
-  return `<div class="sect">THE TRUCK &middot; SHARED</div><div class="cards">${shared}</div><div class="shopcols">${players.map(col).join('')}</div>`;
+  const shared=SHARED_UPG.filter(id=>UPG[id]),personal=Object.keys(UPG).filter(id=>!SHARED_UPG.includes(id));
+  const col=pl=>withPl(pl,()=>`<div class="shopcol p${pl.i}"><div class="colhead"><span>PLAYER ${pl.i+1}</span><b>${fmt$(money)}</b></div>
+    <div class="sect">SHARED UPGRADES</div><div class="shnote">FOR THE TRUCK: EITHER OF YOU CAN BUY THESE, AND THEY WORK FOR YOU BOTH</div>
+    <div class="cards">${storeCards(pl,shared,false)}</div>${storeCards(pl,personal,true)}</div>`);
+  return `<div class="shopcols">${players.map(col).join('')}</div>`;
 }
 function buyUpgrade(pl,id){
   if(NET.role==='guest'){if(pl===players[1])netSend({t:'act',a:'up',id});return;}
@@ -3701,10 +3702,19 @@ function updatePlayer(dt){
   power+=(target-power)*Math.min(1,dt*(target>power?6:9));if(power<.005)power=0;
   if(mode){const use=Math.min(battery,drainRate(mode)*dt);if(use>0)goalAdd('batt3',use/capacity());battery-=drainRate(mode)*dt;if(battery<=0){battery=0;if(!wasEmpty){blip(440,.5,'square',.06,90);rumble(.7,.4,350);}}}
   wasEmpty=battery<=0;
-  // the vortex nozzle swirls leaves to a point: where the mouse is, or a set distance ahead on a controller
-  if(att().vortex){const b=blowParams(Math.max(power,.01)),tube=att().tube,nx=P.x+aim.x*tube,ny=P.y+aim.y*tube;
-    if(inputMode==='pad'||cur.dev.t==='pad'||cur.dev.t==='net')cur.vortexD=b.R*.55;else{const [mwx,mwy]=mouseWorld();cur.vortexD=clamp(Math.hypot(mwx-nx,mwy-ny),12,b.R*.85);}}
+  // the vortex nozzle swirls leaves to a point: where the mouse is, or on a controller as far out as the right stick
+  // is pushed (an online friend sends theirs)
+  if(att().vortex){const f=ni?ni.vf??.55:inputMode==='pad'||cur.dev.t==='pad'?padVortexF(cur,pad):mouseVortexF();setVortex(f);}
 }
+// How far out the vortex point sits, as a share f of its span: from VORT_NEAR px past the nozzle out to 85% of the air's
+// reach at full high speed. vortexAim is where it's aimed (the controller's crosshair sits there); vortexD is where the
+// air actually swirls to, pulled in when the blower isn't running hard enough to reach that far
+const VORT_NEAR=12;
+const vortexSpan=p=>Math.max(VORT_NEAR+1,blowParams(p).R*.85);
+function setVortex(f){const a=VORT_NEAR+clamp(f,0,1)*(vortexSpan(2)-VORT_NEAR);cur.vortexAim=a;cur.vortexD=Math.min(a,vortexSpan(Math.max(power,.01)));}
+// the right stick pushed to its edge puts it at its furthest, a light push keeps it close; let go and it stays put
+function padVortexF(pl,p){const m=Math.hypot(p.rx,p.ry);if(m>.15)pl.vortexF=clamp((m-.15)/.8,0,1);return pl.vortexF??.55;}
+function mouseVortexF(){const [mwx,mwy]=mouseWorld(),tube=att().tube,d=Math.hypot(mwx-(P.x+aim.x*tube),mwy-(P.y+aim.y*tube)),sp=vortexSpan(2);return(clamp(d,VORT_NEAR,sp)-VORT_NEAR)/(sp-VORT_NEAR);}
 // follow this player (or the truck they're in), looking a little ahead
 function updateCamera(dt){
   const [c,s]=tdir();
@@ -3970,9 +3980,9 @@ function drawMarker(cx,cy){
   }
 }
 // controller aim: no cursor, just a faint dashed line out the way the player faces, marching while the blower runs
-function drawAimLine(cx,cy){
+function drawAimLine(cx,cy,len=56){
   const rgb=bundle?'138,154,157':mode===2?'254,95,85':mode===1?'0,157,255':'255,255,255',a0=mode?.6:.38;
-  const x0=P.x-cx,y0=P.y-3-cy,d0=att().tube+5,len=56,shift=mode?(time*30)%6:0,pts=[];
+  const x0=P.x-cx,y0=P.y-3-cy,d0=att().tube+5,shift=mode?(time*30)%6:0,pts=[];
   for(let d=0;d<len;d++){if((d-shift+6)%6>=3)continue;const px=Math.round(x0+aim.x*(d0+d)),py=Math.round(y0+aim.y*(d0+d)),l=pts[pts.length-1];if(l&&l[0]===px&&l[1]===py)continue;pts.push([px,py,a0*(1-d/len*.7)]);}
   for(const [px,py,a] of pts){ctx.fillStyle=`rgba(0,0,0,${(a*.45).toFixed(2)})`;ctx.fillRect(px,py+1,1,1);}
   for(const [px,py,a] of pts){ctx.fillStyle=`rgba(${rgb},${a.toFixed(2)})`;ctx.fillRect(px,py,1,1);}
@@ -3986,16 +3996,22 @@ function drawBedPanel(cx,cy){
     if(h){ctx.fillStyle=levelCol(c);ctx.fillRect(bx,by+11-h,7,h);ctx.fillStyle='rgba(255,255,255,.35)';ctx.fillRect(bx,by+11-h,7,1);}}
   if(charging()){const sx=x+w-9,sy=y+5;ctx.fillStyle='#ffcf4a';ctx.fillRect(sx+2,sy,2,1);ctx.fillRect(sx+2,sy+7,2,1);ctx.fillRect(sx-1,sy+3,1,2);ctx.fillRect(sx+6,sy+3,1,2);ctx.fillStyle='#ffe38a';ctx.fillRect(sx+1,sy+2,4,4);}
 }
+function drawCross(mx,my){
+  const col=bundle?'#8a9a9d':mode===2?'#fe5f55':mode===1?'#009dff':'#ffffff',g=2+(mode?Math.round(Math.sin(time*30)*.6+power*.7):0);
+  const bars=[[mx-g-3,my,3,1],[mx+g+1,my,3,1],[mx,my-g-3,1,3],[mx,my+g+1,1,3],[mx,my,1,1]];
+  ctx.fillStyle='#10171a';for(const b of bars)ctx.fillRect(b[0]-1,b[1]-1,b[2]+2,b[3]+2);
+  ctx.fillStyle=col;for(const b of bars)ctx.fillRect(...b);
+}
 function drawCursor(cx,cy){
   if(driving||cur.riding||state!=='play')return;
-  if(inputMode==='pad')drawAimLine(cx,cy);
+  if(inputMode==='pad'){
+    // on a controller the vortex tip gets a crosshair where it's swirling to, with the aim line running out to it
+    if(att().vortex&&!bundle&&!heldNet&&!cur.raking&&!carryPkg){const d=att().tube+(cur.vortexAim??cur.vortexD);drawAimLine(cx,cy,Math.max(4,d-att().tube-9));drawCross(Math.round(P.x+aim.x*d-cx),Math.round(P.y+aim.y*d-cy));}
+    else drawAimLine(cx,cy);}
   else{
     if(cur.dev.t!=='auto')return;
     const mx=Math.floor((mouse.x-HV.left+canOff.x)/scale),my=Math.floor((mouse.y+canOff.y)/scale);if(mx<0||mx>VW)return;
-    const col=bundle?'#8a9a9d':mode===2?'#fe5f55':mode===1?'#009dff':'#ffffff',g=2+(mode?Math.round(Math.sin(time*30)*.6+power*.7):0);
-    const bars=[[mx-g-3,my,3,1],[mx+g+1,my,3,1],[mx,my-g-3,1,3],[mx,my+g+1,1,3],[mx,my,1,1]];
-    ctx.fillStyle='#10171a';for(const b of bars)ctx.fillRect(b[0]-1,b[1]-1,b[2]+2,b[3]+2);
-    ctx.fillStyle=col;for(const b of bars)ctx.fillRect(...b);
+    drawCross(mx,my);
   }
   if(att().vortex&&power>.05){ctx.fillStyle='rgba(176,108,255,.8)';const tx=Math.round(bl.tx-camX),ty=Math.round(bl.ty-camY);for(let k=0;k<6;k++){const a=time*8+k*Math.PI/3;ctx.fillRect(Math.round(tx+Math.cos(a)*6),Math.round(ty+Math.sin(a)*4),1,1);}}
 }
@@ -4174,7 +4190,9 @@ function hudView(dt){
     else if(tieT>0){cls='busy';txt='TYING TARP...';E('pfill').style.width=((1-tieT/TIE_T)*100).toFixed(1)+'%';}
     else if(mode===2&&hour>=LATE_HOUR){cls='dead';txt='QUIET DOWN!';}
     else if(cur.riding){if(Math.abs(TR.v)<=35){cls='info';txt=`RIDING ALONG  ·  ${G('use')} GET OUT`;}}
-    else if(driving){if(Math.abs(TR.v)<=35){cls='info';txt=TUT.on?`${G('use')} GET OUT`:`${G('use')} GET OUT  ·  ${G('end')} END THE DAY`;}}
+    else if(driving&&TUT.on){cls='info';const kb=glyphStyle()==='kbm';
+      txt=`${G('gas')} GAS  ·  ${G('brake')} BRAKE / REVERSE  ·  &#9664; ${kb?G('steer')+' '+G('steer2'):G('steer')} &#9654; STEER${Math.abs(TR.v)<=35?`  ·  ${G('use')} GET OUT`:''}`;}
+    else if(driving){if(Math.abs(TR.v)<=35){cls='info';txt=`${G('use')} GET OUT  ·  ${G('end')} END THE DAY`;}}
     else if(carryPkg&&part==='back'&&!TUT.on){cls='dead calm';txt=`${G('use')} STEAL IT: +${fmt$(STEAL_PAY)} · &minus;${REP_STEAL} REP`;}
     else if(carryPkg){cls=carryPkg.far?'info':'swap';txt=carryPkg.far?`TAKE IT TO THE FRONT DOOR  ·  ${G('use')} PUT IT DOWN`:`${G('use')} LEAVE IT AT THE DOOR`;}
     else if(heldNet){const full=heldNet.n>=NET_CAP;cls=full?'dead':'info';txt=full?`${G('tarp')} EMPTY NET ON LAND`:heldNet.n?(TUT.on?`${G('tarp')} EMPTY THE NET`:`${G('tarp')} EMPTY THE NET  ·  ${G('use')} PUT IT DOWN`):`SWEEP NET THROUGH WATER  ·  ${G('use')} PUT IT DOWN`;}
@@ -4580,7 +4598,8 @@ function guestFrame(dt){
     if(padHit(BTN.honk)&&!cur.driving&&!cur.riding)toggleGoals();
     if(pad.b.some((b,i)=>b&&!pad.pb[i]))ensureAudio();
     NET.acc+=dt;if(NET.acc>=1/30){NET.acc=0;const lo=mouse.l||(!pad.lock&&pad.lt>.3),hi=mouse.r||(!pad.lock&&pad.rt>.3);
-      netSend({t:'i',mx:R2(clamp(ix,-1,1)),my:R2(clamp(iy,-1,1)),th:R2(clamp(th,-1,1)),ax:R2(aim.x),ay:R2(aim.y),lo:lo?1:0,hi:hi?1:0,cam:[Math.round(camX),Math.round(camY),VW,VH],ev:NET.evOut.splice(0)});}
+      const vf=att().vortex?(inputMode==='pad'?padVortexF(cur,pad):mouseVortexF()):.55;if(att().vortex)setVortex(vf);
+      netSend({t:'i',mx:R2(clamp(ix,-1,1)),my:R2(clamp(iy,-1,1)),th:R2(clamp(th,-1,1)),ax:R2(aim.x),ay:R2(aim.y),lo:lo?1:0,hi:hi?1:0,vf:R2(vf),cam:[Math.round(camX),Math.round(camY),VW,VH],ev:NET.evOut.splice(0)});}
     updateCamera(dt);viewOut(cur);
   }else if(state!=='play'||NET.localMenu){NET.acc+=dt;if(NET.acc>=.2){NET.acc=0;netSend({t:'i',mx:0,my:0,th:0,ax:R2(aim.x),ay:R2(aim.y),lo:0,hi:0,cam:[Math.round(camX),Math.round(camY),VW,VH],ev:[]});}}
   updateParticles(dt);
@@ -4612,7 +4631,7 @@ const TUT_STEPS=[
   {id:'park',text:()=>`DRIVE ROUND THE CORNER TO ${LOTS[1].name}`,sub:()=>driving&&Math.abs(TR.v)<3&&Math.hypot(TR.x-tutPark().x,TR.y-tutPark().y)<60&&illegalPark()?'PULL INTO THE LANE BY THE CURB':'PARK IN THE CURB LANE TO AVOID A TICKET',
     done:()=>driving&&tutParked(),at:tutPark,spot:true},
   {id:'out',text:()=>`GET OUT ${G('use')}`,done:()=>!driving},
-  {id:'tarp',text:()=>`THROW A TARP ${G('tarp')}`,enter:()=>{upg.tarp=Math.max(upg.tarp,1);},done:()=>tarps.some(t=>t.st==='down')},
+  {id:'tarp',text:()=>`THROW A TARP ${G('tarp')}`,done:()=>tarps.some(t=>t.st==='down')},
   {id:'rake',text:()=>`SWITCH TO THE RAKE ${G('rake')}`,done:()=>cur.raking},
   {id:'fill',text:()=>'PULL THE RAKE THROUGH LEAVES',sub:()=>`${cur.rakeN} / ${rakeCap(cur)}`,done:()=>cur.raking&&cur.rakeN>=rakeCap(cur)},
   {id:'dump',text:()=>`EMPTY THE RAKE ONTO THE TARP ${G('tarp')}`,done:()=>TUT.ev.rakeDump,at:()=>{const t=tarps.find(t=>t.st==='down');return t&&{x:(t.x0+t.x1)/2,y:(t.y0+t.y1)/2};}},
@@ -4823,7 +4842,7 @@ function goalRows(pl){
     if(g.pct){if(L&&L.done)num='PAID';else if(L&&lotLocked(L))bad='NOT HIRING YET';else if(st){f=st.pct/g.pct;num=Math.round(st.pct*100)+'%';bad=houseWhy(g,L,false);
         if(g.secs&&!bad)num=`${Math.floor(L.startT==null?0:playT-L.startT)}S / ${n}S · `+num;}
       else num='AT A HOUSE';}
-    else if(g.best==='tarp'){const b=Math.max(v,tarpLive);f=b/n;num=!b&&players.every(q=>!q.upg.tarp)?'BUY TARPS AT THE STORE':`${b} / ${n}`;}
+    else if(g.best==='tarp'){const b=Math.max(v,tarpLive);f=b/n;num=`${b} / ${n}`;}
     else if(g.best){f=v/n;num=`${v} / ${n}`;if(g.best==='bed'&&L&&BEDC[L.li]){const m=Math.max(0,...mulchCounts(L));if(m>v){f=m/n;num=`${m} / ${n}`;}}}
     else if(g.pool){const pp=POOLS.filter(p=>L&&p.lot===L),p=pp[0];
       if(!p)num='AT A POOL';else if(g.pool===2&&(p.gPeak||0)<n){f=p.cnt/n;num=`${p.cnt} / ${n}`;}else{f=p.cnt?1-p.cnt/Math.max(p.cnt,p.gPeak||0,1):1;num=`${p.cnt} LEFT`;}}
