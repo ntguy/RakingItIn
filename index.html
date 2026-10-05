@@ -318,6 +318,10 @@ body.pad .padfocus{outline:3px solid #fff;outline-offset:4px;transform:translate
 body.pad .ucard:has(.padfocus){transform:translateY(-6px) rotate(0);}
 #padToast{position:fixed;right:16px;bottom:16px;z-index:8;background:var(--panel);border:3px solid var(--edge);border-radius:10px;padding:8px 12px;font-size:11px;box-shadow:0 5px 0 var(--shadow);opacity:0;transform:translateY(10px);transition:opacity .2s,transform .2s;pointer-events:none;}
 #padToast.on{opacity:1;transform:none;}
+/* dev: performance overlay (F3) */
+#perf{position:fixed;left:8px;bottom:8px;z-index:9;display:none;pointer-events:none;background:rgba(10,14,16,.88);border:1px solid #5b6f73;border-radius:6px;padding:6px 8px;
+  font:10px/1.3 ui-monospace,Menlo,Consolas,monospace;color:#cfe3e6;max-height:calc(100vh - 16px);overflow:hidden;}
+#perf .ph{font-size:11px;margin-bottom:4px;} #perf canvas{display:block;margin-bottom:4px;} #perf pre{margin:0;font:inherit;white-space:pre;}
 #netBadge{position:fixed;right:16px;top:74px;z-index:4;display:none;pointer-events:none;background:var(--panel);border:3px solid var(--edge);border-radius:10px;padding:5px 10px;font-size:11px;letter-spacing:1px;color:#9fe0ff;box-shadow:0 4px 0 var(--shadow);}
 #netBanner{position:fixed;left:50%;top:42%;transform:translate(-50%,-50%);z-index:5;display:none;pointer-events:none;background:var(--panel);border:3px solid var(--edge);border-radius:12px;padding:10px 18px;font-size:15px;letter-spacing:2px;box-shadow:0 5px 0 var(--shadow);}
 .keypad .codebox{display:flex;gap:8px;justify-content:center;} .codebox span{width:34px;height:44px;border-radius:8px;background:var(--panel-in);display:flex;align-items:center;justify-content:center;font-size:24px;color:var(--gold);box-shadow:inset 0 3px 0 rgba(0,0,0,.35);}
@@ -746,7 +750,11 @@ function inZone(z,x,y){
   if(z.shape==='q'){const dx=(x-z.ax)/(z.x1-z.x0),dy=(y-z.ay)/(z.y1-z.y0);return dx*dx+dy*dy<1;}
   return true;
 }
-function zoneAt(L,x,y){const zs=L.zones;for(let i=0;i<zs.length;i++){if(inZone(zs[i],x,y))return zs[i].good?1:2;}return 0;}
+// ZONE_AT: for each pixel inside a lot, which of that lot's zones covers it (the first one listed, where they overlap),
+// or -1. Built once with the lots, so asking what a leaf is sitting in is a lookup rather than a geometry test
+const ZONE_AT=new Int8Array(WORLD_W*H).fill(-1);
+const zoneIdx=(L,x,y)=>{if(x<0||y<0||x>=WORLD_W||y>=H)return -1;const i=(y|0)*WORLD_W+(x|0);return LOT_AT[i]===L.li?ZONE_AT[i]:-1;};
+function zoneAt(L,x,y){const q=zoneIdx(L,x,y);return q<0?0:L.zones[q].good?1:2;}
 function makeCarObj(cx,cy,vert,dir,col){
   const w=vert?16:34,h=vert?34:16,c={x0:Math.round(cx-w/2),y0:Math.round(cy-h/2),vert,dir,col};c.x1=c.x0+w;c.y1=c.y0+h;c.can=makeCar(col);CARS.push(c);return c;
 }
@@ -768,6 +776,9 @@ function buildLots(){
   ALL_LOTS.push(...LOTS,...FILLER_LOTS);
   ALL_LOTS.forEach((L,li)=>{L.li=li;
     for(let y=L.y0;y<L.y1;y++)for(let x=L.x0;x<L.x1;x++){const i=y*WORLD_W+x;REG[i]=4;LOT_AT[i]=li;SURF[i]=0;}
+    // (last zone first, so where zones overlap the earlier one wins, as it did when zones were tested in order)
+    for(let q=L.zones.length-1;q>=0;q--){const z=L.zones[q],b=zoneBox(z);
+      for(let y=Math.max(L.y0,Math.floor(b.y0));y<Math.min(L.y1,Math.ceil(b.y1));y++)for(let x=Math.max(L.x0,Math.floor(b.x0));x<Math.min(L.x1,Math.ceil(b.x1));x++)if(inZone(z,x+.5,y+.5))ZONE_AT[y*WORLD_W+x]=q;}
     for(const p of L.paved)for(let y=p.y0;y<p.y1;y++)for(let x=p.x0;x<p.x1;x++)SURF[y*WORLD_W+x]=1;
     WALLS.push(...L.fences,...L.obst);
     let k=0;
@@ -2433,7 +2444,7 @@ function renderMenuAs(){
     ${ctlSeg()}<div id="ctlWrap"></div><div class="btns"><button class="btn green bounce" id="mResume">GOT IT! ${G('ok')}</button></div>`;
   else if(menuPage==='controls')html=`<h2>CONTROLS</h2>${ctlSeg()}<div id="ctlWrap"></div>${back}`;
   else if(menuPage==='settings')html=`<h2>SETTINGS</h2><div class="setlist">${volRow('music','MUSIC','NO MUSIC YET')}${volRow('sfx','SOUND EFFECTS')}
-    ${guest?'':'<button class="btn gold" id="mCheat">DEV CHEAT: +1K$</button>'}</div>${back}`;
+    ${guest?'':'<button class="btn gold" id="mCheat">DEV CHEAT: +1K$</button>'}<button class="btn" id="mPerf">PERFORMANCE OVERLAY: ${PERF.on?'ON':'OFF'} (F3)</button></div>${back}`;
   else if(TUT.on)html=`<h2>PAUSED</h2><div class="sub">TUTORIAL</div><div class="mlist">
     <button class="btn green" id="mResume">RESUME ${G('back')}</button><button class="btn" id="mCtl">CONTROLS</button>
     <button class="btn" id="mSet">SETTINGS</button><button class="btn red" id="mExitTut">EXIT TUTORIAL</button></div>`;
@@ -2454,6 +2465,7 @@ function renderMenuAs(){
   on('mAdd',()=>{modalEl.classList.add('hide');state='play';document.body.style.cursor='none';joinPlayer({t:'wait'});});
   {const who=cur;on('mLeave',()=>{modalEl.classList.add('hide');state='play';leavePlayer(who);});}
   {const who=cur;on('mCheat',()=>{withPl(who,()=>{money+=1000;});chaChing();});}
+  on('mPerf',()=>{perfSet(!PERF.on);renderMenu();});
   const setVol=(k,v)=>{settings[k]=clamp(Math.round(v*20)/20,0,1);saveSettings();applyVolumes();const r=modalEl.querySelector(`[data-vr="${k}"]`);if(r)r.value=Math.round(settings[k]*100);
     const t=document.getElementById('vv_'+k);if(t)t.textContent=Math.round(settings[k]*100)+'%';};
   modalEl.querySelectorAll('[data-vol]').forEach(b=>b.onclick=()=>{const k=b.dataset.vol;setVol(k,settings[k]+.1*b.dataset.d);if(k==='sfx')blip(660,.05,'square',.05);});
@@ -2670,6 +2682,8 @@ function pushRect(i,w){
   else if(m===t){LY[i]=w.y0-.6;bounceLeaf(i,0,-1);}else{LY[i]=w.y1+.6;bounceLeaf(i,0,1);}
 }
 const MAXV=300,MAXV2=MAXV*MAXV;
+// the grid of spots where resting leaves can be stirred this frame (32px cells)
+const HOT_SH=5,HOT_W=(WORLD_W>>HOT_SH)+1,HOT_H=(H>>HOT_SH)+1,HOT=new Uint8Array(HOT_W*HOT_H);
 // vortex tip: top speed leaves spiral in at, how fast speed falls off near the aim point, how much they circle, how hard
 // the air grabs them (per unit of blower force), and the radius of the pile they settle into
 const VORT_VMAX=55,VORT_GAIN=4,VORT_SWIRL=.45,VORT_STEER=.03,VORT_PILE=4;
@@ -2709,14 +2723,22 @@ function updateLeaves(dt){
   const tc=Math.cos(TR.a),ts=Math.sin(TR.a),tv=TR.v,tvx=tc*tv,tvy=ts*tv,tMove=Math.abs(tv)>15,tx=TR.x,ty=TR.y,tsp=Math.abs(tv);
   const wind=Math.sin(T*.13)*6+3,havePeds=peds.length>0,WW=WORLD_W;
   const MV=movers(),nMV=MV.length,nearMover=(x,y)=>{for(let q=0;q<nMV;q++){const m=MV[q];if(x>m.x-m.r&&x<m.x+m.r&&y>m.y-m.r&&y<m.y+m.r)return true;}return false;};
-  let air=0,slide=0;const PX=players.map(pl=>pl.P.x),PY=players.map(pl=>pl.P.y),nP=PX.length;
+  // a leaf lying still can only be stirred near a blower, a walker, the moving truck or traffic: mark the grid cells
+  // those cover, so the thousands of leaves lying anywhere else are passed over with one lookup
+  HOT.fill(0);const hot=(x0,y0,x1,y1)=>{const a=clamp(x0>>HOT_SH,0,HOT_W-1),b=clamp(x1>>HOT_SH,0,HOT_W-1),c=clamp(y0>>HOT_SH,0,HOT_H-1),d=clamp(y1>>HOT_SH,0,HOT_H-1);for(let gy=c;gy<=d;gy++)HOT.fill(1,gy*HOT_W+a,gy*HOT_W+b+1);};
+  for(const b of B)hot(b.nx-b.range|0,b.ny-b.range|0,b.nx+b.range|0,b.ny+b.range|0);
+  for(const w of WK)hot(w.px-8|0,w.py-8|0,w.px+8|0,w.py+8|0);
+  if(tMove)hot(tx-80|0,ty-60|0,tx+80|0,ty+60|0);
+  for(const m of MV)hot(m.x-m.r|0,m.y-m.r|0,m.x+m.r|0,m.y+m.r|0);
+  let air=0,slide=0,act=0;const PX=players.map(pl=>pl.P.x),PY=players.map(pl=>pl.P.y),nP=PX.length;
   for(let i=0;i<N;i++){
     if(ST[i]!==0)continue;
     let x=LX[i],y=LY[i],z=LZ[i],vx=VX[i],vy=VY[i],vz=VZ[i];
     if(z===0&&vx===0&&vy===0&&vz===0){
+      if(!HOT[((y|0)>>HOT_SH)*HOT_W+((x|0)>>HOT_SH)])continue;
       if(!(on&&nearBlow(x,y))&&!(nWK&&nearWalk(x,y))&&!(tMove&&x>tx-80&&x<tx+80&&y>ty-60&&y<ty+60)&&!(nMV&&nearMover(x,y)))continue;
     }
-    const ph=PH[i];
+    const ph=PH[i];act++;
     for(let q=0;q<nB;q++){const b=B[q],nx=b.nx,ny=b.ny,ax=b.ax,ay=b.ay,range=b.range,R2=b.R2,F=b.F,cosH=b.cosH,inv=b.inv,liftK=b.liftK,vort=b.vort,tgx=b.tgx,tgy=b.tgy;
       const dx=x-nx,dy=y-ny,d2=dx*dx+dy*dy;
       if(d2<R2&&d2>.01){
@@ -2793,7 +2815,7 @@ function updateLeaves(dt){
       const w=fromTruck(nlx,nly);LX[i]=w[0];LY[i]=w[1];bounceLeaf(i,nx2,ny2);}}}
     if(havePeds&&z<16&&(z>.5||s2>900))hitPed(LX[i],LY[i]);
   }
-  airCount=air;rustleLeaves=slide;
+  airCount=air;rustleLeaves=slide;leafActive=act;
 }
 function updateTrees(dt){
   const B=blowers(.3);
@@ -2816,11 +2838,16 @@ function updateTrees(dt){
     t.alpha+=((inside?.28:aimed?.4:.95)-t.alpha)*Math.min(1,dt*7);
   }
 }
+// (a fresh day's leaves: count every pool once, wherever the players are)
+let poolRecount=true;
 // floating leaves drift on the surface. Wading pushes them around; a moving net head scoops them up
 let rippleT=0;
 function updatePool(dt){
-  for(const pl of POOLS)pl.cnt=0;
   if(!POOLS.length)return;
+  // floating leaves only drift, and only get netted or waded through, near a player or on screen: with no pool in
+  // reach of either, skip the pass over every leaf and keep the counts from last time (nothing can have changed them)
+  if(!poolRecount&&!POOLS.some(p=>inAnyCam((p.x0+p.x1)/2,(p.y0+p.y1)/2,(p.x1-p.x0)/2+20)||players.some(pl=>Math.hypot(Math.max(p.x0-pl.P.x,0,pl.P.x-p.x1),Math.max(p.y0-pl.P.y,0,pl.P.y-p.y1))<NET_REACH+20)))return;
+  poolRecount=false;for(const pl of POOLS)pl.cnt=0;
   const WW=WORLD_W,T=time,NH=[],WD=[];
   for(const pl of players){if(!onFoot(pl))continue;
     if(pl.heldNet){const n=pl.heldNet,hx=pl.P.x+pl.aim.x*NET_REACH,hy=pl.P.y+pl.aim.y*NET_REACH;let hvx=0,hvy=0,hsp=0;
@@ -3161,7 +3188,8 @@ function buildTrafficPath(){
 // every mailbox gets a stop on the pass where it's on the driver's right
 function buildMail(){
   for(const L of ALL_LOTS){const m=L.lmailbox,[x,y]=L.T(m.x+4,m.y+2),mb={x,y,flag:false};MAILBOXES.push(mb);
-    let best=-1,bd=85*85;
+    // (115px: far enough to reach a box just round a corner, like the Millers' at the end of Maple Avenue)
+    let best=-1,bd=115*115;
     for(let i=0;i<TPX.length;i++){const dx=x-TPX[i],dy=y-TPY[i],d=dx*dx+dy*dy;if(d<bd&&dx*-Math.sin(TPA[i])+dy*Math.cos(TPA[i])>0){bd=d;best=i;}}
     if(best>=0)MAIL_STOPS.push({s:TPS[best]-6,mb});}
   MAIL_STOPS.sort((a,b)=>a.s-b.s);
@@ -4833,10 +4861,13 @@ function houseWhy(g,L,final){
 let BEDC=[],bedT=0,tarpLive=0;
 function countBeds(){
   BEDC=LOTS.map(L=>L.zones.map(()=>0));
-  for(let i=0;i<N;i++){const st=ST[i];if(st>1||LZ[i]>3)continue;const x=LX[i],y=LY[i],li=LOT_AT[(y|0)*WORLD_W+(x|0)];if(li<0||li>=LOTS.length)continue;
-    const zs=LOTS[li].zones;for(let q=0;q<zs.length;q++)if(zs[q].type==='mulch'&&inZone(zs[q],x,y)){BEDC[li][q]++;break;}}
-  // and the leaves lying on each tarp that's down (what tying it up would bundle)
-  tarpLive=0;for(const t of tarps){if(t.st!=='down')continue;let n=0;for(let i=0;i<N;i++)if(ST[i]===0&&LZ[i]<4&&LX[i]>=t.x0&&LX[i]<t.x1&&LY[i]>=t.y0&&LY[i]<t.y1)n++;tarpLive=Math.max(tarpLive,n);}
+  // and, in the same pass, the leaves lying on each tarp that's down (what tying it up would bundle)
+  const DT=tarps.filter(t=>t.st==='down'),tn=DT.map(()=>0),nT=DT.length,nL=LOTS.length;
+  for(let i=0;i<N;i++){const st=ST[i];if(st>1||LZ[i]>3)continue;const x=LX[i],y=LY[i];
+    if(nT&&st===0&&LZ[i]<4)for(let q=0;q<nT;q++){const t=DT[q];if(x>=t.x0&&x<t.x1&&y>=t.y0&&y<t.y1)tn[q]++;}
+    if(x<0||y<0||x>=WORLD_W||y>=H)continue;const p=(y|0)*WORLD_W+(x|0),li=LOT_AT[p],q=ZONE_AT[p];if(li<0||li>=nL||q<0)continue;
+    if(LOTS[li].zones[q].type==='mulch')BEDC[li][q]++;}
+  tarpLive=nT?Math.max(...tn):0;
 }
 const mulchCounts=L=>(BEDC[L.li]||[]).filter((_,q)=>L.zones[q].type==='mulch');
 // every frame of play: who's started which house, beds, pools
@@ -4852,7 +4883,7 @@ function goalsTick(dt){
 }
 // the end of the day: anything that needed the whole day
 function goalsDayEnd(){if(goalOn('nopots')&&!today.pots&&today.houses>0)goalDone('nopots');}
-function goalsDayStart(){UL.fill(0);UH.fill(0);UR.fill(0);for(const L of LOTS){L.startT=null;L.startH=null;}for(const p of POOLS){p.gHad=false;p.gPeak=0;}BEDC=[];bedT=0;tarpLive=0;}
+function goalsDayStart(){poolRecount=true;UL.fill(0);UH.fill(0);UR.fill(0);for(const L of LOTS){L.startT=null;L.startH=null;}for(const p of POOLS){p.gHad=false;p.gPeak=0;}BEDC=[];bedT=0;tarpLive=0;}
 // what each active goal's line in the panel shows, as seen by one player: progress 0..1, the number, and whether
 // the house they're at has already ruled itself out
 function goalRows(pl){
@@ -4882,6 +4913,77 @@ function goalsHTML(rows,open){
 }
 function toggleGoals(){if(TUT.on)return;GOALS.ui.open=!GOALS.ui.open;try{localStorage.setItem(GOAL_UI_KEY,JSON.stringify(GOALS.ui));}catch(e){}blip(GOALS.ui.open?620:480,.04,'square',.04);for(const v of views)v.cache.goalT=0;}
 
+// ============================================================ dev: performance overlay
+// F3 (or SETTINGS > PERFORMANCE OVERLAY) shows where each frame's time goes: every subsystem's milliseconds per frame,
+// averaged over the last second, as a tree (a row's time includes the rows under it), plus frame times and counts.
+// F4 copies the report (it's also perfReport() in the console). Timing works by wrapping the listed functions while
+// the overlay is on, and putting the originals back when it's off, so it costs nothing when hidden
+const PERF_KEY='rakingitin-perf-v1';
+const PERF={on:false,orig:{},acc:{},calls:{},max:{},frames:0,winT:0,snap:null,ft:new Float32Array(240),fi:0,lastNow:0,jsMax:0,el:null,cv:null,txt:''};
+// [function, parent]. '*' = called from all over (shown on its own, already counted inside whoever called it)
+const PERF_FUNCS=[
+  ['update',''],['updatePlayer','update'],['updateTraffic','update'],['trafficObstacles','updateTraffic'],['driveVehicle','updateTraffic'],['updateCouriers','updateTraffic'],['updatePackages','updateTraffic'],
+  ['updateCritters','update'],['updateRakes','update'],['updateLeaves','update'],['updatePool','update'],['updatePots','update'],['updateTarps','update'],['updateTrees','update'],
+  ['updateParticles','update'],['updatePeds','update'],['updateCamera','update'],['goalsTick','update'],['countBeds','goalsTick'],['tutUpdate','update'],
+  ['render',''],['drawLeaves','render'],['drawTarpsGround','render'],['drawPools','render'],['drawZoneHints','render'],['drawPlayer','render'],['drawTraffic','render'],['drawCar','render'],
+  ['drawPot','render'],['drawStreetlight','render'],['drawPed','render'],['drawCameo','render'],['drawTruck','render'],['drawLighting','render'],['drawDoorBadges','render'],
+  ['drawPackageCues','render'],['drawCursor','render'],
+  ['updateHUD',''],['hudView','updateHUD'],['goalRows','updateHUD'],['updateFx',''],['updateAudio',''],['netHostTick',''],['guestFrame',''],['pollPad',''],['padInput',''],['updateRumble',''],
+  ['lotStats','*'],
+];
+let leafActive=0;
+function perfSet(on){
+  PERF.on=on;try{localStorage.setItem(PERF_KEY,on?'1':'');}catch(e){}
+  for(const [name] of PERF_FUNCS){
+    if(on&&!PERF.orig[name]){const f=window[name];if(typeof f!=='function')continue;PERF.orig[name]=f;
+      window[name]=function(){const t=performance.now();try{return f.apply(this,arguments);}finally{const d=performance.now()-t;PERF.acc[name]=(PERF.acc[name]||0)+d;PERF.calls[name]=(PERF.calls[name]||0)+1;if(d>(PERF.max[name]||0))PERF.max[name]=d;}};}
+    else if(!on&&PERF.orig[name]){window[name]=PERF.orig[name];delete PERF.orig[name];}}
+  PERF.acc={};PERF.calls={};PERF.max={};PERF.frames=0;PERF.winT=0;PERF.jsMax=0;PERF.snap=null;
+  if(!PERF.el){PERF.el=document.createElement('div');PERF.el.id='perf';document.body.appendChild(PERF.el);}
+  PERF.el.style.display=on?'block':'none';if(on)PERF.el.innerHTML='<div class="ph">MEASURING...</div>';
+}
+// called at the end of every frame with the frame's start time and how long its JavaScript took
+function perfFrame(now,js){
+  if(!PERF.on)return;
+  const gap=PERF.lastNow?now-PERF.lastNow:16.7;PERF.lastNow=now;PERF.ft[PERF.fi]=gap;PERF.fi=(PERF.fi+1)%PERF.ft.length;
+  PERF.frames++;PERF.js=(PERF.js||0)+js;PERF.gap=(PERF.gap||0)+gap;if(js>PERF.jsMax)PERF.jsMax=js;if(gap>(PERF.gapMax||0))PERF.gapMax=gap;
+  PERF.winT+=gap;if(PERF.winT<1000)return;
+  // a second's worth: average it all per frame and draw the panel
+  const f=PERF.frames,rows={};for(const [name] of PERF_FUNCS)if(PERF.calls[name])rows[name]={ms:PERF.acc[name]/f,calls:PERF.calls[name]/f,max:PERF.max[name]||0};
+  PERF.snap={fps:f*1000/PERF.winT,js:PERF.js/f,jsMax:PERF.jsMax,gap:PERF.gap/f,gapMax:PERF.gapMax,rows,
+    counts:{leaves:N,moving:leafActive,airborne:airCount,traffic:traffic.length,peds:peds.length,players:players.length,views:views.length,
+      canvas:views.map(v=>v.w+'x'+v.h+'@'+v.sc).join(' '),dpr:devicePixelRatio,trees:TREES.length,pots:POTS.length,cars:CARS.length,state}};
+  PERF.acc={};PERF.calls={};PERF.max={};PERF.frames=0;PERF.winT=0;PERF.js=0;PERF.gap=0;PERF.jsMax=0;PERF.gapMax=0;
+  perfDraw();
+}
+// the report as text: the same tree the overlay shows (min: leave out rows under that many ms per frame)
+function perfText(min=0){
+  const S=PERF.snap;if(!S)return'(no measurements yet: turn the overlay on with F3)';
+  const out=[`FPS ${S.fps.toFixed(1)}   FRAME ${S.gap.toFixed(1)}ms (worst ${S.gapMax.toFixed(1)})   JS ${S.js.toFixed(2)}ms/frame (worst ${S.jsMax.toFixed(1)})`];
+  const kids=p=>PERF_FUNCS.filter(([n,q])=>q===p&&S.rows[n]&&S.rows[n].ms>=min).sort((a,b)=>S.rows[b[0]].ms-S.rows[a[0]].ms);
+  const walk=(p,d)=>{for(const [n] of kids(p)){const r=S.rows[n];out.push(`${'  '.repeat(d)}${n.padEnd(22-d*2)} ${r.ms.toFixed(3).padStart(7)}ms ${(r.ms/S.js*100).toFixed(1).padStart(5)}%  x${r.calls.toFixed(r.calls<10?1:0).padStart(4)}  worst ${r.max.toFixed(2)}`);walk(n,d+1);}};
+  walk('',0);
+  const sh=kids('*');if(sh.length){out.push('(inside the above)');walk('*',1);}
+  const c=S.counts;out.push(`LEAVES ${c.leaves} (moving ${c.moving}, airborne ${c.airborne})  TRAFFIC ${c.traffic}  PEOPLE ${c.peds}  TREES ${c.trees}  POTS ${c.pots}  PARKED CARS ${c.cars}`);
+  out.push(`VIEWS ${c.views}  CANVAS ${c.canvas}  DPR ${c.dpr}  STATE ${c.state}`);
+  return out.join('\n');
+}
+window.perfReport=()=>{const t=perfText();console.log(t);return t;};
+function perfDraw(){
+  const S=PERF.snap,el=PERF.el;if(!el)return;
+  const col=S.fps>=55?'#4bc26a':S.fps>=40?'#ffcf4a':'#fe5f55';
+  el.innerHTML=`<div class="ph"><b style="color:${col}">${S.fps.toFixed(0)} FPS</b> &middot; F3 HIDE &middot; F4 COPY</div><canvas width="240" height="40"></canvas><pre>${perfText(.01)}</pre>`;
+  const g=el.querySelector('canvas').getContext('2d');g.fillStyle='rgba(0,0,0,.4)';g.fillRect(0,0,240,40);
+  // frame times, newest on the right: the line is a 60 FPS frame (16.7ms), the top edge 33ms
+  const y=v=>40-clamp(v/33.3,0,1)*40;g.fillStyle='rgba(255,255,255,.25)';g.fillRect(0,Math.round(y(16.7)),240,1);
+  for(let k=0;k<240;k++){const v=PERF.ft[(PERF.fi+k)%240];g.fillStyle=v>20?'#fe5f55':v>17.5?'#ffcf4a':'#4bc26a';g.fillRect(k,y(v),1,40-y(v));}
+}
+addEventListener('keydown',e=>{
+  if(e.code==='F3'){e.preventDefault();perfSet(!PERF.on);}
+  else if(e.code==='F4'&&PERF.on){e.preventDefault();const t=perfText();try{navigator.clipboard.writeText(t);padToast('PERFORMANCE REPORT COPIED');}catch(err){}console.log(t);}
+});
+try{if(localStorage.getItem(PERF_KEY))setTimeout(()=>perfSet(true),0);}catch(e){}
+
 // ============================================================ boot
 buildLots();buildBackground();buildTruck();buildTrafficSprites();buildTrafficPath();buildMail();initTrees();resize();
 N=0;for(const L of LOTS)spawnLot(L);
@@ -4895,12 +4997,13 @@ let last=performance.now();
 // holding Enter for a moment while player 1 is on a controller drops a second player in on the keyboard
 function joinByKeyboard(){if(enterDownAt&&state==='play'&&performance.now()-enterDownAt>800&&canJoinWith({t:'kbm'})){enterDownAt=0;joinPlayer({t:'kbm'});}}
 function frame(now){
-  let dt=(now-last)/1000;last=now;if(dt>1/20)dt=1/20;if(dt<=0)dt=1/240;
-  if(NET.role==='guest'){storePl();pollPad();if(state!=='play'||NET.localMenu)padInput(dt);guestFrame(dt);render();updateHUD(dt);updateFx(dt);updateAudio();updateRumble();requestAnimationFrame(frame);return;}
+  let dt=(now-last)/1000;last=now;if(dt>1/20)dt=1/20;if(dt<=0)dt=1/240;const t0=performance.now();
+  if(NET.role==='guest'){storePl();pollPad();if(state!=='play'||NET.localMenu)padInput(dt);guestFrame(dt);render();updateHUD(dt);updateFx(dt);updateAudio();updateRumble();perfFrame(now,performance.now()-t0);requestAnimationFrame(frame);return;}
   storePl();pollPad();padInput(dt);joinByKeyboard();
   if(state==='play')update(dt);else{time+=dt;power=0;mode=0;}
   netHostTick(dt);
   render();updateHUD(dt);updateFx(dt);updateAudio();updateRumble();
+  perfFrame(now,performance.now()-t0);
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
