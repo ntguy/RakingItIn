@@ -711,6 +711,8 @@ const repRank=r=>r<0?'SKETCHY':REP_NAMES[repLevel(r)];
 const lotNeed=L=>REP_LEVELS[L.level||0];
 const lotLocked=L=>!!L&&!L.filler&&!TUTORIAL&&repLevel(rep)<(L.level||0);
 const TRUCK_HL=26,TRUCK_HW=12;
+// where the day starts: beside the truck, this far along it from the middle (+ toward the front)
+const SPAWN_AT=8;
 // pools: COPE px of stone deck ring the water. The net is a stick NET_STICK long; held, its head sits NET_REACH from the player
 const COPE=3,NET_STICK=24,NET_REACH=26,NET_CAP=50,NET_R=5.5;
 // the rake (R / triangle swaps it for the blower). Pulled back toward you, its head scoops up the leaves it passes over
@@ -2641,7 +2643,7 @@ function resetDay(){
   TR.v=0;TR.steer=0;
   for(const pl of players)withPl(pl,()=>{bundle=null;tarpsUsed=0;battery=capacity();swapT=0;tieT=0;driving=false;cur.riding=false;heldNet=null;carryPkg=null;
     cur.raking=false;cur.rakeN=0;Object.assign(cur.rake,{eff:RAKE_REACH,prev:null,drop:null,contact:0,load:0});
-    const [x,y]=fromTruck(-6-pl.i*14,-(TRUCK_HW+8));P.x=x;P.y=y;P.vx=P.vy=0;collidePlayer();
+    const [x,y]=fromTruck(SPAWN_AT-pl.i*14,-(TRUCK_HW+8));P.x=x;P.y=y;P.vx=P.vy=0;collidePlayer();
     const v=pl.view||views[0];pl.cam.x=clamp(P.x-v.w/2,0,WORLD_W-v.w);pl.cam.y=clamp(P.y-v.h/2,0,H-v.h);});
   camX=players[0].cam.x;camY=players[0].cam.y;
   statsCache=null;statsT=1;for(const v of views)v.cache.hot=null;
@@ -5260,7 +5262,7 @@ try{if(localStorage.getItem(PERF_KEY))setTimeout(()=>perfSet(true),0);}catch(e){
 buildLots();buildBackground();buildTruck();buildTrafficSprites();buildTrafficPath();buildMail();initTrees();resize();
 N=0;for(const L of LOTS)spawnLot(L);
 today=newToday();
-{const [x,y]=fromTruck(-6,-(TRUCK_HW+8));P.x=x;P.y=y;}
+{const [x,y]=fromTruck(SPAWN_AT,-(TRUCK_HW+8));P.x=x;P.y=y;}
 camX=clamp(P.x-VW/2,0,WORLD_W-VW);camY=clamp(P.y-VH/2,0,H-VH);
 {const p1=newPlayer(0,{t:'auto'});p1.P=P;p1.aim=aim;p1.money=money;p1.upg=upg;p1.owned=owned;p1.equipped=equipped;players.push(p1);usePl(p1);views[0].pl=p1;p1.view=views[0];p1.cam.x=camX;p1.cam.y=camY;}
 if(TUTORIAL)startTutorial();else setupTitle();
