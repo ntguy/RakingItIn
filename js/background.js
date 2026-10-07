@@ -72,7 +72,7 @@ function buildBackground(){
   for(const L of ALL_LOTS){const m=12;
     for(let y=Math.max(0,L.y0-m);y<Math.min(H,L.y1+m);y++)for(let x=Math.max(0,L.x0-m);x<Math.min(WW,L.x1+m);x++){
       if(REG[y*WW+x]!==0)continue;const n=vnoise(x*.3,y*.3)*.7+hash(x,y)*.3;px[y*WW+x]=HEDGE[clamp((n*4)|0,0,3)];}
-    for(const a of L.aprons)for(let y=a.y0;y<a.y1;y++)for(let x=a.x0;x<a.x1;x++){const i=y*WW+x;if(REG[i]===2){const r=hash(x*3,y*11);px[i]=DR[r<.2?1:r<.3?2:0];}}
+    for(const a of L.aprons)for(let y=a.y0;y<a.y1;y++)for(let x=a.x0;x<a.x1;x++){const i=y*WW+x;if(REG[i]===2){const r=hash(x*3,y*11);px[i]=a.mat==='gravel'?hexA(GRAVEL_COLS[r<.08?3:r<.3?1:r<.45?2:0]):DR[r<.2?1:r<.3?2:0];}}
   }
   decorateStreets(px,WW,hoodN);
   c.putImageData(img,0,0);
@@ -91,6 +91,10 @@ function buildBackground(){
   for(const L of ALL_LOTS)for(const h of [L.house,...(L.structs||[])])for(let y=h.y0+7;y<h.y1+8;y++)for(let x=h.x0+7;x<h.x1+8;x++)dark(x,y,.68);
   c.putImageData(img,0,0);
   ALL_LOTS.forEach((L,i)=>blitLot(c,layers[i][1],L));
+  // each tunnel's roof, turned the way its lot faces, to draw over whoever walks through
+  TUNNELS.length=0;for(const L of ALL_LOTS)for(const st of L.lstructs||[]){const q=st.slab;if(!q)continue;
+    const a=L.T(q.x0,q.y0),b=L.T(q.x1,q.y1),x0=Math.min(a[0],b[0]),y0=Math.min(a[1],b[1]),can=mk(Math.abs(b[0]-a[0]),Math.abs(b[1]-a[1])),g=can.getContext('2d');
+    g.translate(-x0,-y0);blitLot(g,q.can,L,q.x0,q.y0);TUNNELS.push({x0,y0,x1:x0+can.width,y1:y0+can.height,can,alpha:1});}
   for(const t of TREES){c.fillStyle='#3a2416';pcircle(c,t.x,t.y,5);c.fillStyle='#6b4428';pcircle(c,t.x,t.y,4);c.fillStyle='#8a5a36';c.fillRect(t.x-2,t.y-3,2,2);}
 }
 // paint a lot in its local frame: [ground layer, overlay layer (house, fence, props)]
@@ -99,25 +103,35 @@ function renderLot(L){
   // Birch Lane lawns are tired (yellowing, with bare patches and dandelions); Willow Heights lawns are deep green and
   // mown in sharp stripes
   const hd=L.hood??1,G=(hd===0?['#4a7032','#557a36','#62853c','#6e8e40','#7c9846']:hd===2?['#3a7a32','#438a38','#4d983e','#58a846','#64b450']:['#3d7532','#478537','#51943d','#5ca343','#69b04b']).map(h=>hexA(h));
-  const TUFT=hexA('#33662b'),TUFTL=hexA('#8fcb5f'),FL1=hexA('#fff3d6'),FL2=hexA('#ffd84a'),BARE=[hexA('#7a6a44'),hexA('#6a5a3a'),hexA('#8a7a4e')];
+  const TUFT=hexA('#33662b'),TUFTL=hexA('#6fa84a'),FL1=hexA('#fff3d6'),BARE=[hexA('#7a6a44'),hexA('#6a5a3a'),hexA('#8a7a4e')];
   const DR=[hexA('#aaa398'),hexA('#a19a8f'),hexA('#b4ada2')],DRJ=hexA('#8a847a');
+  const GRAVEL=GRAVEL_COLS.map(h=>hexA(h)),ASPH=[hexA('#3f4042'),hexA('#47484a'),hexA('#37383a')],LINE=[hexA('#d6d2c4'),hexA('#9a9890')];
   const sw=20+L.style*2,ox=L.ox*3+L.li*977,oy=L.oy*3,stripe=hd===2?.16:hd===0?.05:.1;
   for(let y=0;y<d;y++)for(let x=0;x<w;x++){
     const r=hash(x*7+1+ox,y*13+3+oy);let n=fbm((x+ox)*.025,(y+oy)*.025)*.75+r*.3;
     if(((x/sw)|0)&1)n+=stripe;
     let v=G[clamp(((n-.2+BAYER[(y&3)*4+(x&3)]*.14)*4.2)|0,0,4)];
-    if(r>.985)v=TUFT;else if(r>.978)v=TUFTL;if(r<.0007)v=FL1;else if(r<.0012)v=FL2;
-    if(hd===0){const b=vnoise((x+ox)*.06+5,(y+oy)*.06);if(b>.77)v=BARE[r<.4?0:r<.8?1:2];else if(r<.004)v=FL2;}
+    if(r>.985)v=TUFT;else if(r>.978)v=TUFTL;if(r<.0007)v=FL1;
+    if(hd===0){const b=vnoise((x+ox)*.06+5,(y+oy)*.06);if(b>.77)v=BARE[r<.4?0:r<.8?1:2];}
     px[y*w+x]=v;
   }
   const P=L.lpaved;
   for(const p of P)for(let y=p.y0;y<p.y1;y++)for(let x=p.x0;x<p.x1;x++){
     const r=hash(x*3+ox,y*11+oy);let v=DR[r<.2?1:r<.3?2:0];
-    if(p.kind==='path'){if((y-p.y0)%9===8||x===p.x0||x===p.x1-1)v=DRJ;}
+    if(p.mat==='gravel')v=GRAVEL[r<.08?3:r<.3?1:r<.45?2:0];
+    else if(p.mat==='lot')v=ASPH[r<.15?1:r<.22?2:0];
+    // (a walk running across the yard has its joints the other way)
+    else if(p.kind==='path'){const hz=p.x1-p.x0>p.y1-p.y0;if(hz?(x-p.x0)%9===8||y===p.y0||y===p.y1-1:(y-p.y0)%9===8||x===p.x0||x===p.x1-1)v=DRJ;}
     else if((y-p.y0)%34===33)v=DRJ;
     px[y*w+x]=v;
   }
-  for(const p of P)if(p.kind!=='path'){for(let y=p.y0;y<p.y1;y++){for(const x of [p.x0,p.x1-1]){let inner=false;for(const q of P)if(q!==p&&q.kind!=='path'&&x>=q.x0&&x<q.x1&&y>=q.y0&&y<q.y1&&!(x===q.x0||x===q.x1-1))inner=true;if(!inner)px[y*w+x]=DRJ;}}}
+  // parking bays: a painted line either side of each one, worn away in places. Each row is [x0,y0,x1,y1,n]: a box
+  // split into n bays side by side along its long side
+  const line=(x,y)=>{if(x<0||y<0||x>=w||y>=d)return;const r=hash(x*5+ox,y*7+oy);if(r>.12)px[y*w+x]=r<.3?LINE[1]:LINE[0];};
+  for(const p of P)for(const [bx0,by0,bx1,by1,n] of p.bays||[])for(let k=0;k<=n;k++){
+    if(bx1-bx0>=by1-by0){const x=Math.round(bx0+k*(bx1-bx0)/n)-(k===n?1:0);for(let y=by0;y<by1;y++)line(x,y);}
+    else{const y=Math.round(by0+k*(by1-by0)/n)-(k===n?1:0);for(let x=bx0;x<bx1;x++)line(x,y);}}
+  for(const p of P)if(p.kind!=='path'&&!p.mat){for(let y=p.y0;y<p.y1;y++){for(const x of [p.x0,p.x1-1]){let inner=false;for(const q of P)if(q!==p&&q.kind!=='path'&&x>=q.x0&&x<q.x1&&y>=q.y0&&y<q.y1&&!(x===q.x0||x===q.x1-1))inner=true;if(!inner)px[y*w+x]=DRJ;}}}
   for(const z of L.lz)if(z.above)for(let y=Math.max(0,Math.floor(z.cy-z.ry+2));y<Math.min(d,Math.ceil(z.cy+z.ry+5));y++)for(let x=Math.max(0,Math.floor(z.cx-z.rx+1));x<Math.min(w,Math.ceil(z.cx+z.rx+4));x++){
     const dx=(x+.5-z.cx-3)/(z.rx+1),dy=(y+.5-z.cy-4)/(z.ry+1);if(dx*dx+dy*dy<1)px[y*w+x]=shade32(px[y*w+x],.68);}
   for(const z of L.lz)paintZone(px,w,d,z);
@@ -125,11 +139,11 @@ function renderLot(L){
   const o=mk(w,d),oc=o.getContext('2d');drawLotDeco(oc,L);drawHouse(oc,L);drawFence(oc,L);
   return[g,o];
 }
-function blitLot(c,can,L){
+function blitLot(c,can,L,lx=0,ly=0){
   const {ox,oy,w,d,rot}=L;c.save();
   if(rot===0)c.translate(ox,oy);else if(rot===2){c.translate(ox+w,oy+d);c.rotate(Math.PI);}
   else if(rot===1){c.translate(ox+d,oy);c.rotate(Math.PI/2);}else{c.translate(ox,oy+w);c.rotate(-Math.PI/2);}
-  c.drawImage(can,0,0);c.restore();
+  c.drawImage(can,lx,ly);c.restore();
 }
 function paintZone(px,WW,HH,z){
   const b=zoneBox(z),x0=Math.max(0,Math.floor(b.x0)),y0=Math.max(0,Math.floor(b.y0)),x1=Math.min(WW,Math.ceil(b.x1)),y1=Math.min(HH,Math.ceil(b.y1));
@@ -195,9 +209,7 @@ function drawLotDeco(c,L){
       const lx=Math.round(z.x0+(z.x1-z.x0)*.3),ly=Math.round(z.y1-10);c.fillStyle='#4a2e1b';c.fillRect(lx,ly,18,4);c.fillStyle='#7a5236';c.fillRect(lx,ly,18,2);c.fillStyle='#c2a070';c.fillRect(lx+17,ly,2,4);}
   }
   for(const f of L.lfurn||[])drawFurniture(c,f,L);
-  const pumpkin=(x,y,r)=>{c.fillStyle='#8a3d0c';pcircle(c,x,y+1,r);c.fillStyle='#ea7a1c';pcircle(c,x,y,r);c.fillStyle='#ffab4d';c.fillRect(x-r+2,y-r+1,2,1);
-    c.fillStyle='#b8560f';c.fillRect(x-1,y-r+1,1,r*2-1);c.fillRect(x+2,y-r+2,1,r*2-3);c.fillStyle='#3d6a24';c.fillRect(x,y-r-1,2,2);};
-  for(const d of L.deco)if(d.t==='pumpkin')pumpkin(d.x,d.y,4);
+  for(const d of L.deco)if(d.t==='pumpkin')drawFurniture(c,{kind:'pumpkin',x:d.x,y:d.y,w:8,h:8},L);
   // Birch Lane: a wheelie bin out by the mailbox with junk round it, and a few bits of litter blown into the yard.
   // Willow Heights: little lamps lining the front walk
   if(L.hood===0){const bx=L.lmailbox.x+14,by=L.d-12;if(bx<L.w-12){c.fillStyle='rgba(0,0,0,.3)';c.fillRect(bx+1,by+1,7,9);c.fillStyle='#1d2f3a';c.fillRect(bx,by,7,9);c.fillStyle='#2f4a5a';c.fillRect(bx,by,7,2);c.fillStyle='#3d5a6a';c.fillRect(bx+1,by,5,1);
@@ -228,24 +240,31 @@ function drawApartment(c,L){
     c.fillStyle='#e8eef2';pcircle(c,x+14,y+hh-12,3);c.fillStyle='#9aa0a4';c.fillRect(x+14,y+hh-12,3,1);
     for(let fy=y+10;fy<y+hh-10;fy+=18){c.fillStyle='#1d2326';c.fillRect(x-2,fy,6,12);c.fillStyle='#5d656d';for(let k=0;k<12;k+=2)c.fillRect(x-2,fy+k,6,1);}
   }else if(hd===2){
-    // The Willows: a roof terrace (decking, planters, a glass rail), a lift tower and rows of solar panels
-    const tx=x+8,ty=y+8,tw=Math.round(w*.5),th=hh-30;
-    for(let yy=0;yy<th;yy++){c.fillStyle=['#a0703e','#94663a','#ad7c48'][((yy/4)|0)%3];c.fillRect(tx,ty+yy,tw,1);if(yy%4===3){c.fillStyle='#5a3a1a';c.fillRect(tx,ty+yy,tw,1);}}
-    c.fillStyle='rgba(160,220,255,.7)';c.fillRect(tx,ty,tw,1);c.fillRect(tx,ty,1,th);c.fillRect(tx,ty+th-1,tw,1);c.fillRect(tx+tw-1,ty,1,th);
-    for(const [px,py] of [[tx+3,ty+3],[tx+tw-9,ty+3],[tx+3,ty+th-9],[tx+tw-9,ty+th-9]]){c.fillStyle='#5a3a1e';c.fillRect(px,py,6,6);c.fillStyle='#3f7a34';pcircle(c,px+3,py+2,3);c.fillStyle='#ff5f8f';c.fillRect(px+2,py+1,1,1);}
-    c.fillStyle='#e8e0d0';c.fillRect(tx+tw/2-8|0,ty+th/2-3|0,6,6);c.fillRect(tx+tw/2+2|0,ty+th/2-3|0,6,6);
-    box(x+w-30,y+8,20,16,'#9aa0a4','#c8ccd0');c.fillStyle='rgba(160,220,255,.8)';c.fillRect(x+w-26,y+22,12,2);
-    for(let py=y+34;py<y+hh-12;py+=10)for(let px=x+w-60;px<x+w-10;px+=12){c.fillStyle='#0f1a30';c.fillRect(px,py,10,8);c.fillStyle='#22406e';c.fillRect(px+1,py+1,8,6);c.fillStyle='#3a5f96';c.fillRect(px+1,py+4,8,1);c.fillRect(px+5,py+1,1,6);}
+    // The Willows: a sky garden at one end, a rooftop bar in the middle and the lift tower and solar panels at the other
+    const a=Math.round(w*.32),b=Math.round(w*.7);
+    skyGarden(c,L,x+3,y+3,a-4,hh-6);roofBar(c,L,x+a+2,y+3,b-a-3,hh-6);
+    c.fillStyle='#9aa0a4';c.fillRect(x+b,y+2,1,hh-4);
+    for(let py=y+8;py<y+hh-14;py+=11)for(let px=x+b+6;px<x+w-30;px+=12){c.fillStyle='#0f1a30';c.fillRect(px,py,10,9);c.fillStyle='#22406e';c.fillRect(px+1,py+1,8,7);c.fillStyle='#3a5f96';c.fillRect(px+1,py+4,8,1);c.fillRect(px+5,py+1,1,7);}
+    box(x+w-24,y+8,16,20,'#9aa0a4','#c8ccd0');c.fillStyle='rgba(160,220,255,.8)';c.fillRect(x+w-21,y+25,10,2);
+    ac(x+w-22,y+hh-18);
   }else{
     // Maple Gardens: grey membrane in panels, HVAC units, roof hatches, and balconies along the front
     c.fillStyle='#7a7a76';for(let xx=x+20;xx<x+w;xx+=24)c.fillRect(xx,y+2,1,hh-4);
     for(let k=0;k<Math.max(2,w/60|0);k++)ac(x+16+k*60,y+10);
     for(let k=0;k<Math.max(1,w/80|0);k++){box(x+40+k*80,y+hh-24,10,8,'#6a6a66','#8a8a86');}
   }
-  // the entrance: a canopy over the door
+  // the entrance: a canopy over the door (and over any doors out the back)
+  for(const bx of L.bdx||[]){c.fillStyle='#1e1414';c.fillRect(bx-7,y-4,14,5);c.fillStyle=hd===0?'#6a3428':hd===2?'#1d2326':'#2f5a4a';c.fillRect(bx-6,y-3,12,3);c.fillStyle=hd===2?'#e8c24a':'#e8e0d0';c.fillRect(bx-6,y-1,12,1);}
   const dx=L.ldoor.x;c.fillStyle='#1e1414';c.fillRect(dx-9,y+hh-1,18,5);c.fillStyle=hd===0?'#6a3428':hd===2?'#1d2326':'#2f5a4a';c.fillRect(dx-8,y+hh,16,3);c.fillStyle=hd===2?'#e8c24a':'#e8e0d0';c.fillRect(dx-8,y+hh,16,1);
   // balconies hang off the front of the Maple and Willow blocks
-  if(hd>0)for(let bx=x+10;bx<x+w-20;bx+=hd===2?30:26){if(Math.abs(bx+6-dx)<16)continue;c.fillStyle='rgba(0,0,0,.3)';c.fillRect(bx+2,y+hh+2,12,4);c.fillStyle='#5a5a5a';c.fillRect(bx,y+hh,12,4);c.fillStyle=hd===2?'rgba(160,220,255,.8)':'#c8c2b4';c.fillRect(bx,y+hh+3,12,1);c.fillStyle='#3f7a34';c.fillRect(bx+2,y+hh+1,2,2);}
+  // the way into the garage under the building: a dark mouth in the front wall with a striped header, the drive
+  // darkening as it runs in under it
+  const gd=L.gdx;if(gd){const gx=gd[0],gw=gd[1]-gd[0];
+    for(let k=0;k<10;k++){c.fillStyle=`rgba(0,0,0,${.5-k*.05})`;c.fillRect(gx,y+hh+k,gw,1);}
+    c.fillStyle='#0b0e11';c.fillRect(gx,y+hh-12,gw,12);c.fillStyle='#1a2026';c.fillRect(gx+2,y+hh-10,gw-4,1);
+    for(let k=0;k<gw;k+=4){c.fillStyle=(k>>2)&1?'#1d2326':'#e8c24a';c.fillRect(gx+k,y+hh-14,4,2);}
+    c.fillStyle='#e8eef2';for(let k=0;k<3;k++){const cx=gx+(gw>>1),cy=y+hh+3+k*5;c.fillRect(cx-3,cy+2,1,1);c.fillRect(cx-2,cy+1,1,1);c.fillRect(cx-1,cy,2,1);c.fillRect(cx+1,cy+1,1,1);c.fillRect(cx+2,cy+2,1,1);}}
+  if(hd>0)for(let bx=x+10;bx<x+w-20;bx+=hd===2?30:26){if(Math.abs(bx+6-dx)<16||gd&&bx+14>gd[0]-4&&bx<gd[1]+4)continue;c.fillStyle='rgba(0,0,0,.3)';c.fillRect(bx+2,y+hh+2,12,4);c.fillStyle='#5a5a5a';c.fillRect(bx,y+hh,12,4);c.fillStyle=hd===2?'rgba(160,220,255,.8)':'#c8c2b4';c.fillRect(bx,y+hh+3,12,1);c.fillStyle='#3f7a34';c.fillRect(bx+2,y+hh+1,2,2);}
 }
 // the extra blocks: a wing of the building (same roof, a row of skylights and planters), or a parking garage seen
 // from above: the top deck with its bays marked out and cars parked, a ramp down at the entrance end, a glass stair
@@ -273,12 +292,106 @@ function drawStruct(c,L,st){
     c.fillStyle='#f4f1e8';for(let k=0;k<3;k++){if(vert){const yy=y+hh-26+k*8;c.fillRect(x+(w>>1)-3,yy,1,1);c.fillRect(x+(w>>1)-2,yy-1,1,1);c.fillRect(x+(w>>1)-1,yy-2,2,1);c.fillRect(x+(w>>1)+1,yy-1,1,1);c.fillRect(x+(w>>1)+2,yy,1,1);}}
     const tx=vert?x+4:x+w-22,ty=vert?y+4:y+4;c.fillStyle='#14202c';c.fillRect(tx,ty,18,18);c.fillStyle='#22364a';c.fillRect(tx+1,ty+1,16,16);c.fillStyle='rgba(160,220,255,.6)';c.fillRect(tx+2,ty+2,6,1);c.fillRect(tx+2,ty+2,1,6);c.fillStyle='#e8c24a';c.fillRect(tx+7,ty+7,4,4);
     return;}
+  // a Willows wing with something up on its roof: the spa or the sports deck, inside a parapet and a glass rail
+  if(st.roof){c.fillStyle='#e8eef2';c.fillRect(x,y,w,hh);c.fillStyle='#9aa0a4';c.fillRect(x+2,y+2,w-4,hh-4);
+    (st.roof==='spa'?roofSpa:roofSport)(c,L,x+3,y+3,w-6,hh-6,R);if(st.gap)cutTunnel(c,st);return;}
   // a wing: the building's roof again
   const roof=L.hood===0?['#4a4a48','#3e3e3c','#565654']:L.hood===2?['#c8ccd0','#bcc0c4','#d4d8dc']:['#8a8a86','#7e7e7a','#969692'];
   for(let yy=0;yy<hh;yy++)for(let xx=0;xx<w;xx++){const r=R(xx,yy);c.fillStyle=roof[r<.6?0:r<.82?1:2];c.fillRect(x+xx,y+yy,1,1);}
   c.fillStyle=L.hood===2?'#e8eef2':'#b8b2a6';c.fillRect(x,y,w,2);c.fillRect(x,y,2,hh);c.fillRect(x+w-2,y,2,hh);c.fillRect(x,y+hh-2,w,2);
   const vert=hh>=w;for(let k=16;k<(vert?hh:w)-16;k+=22){const sx=vert?x+(w>>1)-6:x+k,sy=vert?y+k:y+(hh>>1)-6;c.fillStyle='#2a3a4a';c.fillRect(sx,sy,12,12);c.fillStyle='#6fb3d9';c.fillRect(sx+1,sy+1,10,10);c.fillStyle='#bfe6ff';c.fillRect(sx+2,sy+2,4,2);}
   for(const [px,py] of vert?[[x+5,y+5],[x+w-11,y+5],[x+5,y+hh-11],[x+w-11,y+hh-11]]:[[x+5,y+5],[x+w-11,y+5]]){c.fillStyle='#5a3a1e';c.fillRect(px,py,6,6);c.fillStyle='#3f7a34';pcircle(c,px+3,py+2,3);c.fillStyle='#ffd84a';c.fillRect(px+2,py+1,1,1);}
+}
+// a tunnel through a block: keep the slice of roof over it to draw above the player (st.slab), and in its place
+// leave the walk showing through, in the shade of the roof with the walls' shadows down each side
+function cutTunnel(c,st){
+  const v=st.y1-st.y0>=st.x1-st.x0,[a,b]=st.gap,x0=v?st.x0-2:a,y0=v?a:st.y0-2,w=v?st.x1-st.x0+4:b-a,h=v?b-a:st.y1-st.y0+4;
+  const can=mk(w,h);can.getContext('2d').drawImage(c.canvas,x0,y0,w,h,0,0,w,h);st.slab={can,x0,y0,x1:x0+w,y1:y0+h};
+  c.clearRect(x0,y0,w,h);c.fillStyle='rgba(10,14,18,.38)';c.fillRect(x0,y0,w,h);
+  c.fillStyle='rgba(10,14,18,.35)';if(v){c.fillRect(x0,y0,w,3);c.fillRect(x0,y0+h-2,w,2);}else{c.fillRect(x0,y0,3,h);c.fillRect(x0+w-2,y0,2,h);}
+  c.fillStyle='#1e1414';if(v){c.fillRect(x0,y0-1,w,1);c.fillRect(x0,y0+h,w,1);}else{c.fillRect(x0-1,y0,1,h);c.fillRect(x0+w,y0,1,h);}
+}
+// ---------- The Willows' rooftops. Each fills the box x,y,w,h (in the lot's frame) with its own floor and furniture
+// (the patio pieces from drawFurniture), ringed by a glass rail
+const glassRail=(c,x,y,w,h)=>{c.fillStyle='rgba(160,220,255,.75)';c.fillRect(x,y,w,1);c.fillRect(x,y+h-1,w,1);c.fillRect(x,y,1,h);c.fillRect(x+w-1,y,1,h);};
+// fairy lights strung in a zigzag between two edges: a dot every 3px, warm and cool by turns
+function stringLights(c,x0,y0,x1,y1,n){for(let k=0;k<n;k++){const ax=x0+(x1-x0)*k/n,bx=x0+(x1-x0)*(k+1)/n,ay=k&1?y1:y0,by=k&1?y0:y1,len=Math.hypot(bx-ax,by-ay);
+  for(let t=0;t<len;t+=3){const px=Math.round(ax+(bx-ax)*t/len),py=Math.round(ay+(by-ay)*t/len+Math.sin(t/len*Math.PI)*3);c.fillStyle=((t/3)|0)%3?'#ffd84a':'#fff3d6';c.fillRect(px,py,1,1);}}}
+// a sky garden: sedum in reds and greens, a stepping-stone path through it, planters and a pergola over a bench
+function skyGarden(c,L,x,y,w,h){
+  for(let yy=0;yy<h;yy++)for(let xx=0;xx<w;xx++){const n=vnoise((x+xx)*.18,(y+yy)*.18)*.7+hash(x+xx,y+yy)*.3;c.fillStyle=n<.3?'#3f7a34':n<.5?'#4f8a3a':n<.66?'#6aa84a':n<.78?'#8a9a3a':'#a05a3a';c.fillRect(x+xx,y+yy,1,1);}
+  const horiz=w>=h,len=horiz?w:h;
+  for(let k=4;k<len-4;k+=7){const o=Math.round(Math.sin(k*.09)*(horiz?h:w)*.22),sx=horiz?x+k:x+(w>>1)-3+o,sy=horiz?y+(h>>1)-3+o:y+k;c.fillStyle='#8f897d';c.fillRect(sx,sy+1,6,5);c.fillStyle='#d8d2c4';c.fillRect(sx,sy,6,5);}
+  const px=horiz?x+w-30:x+4,py=horiz?y+4:y+h-30;c.fillStyle='rgba(0,0,0,.25)';c.fillRect(px+2,py+2,24,24);
+  drawFurniture(c,{kind:'bench',x:px+12,y:py+14,w:14,h:5,r:.3},L);
+  c.fillStyle='#5a3a1e';for(let k=0;k<26;k+=4)c.fillRect(px+k,py,2,26);c.fillStyle='#7a5232';c.fillRect(px,py,26,2);c.fillRect(px,py+24,26,2);
+  c.fillStyle='#3f7a34';for(let k=1;k<26;k+=5)c.fillRect(px+k,py+(k*7)%22,2,2);c.fillStyle='#ff5f8f';c.fillRect(px+9,py+5,1,1);c.fillRect(px+19,py+17,1,1);
+  for(const [qx,qy] of horiz?[[x+4,y+4],[x+4,y+h-10]]:[[x+4,y+4],[x+w-10,y+4]])drawFurniture(c,{kind:'planter',x:qx+3,y:qy+3,w:8,h:8,r:hash(qx,qy)},L);
+  glassRail(c,x,y,w,h);
+}
+// the rooftop bar: dark decking, a bar counter with stools, a sofa corner round a fire table, fairy lights over it all
+function roofBar(c,L,x,y,w,h){
+  const horiz=w>=h;
+  for(let yy=0;yy<h;yy++)for(let xx=0;xx<w;xx++){const a=horiz?xx:yy;c.fillStyle=a%5===4?'#3a2614':['#5a3a1e','#644226','#53351a'][((a/5)|0)%3];c.fillRect(x+xx,y+yy,1,1);}
+  // the bar along one long side, stools in front of it
+  const bl=Math.round((horiz?w:h)*.55);
+  if(horiz){c.fillStyle='rgba(0,0,0,.3)';c.fillRect(x+6,y+5,bl,8);c.fillStyle='#1d2326';c.fillRect(x+4,y+3,bl,8);c.fillStyle='#c8ccd0';c.fillRect(x+4,y+3,bl,2);c.fillStyle='#8f989e';for(let k=8;k<bl;k+=10)c.fillRect(x+4+k,y+6,3,3);
+    for(let k=6;k<bl;k+=8){c.fillStyle='#2a2e33';pcircle(c,x+4+k,y+15,2);c.fillStyle='#c9352b';c.fillRect(x+3+k,y+14,2,2);}}
+  else{c.fillStyle='rgba(0,0,0,.3)';c.fillRect(x+5,y+6,8,bl);c.fillStyle='#1d2326';c.fillRect(x+3,y+4,8,bl);c.fillStyle='#c8ccd0';c.fillRect(x+3,y+4,2,bl);
+    for(let k=6;k<bl;k+=8){c.fillStyle='#2a2e33';pcircle(c,x+15,y+4+k,2);c.fillStyle='#c9352b';c.fillRect(x+14,y+3+k,2,2);}}
+  const gx=horiz?x+w-22:x+(w>>1),gy=horiz?y+h-17:y+h-22;
+  for(const p of FURN_GROUPS.firepit.p)drawFurniture(c,{kind:p[0],x:gx+p[1],y:gy+p[2],w:p[3],h:p[4],r:.6},L);
+  drawFurniture(c,{kind:'sofa',x:horiz?gx-26:gx,y:horiz?gy:gy-26,w:horiz?6:22,h:horiz?22:6,r:.6},L);
+  drawFurniture(c,{kind:'planter',x:horiz?x+w-6:x+w-6,y:horiz?y+6:y+6,w:8,h:8,r:.2},L);
+  stringLights(c,x+2,y+2,horiz?x+w-2:x+w-2,horiz?y+h-3:y+h-3,horiz?7:4);
+  glassRail(c,x,y,w,h);
+}
+// the spa: pale stone tiles, a lap pool down the middle, a hot tub, loungers and umbrellas, and a little sauna
+function roofSpa(c,L,x,y,w,h,R){
+  for(let yy=0;yy<h;yy++)for(let xx=0;xx<w;xx++){c.fillStyle=xx%7===6||yy%7===6?'#bfb5a1':((xx/7|0)+(yy/7|0))&1?'#e4dccb':'#d8cfbc';c.fillRect(x+xx,y+yy,1,1);}
+  const vert=h>=w,lw=vert?Math.round(w*.32):Math.round(h*.32),lx=vert?x+5:x+30,ly=vert?y+30:y+5,ll=(vert?h:w)-60;
+  c.fillStyle='#f4f1e8';if(vert)c.fillRect(lx-2,ly-2,lw+4,ll+4);else c.fillRect(lx-2,ly-2,ll+4,lw+4);
+  for(let k=0;k<ll;k++)for(let q=0;q<lw;q++){const n=hash(k*3+x,q*5+y);c.fillStyle=n<.08?'#8ad8f4':(k>>3)&1?'#2a9ad0':'#3aa8dc';c.fillRect(vert?lx+q:lx+k,vert?ly+k:ly+q,1,1);}
+  c.fillStyle='rgba(255,255,255,.5)';for(let k=4;k<ll;k+=12){if(vert)c.fillRect(lx+(lw>>1),ly+k,1,6);else c.fillRect(lx+k,ly+(lw>>1),6,1);}
+  // the hot tub, steaming, near the end
+  const tx=vert?x+w-14:x+14,ty=vert?y+14:y+h-14;c.fillStyle='rgba(0,0,0,.25)';pcircle(c,tx+2,ty+2,10);c.fillStyle='#8c8678';pcircle(c,tx,ty,10);c.fillStyle='#b4ac9c';pcircle(c,tx,ty-1,9);c.fillStyle='#5fd0e8';pcircle(c,tx,ty,7);
+  c.fillStyle='#e8f6ff';for(let k=0;k<9;k++){const a=k*2.4,r=2+(k%4)*1.3;c.fillRect(Math.round(tx+Math.cos(a)*r),Math.round(ty+Math.sin(a)*r),1,1);}
+  // loungers and umbrellas down the far side
+  const sx=vert?x+w-8:x,sy=vert?y:y+h-8,n=Math.floor(((vert?h:w)-80)/26);
+  for(let k=0;k<n;k++){const a=36+k*26;drawFurniture(c,vert?{kind:'lounger',x:sx-2,y:y+a+9,w:8,h:18,r:(k+1)*.23}:{kind:'lounger',x:x+a+9,y:sy+2,w:18,h:8,r:(k+1)*.23},L);
+    if(k%2)drawFurniture(c,{kind:'umbrella',x:vert?sx-6:x+a-4,y:vert?y+a-4:sy-6,w:1,h:1,r:.8},L);}
+  // the sauna at the far end: a cedar hut with a slatted roof
+  const hx=vert?x+3:x+w-26,hy=vert?y+h-24:y+3;c.fillStyle='rgba(0,0,0,.3)';c.fillRect(hx+2,hy+2,22,20);c.fillStyle='#5a3a1e';c.fillRect(hx,hy,22,20);
+  for(let k=1;k<20;k+=3){c.fillStyle='#9a6a42';c.fillRect(hx+1,hy+k,20,2);}c.fillStyle='#e8c24a';c.fillRect(hx+9,hy+19,4,1);
+  glassRail(c,x,y,w,h);
+}
+// the sports deck: striped astroturf, a pickleball court with its net, a grilling area, and yoga mats
+function roofSport(c,L,x,y,w,h,R){
+  const vert=h>=w;
+  for(let yy=0;yy<h;yy++)for(let xx=0;xx<w;xx++){const a=vert?yy:xx,n=hash(x+xx,y+yy);c.fillStyle=n<.06?'#3a7a32':((a/8)|0)&1?'#4a9a3e':'#55a846';c.fillRect(x+xx,y+yy,1,1);}
+  // the court: blue inside a green apron, white lines, the net across the middle
+  const cw=vert?w-12:Math.round(w*.42),ch=vert?Math.round(h*.42):h-12,cx=vert?x+6:x+6,cy=vert?y+6:y+6;
+  c.fillStyle='#2f7a5a';c.fillRect(cx,cy,cw,ch);c.fillStyle='#2f6aa0';c.fillRect(cx+3,cy+3,cw-6,ch-6);c.fillStyle='#f4f1e8';
+  c.fillRect(cx+3,cy+3,cw-6,1);c.fillRect(cx+3,cy+ch-4,cw-6,1);c.fillRect(cx+3,cy+3,1,ch-6);c.fillRect(cx+cw-4,cy+3,1,ch-6);
+  if(vert){const m=cy+(ch>>1),k=Math.round(ch*.16);c.fillRect(cx+3,m-k,cw-6,1);c.fillRect(cx+3,m+k,cw-6,1);c.fillRect(cx+(cw>>1),cy+3,1,m-k-cy-3);c.fillRect(cx+(cw>>1),m+k,1,cy+ch-4-m-k);
+    c.fillStyle='#1d2326';c.fillRect(cx+1,m,cw-2,1);c.fillStyle='#e8eef2';c.fillRect(cx+1,m-1,2,3);c.fillRect(cx+cw-3,m-1,2,3);}
+  else{const m=cx+(cw>>1),k=Math.round(cw*.16);c.fillRect(m-k,cy+3,1,ch-6);c.fillRect(m+k,cy+3,1,ch-6);c.fillRect(cx+3,cy+(ch>>1),m-k-cx-3,1);c.fillRect(m+k,cy+(ch>>1),cx+cw-4-m-k,1);
+    c.fillStyle='#1d2326';c.fillRect(m,cy+1,1,ch-2);c.fillStyle='#e8eef2';c.fillRect(m-1,cy+1,3,2);c.fillRect(m-1,cy+ch-3,3,2);}
+  // the grilling area: an outdoor kitchen counter with two grills and a sink, a long table beside it, planters round it
+  const kx=vert?x+3:x+Math.round(w*.5),ky=vert?y+Math.round(h*.5):y+3,kl=vert?Math.round(h*.3):Math.round(w*.3);
+  c.fillStyle='rgba(0,0,0,.3)';if(vert)c.fillRect(kx+2,ky+2,10,kl);else c.fillRect(kx+2,ky+2,kl,10);
+  c.fillStyle='#5d656d';if(vert)c.fillRect(kx,ky,10,kl);else c.fillRect(kx,ky,kl,10);c.fillStyle='#c8ccd0';if(vert)c.fillRect(kx,ky,10,1);else c.fillRect(kx,ky,1,10);
+  c.fillStyle='#8f989e';if(vert)c.fillRect(kx+3,ky+kl-9,5,5);else c.fillRect(kx+kl-9,ky+3,5,5);c.fillStyle='#46afdc';if(vert)c.fillRect(kx+4,ky+kl-8,3,3);else c.fillRect(kx+kl-8,ky+4,3,3);
+  for(const t of [.22,.5])drawFurniture(c,vert?{kind:'grill',x:kx+5,y:ky+Math.round(kl*t),w:8,h:12,r:.4}:{kind:'grill',x:kx+Math.round(kl*t),y:ky+5,w:12,h:8,r:.4},L);
+  c.fillStyle='rgba(200,200,200,.45)';if(vert){c.fillRect(kx+7,ky+Math.round(kl*.22)-9,1,3);c.fillRect(kx+6,ky+Math.round(kl*.5)-10,1,3);}else{c.fillRect(kx+Math.round(kl*.22)-1,ky-3,1,3);c.fillRect(kx+Math.round(kl*.5),ky-4,1,3);}
+  const tx=vert?x+w-17:kx+(kl>>1),ty=vert?ky+(kl>>1):y+h-17;
+  for(const [kind,dx,dy,fw,fh] of FURN_GROUPS.dining6.p){const [ox,oy,pw,ph]=vert?[dy,dx,fh,fw]:[dx,dy,fw,fh];drawFurniture(c,{kind,x:tx+ox,y:ty+oy,w:pw,h:ph,turn:vert,r:.7},L);}
+  for(const [qx,qy] of vert?[[x+w-6,ky-6],[x+w-6,ky+kl+6]]:[[kx-6,y+h-6],[kx+kl+6,y+h-6]])drawFurniture(c,{kind:'planter',x:qx,y:qy,w:8,h:8,r:hash(qx,qy)},L);
+  stringLights(c,vert?x+2:kx-2,vert?ky-4:y+2,vert?x+w-2:kx+kl+2,vert?ky+kl+4:y+h-2,vert?4:5);
+  // yoga mats at the far end
+  const MATS=['#b06cff','#ff8a3a','#44a3b3','#ff5f8f'];
+  for(let k=0;k<4;k++){c.fillStyle=MATS[k];if(vert)c.fillRect(x+5+k*((w-10)/4|0),y+h-20,5,14);else c.fillRect(x+w-20,y+5+k*((h-10)/4|0),14,5);}
+  glassRail(c,x,y,w,h);
 }
 function drawHouse(c,L){
   for(const st of L.lstructs||[])drawStruct(c,L,st);
@@ -397,7 +510,9 @@ function makeLuxCar(col){
 }
 // a car colour for each neighborhood (r is 0..1)
 const OLD_COLS=['#8a7a5a','#6a7a6a','#7a5a4a','#5a6a7a','#9a8a6a','#7a3a2a','#6a6a5a','#4a5a4a'],LUX_COLS=['#15171a','#f4f4f0','#c8ccd0','#1d3a6a','#6a1a24','#2a2e33','#e8e0d0','#0f3a2a'];
-const carCol=(hood,r)=>hood===0?'o:'+OLD_COLS[(r*OLD_COLS.length)|0]:hood===2?'l:'+LUX_COLS[(r*LUX_COLS.length)|0]:CAR_COLS[(r*CAR_COLS.length)|0];
+// k = 'o' old beater, 'l' luxury, 's' ordinary
+const carKind=(k,r)=>k==='o'?'o:'+OLD_COLS[(r*OLD_COLS.length)|0]:k==='l'?'l:'+LUX_COLS[(r*LUX_COLS.length)|0]:CAR_COLS[(r*CAR_COLS.length)|0];
+const carCol=(hood,r)=>carKind(hood===0?'o':hood===2?'l':'s',r);
 
 // ============================================================ trees
 function makeCanopy(t,seed){

@@ -238,6 +238,23 @@ function drawDoorBadges(cx,cy){
     else if(nd===L){ctx.fillStyle='#1a0f0a';pcircle(ctx,x,y,6);ctx.fillStyle='#ffcf4a';pcircle(ctx,x,y,5);ctx.fillStyle='#1a0f0a';ctx.fillRect(x,y-3,1,4);ctx.fillRect(x,y+2,1,1);}
   }
 }
+// co-op: a badge on the edge of the view for each other player who's off screen (or the truck, if they're in it),
+// in their shirt colour with their number on it and an arrow pointing the way to them
+const PX_GLYPH={P:[7,5,7,4,4],1:[2,6,2,2,7],2:[7,1,7,4,7],3:[7,1,3,1,7],4:[5,5,7,1,1]};
+function pxText(str,x,y,col){ctx.fillStyle=col;let ox=x;for(const ch of str){const g=PX_GLYPH[ch];if(g)for(let r=0;r<5;r++)for(let k=0;k<3;k++)if(g[r]>>(2-k)&1)ctx.fillRect(ox+k,y+r,1,1);ox+=4;}}
+function drawMates(cx,cy){
+  if(state!=='play'||players.length<2)return;
+  for(const pl of players){if(pl===cur)continue;
+    const inTruck=!onFoot(pl),dx=(inTruck?TR.x:pl.P.x)-cx-VW/2,dy=(inTruck?TR.y:pl.P.y-8)-cy-VH/2;
+    if(Math.abs(dx)<VW/2-2&&Math.abs(dy)<VH/2-2)continue;
+    // from the middle of the view toward them, stopped just inside its edge (further in at the top and bottom, clear of
+    // the HUD bar and the house panel)
+    const k=Math.min((VW/2-14)/(Math.abs(dx)||1e-6),(VH/2-(dy<0?28:40))/(Math.abs(dy)||1e-6)),ex=Math.round(VW/2+dx*k),ey=Math.round(VH/2+dy*k),dl=Math.hypot(dx,dy)||1,col=pl.pal.shirt[1];
+    ctx.fillStyle='#1a0f0a';for(let q=9;q<14;q++){const w=15-q;ctx.fillRect(Math.round(ex+dx/dl*q-w/2),Math.round(ey+dy/dl*q-w/2),w+1,w+1);}
+    ctx.fillStyle=col;for(let q=9;q<13;q++){const w=13-q;ctx.fillRect(Math.round(ex+dx/dl*q-w/2),Math.round(ey+dy/dl*q-w/2),w,w);}
+    ctx.fillStyle='#1a0f0a';pcircle(ctx,ex,ey,8);ctx.fillStyle=col;pcircle(ctx,ex,ey,7);ctx.fillStyle=pl.pal.shirt[3];ctx.fillRect(ex-4,ey-6,8,1);
+    pxText('P'+(pl.i+1),ex-3,ey-2,'#1a0f0a');pxText('P'+(pl.i+1),ex-4,ey-3,'#f4f1e8');}
+}
 function drawMarker(cx,cy){
   if(driving||cur.riding||swapT>0)return;
   const need=(battery/capacity()<.25&&bestSpare()>battery/capacity()+.15)||bundle;if(!need)return;
@@ -367,6 +384,8 @@ function renderView(){
     ctx.fillRect(Math.round(x),Math.round(y),1,1);ctx.fillRect(Math.round(x-s.vx*.018),Math.round(y-s.vy*.018),1,1);ctx.fillRect(Math.round(x-s.vx*.036),Math.round(y-s.vy*.036),1,1);}
   ctx.drawImage(aCan,0,0);
   drawTarpsAir(cx,cy);
+  // tunnel roofs pass over whoever's in the tunnel
+  for(const t of TUNNELS){if(t.x0-cx>VW||t.y0-cy>VH||t.x1<cx||t.y1<cy)continue;ctx.globalAlpha=t.alpha;ctx.drawImage(t.can,t.x0-cx,t.y0-cy);ctx.globalAlpha=1;}
   for(const t of TREES){
     const sway=Math.round(Math.sin(time*1.2+t.ph)*.8+Math.sin(time*31+t.ph)*t.shake*1.2);
     const x=Math.round(t.x-t.can.width/2-cx+sway),y=Math.round(t.y-t.lift-t.can.height/2-cy);
@@ -379,6 +398,7 @@ function renderView(){
   drawLighting(cx,cy);
   drawDoorBadges(cx,cy);
   drawPackageCues(cx,cy);
+  drawMates(cx,cy);
   drawMarker(cx,cy);
   drawTutMarker(cx,cy);
   drawBedPanel(cx,cy);

@@ -1,6 +1,6 @@
 'use strict';
 // ============================================================ audio
-let AC=null,nGain,nFilt,mOsc,mGain,eOsc,eGain,master,sfxBus,musicBus,noiseBuf,rGain,rFilt;
+let AC=null,nGain,nFilt,mOsc,mGain,eOsc,eGain,master,sfxBus,musicBus,noiseBuf,rGain,rFilt,eng=null;
 // leaf rustle: how many leaves slid along the ground near a player this frame, and how much the rakes are hauling
 let rustleLeaves=0,rustleRake=0,rustleLvl=0;
 // volume settings (0..1), kept in the browser
@@ -29,8 +29,7 @@ function ensureAudio(){
   mGain=AC.createGain();mGain.gain.value=0;
   const lfo=AC.createOscillator();lfo.frequency.value=9;const lg=AC.createGain();lg.gain.value=2.5;lfo.connect(lg);lg.connect(mOsc.frequency);lfo.start();
   mOsc.connect(mLP);mLP.connect(mGain);mGain.connect(sfxBus);mOsc.start();
-  eOsc=AC.createOscillator();eOsc.type='square';eOsc.frequency.value=38;const eLP=AC.createBiquadFilter();eLP.type='lowpass';eLP.frequency.value=260;
-  eGain=AC.createGain();eGain.gain.value=0;eOsc.connect(eLP);eLP.connect(eGain);eGain.connect(sfxBus);eOsc.start();
+  makeEngine();
   // leaf rustle: one looping buffer of leaf crinkles, faded up and down with how many leaves are moving. Each crinkle is
   // a short burst of noise with its own darkness, length and loudness (mostly small ticks, now and then a bigger
   // crunch) with gaps between them, over a faint soft bed, all swelling and easing like a breeze
@@ -46,6 +45,37 @@ function ensureAudio(){
     rFilt=AC.createBiquadFilter();rFilt.type='lowpass';rFilt.frequency.value=1800;rFilt.Q.value=.5;
     rGain=AC.createGain();rGain.gain.value=0;rs.connect(hp);hp.connect(rFilt);rFilt.connect(rGain);rGain.connect(sfxBus);rs.start();}
 }
+// ============================================================ the truck's engine
+// A lumpy little four-cylinder. A narrow pulse at the firing rate (its harmonics give each firing a thump), a saw an
+// octave up for growl and a breath of exhaust noise all go through one loudness that wobbles at half the firing rate
+// (so every other firing lands harder: the lope of an old engine at idle), then one lowpass that opens up as it revs.
+// The firing rate wanders a little all the time so it never settles into a clean electric tone
+// gears: [top speed, firing rate at the bottom of the gear, at the top] (Hz); changing up drops the revs
+const GEARS=[[45,27,58],[95,38,62],[160,42,68]],ENG_VOL=.06;
+function makeEngine(){
+  const g=AC.createGain(),lp=AC.createBiquadFilter(),am=AC.createGain(),N=24,re=new Float32Array(N+1),im=new Float32Array(N+1);
+  for(let n=1;n<=N;n++)re[n]=Math.sin(Math.PI*n*.18)/n;
+  const pulse=AC.createOscillator();pulse.setPeriodicWave(AC.createPeriodicWave(re,im));pulse.frequency.value=27;
+  const saw=AC.createOscillator();saw.type='sawtooth';saw.frequency.value=54;const sawG=AC.createGain();sawG.gain.value=.3;
+  const ns=AC.createBufferSource();ns.buffer=noiseBuf;ns.loop=true;const nbp=AC.createBiquadFilter();nbp.type='bandpass';nbp.frequency.value=240;nbp.Q.value=.9;const nG=AC.createGain();nG.gain.value=.3;
+  const lope=AC.createOscillator();lope.type='triangle';lope.frequency.value=13.5;const lopeG=AC.createGain();lopeG.gain.value=.35;
+  am.gain.value=.65;lope.connect(lopeG);lopeG.connect(am.gain);
+  lp.type='lowpass';lp.frequency.value=220;lp.Q.value=2.2;g.gain.value=0;
+  pulse.connect(am);saw.connect(sawG);sawG.connect(am);ns.connect(nbp);nbp.connect(nG);nG.connect(am);am.connect(lp);lp.connect(g);g.connect(sfxBus);
+  pulse.start();saw.start();ns.start();lope.start();
+  eOsc=pulse;eGain=g;eng={pulse,saw,sawG,nG,lope,lopeG,lp,t:0,sp:0,load:0};
+}
+// the firing rate for a speed, in whichever gear that speed is in
+function engineHz(sp){let lo=0;for(const [top,a,b] of GEARS){if(sp<top||top===GEARS[GEARS.length-1][0])return a+(b-a)*clamp((sp-lo)/(top-lo),0,1);lo=top;}}
+function setEngine(t,on,sp,load){
+  const e=eng,hz=engineHz(sp)+load*5,rev=clamp((hz-27)/41,0,1);
+  e.pulse.frequency.setTargetAtTime(hz,t,.07);e.saw.frequency.setTargetAtTime(hz*2,t,.07);e.lope.frequency.setTargetAtTime(hz/2,t,.07);
+  e.pulse.detune.setTargetAtTime((Math.random()-.5)*50,t,.03);e.lope.detune.setTargetAtTime((Math.random()-.5)*80,t,.05);
+  // idling it lopes hard; revved up the firings smooth out
+  e.lopeG.gain.setTargetAtTime(.35-rev*.2,t,.1);e.sawG.gain.setTargetAtTime(.25+rev*.25+load*.15,t,.1);e.nG.gain.setTargetAtTime(.25+load*.45+rev*.15,t,.1);
+  e.lp.frequency.setTargetAtTime(200+rev*480+load*380,t,.08);
+  eGain.gain.setTargetAtTime(on?ENG_VOL*(.7+rev*.35+load*.3):0,t,on?.1:.15);
+}
 function updateAudio(){
   updateMusic();if(!AC)return;const loud=players.reduce((m,pl)=>pl.power>m.power?pl:m,players[0]),t=AC.currentTime,p=state==='play'?loud.power:0,a=withPl(loud,att),tn=loud.upg.tune;
   const tone=a.id==='jet'?1.6:a.id==='fan'?.75:a.id==='long'?1.15:a.id==='vortex'?1.3:1;
@@ -54,9 +84,11 @@ function updateAudio(){
   nFilt.frequency.setTargetAtTime((420+p*700+tn*80)*tone,t,.08);
   mOsc.frequency.setTargetAtTime(62+p*58+tn*8,t,.08);
   mGain.gain.setTargetAtTime(p>.02?(.03+p*.022)*bv:0,t,.05);
-  const sp=Math.abs(TR.v);
-  eGain.gain.setTargetAtTime(players.some(pl=>pl.driving)&&state==='play'?.035+sp/160*.03:0,t,.1);
-  eOsc.frequency.setTargetAtTime(34+sp*.3,t,.1);
+  // how hard the engine is working: read off how fast the truck is speeding up (so it works the same for an online
+  // guest, who only gets the truck's speed)
+  const sp=Math.abs(TR.v),edt=t-(eng.t||t);eng.t=t;
+  if(edt>0){const acc=(sp-eng.sp)/edt;eng.sp=sp;eng.load+=(clamp(acc/110,0,1)-eng.load)*Math.min(1,edt*6);}
+  setEngine(t,players.some(pl=>pl.driving)&&state==='play',sp,eng.load);
   // rustle: rises fast and falls slowly, and stays faint even under a big push of leaves
   const want=state==='play'?Math.min(1,rustleLeaves/RUSTLE_LEAVES+rustleRake/RUSTLE_RAKE):0;
   rustleLvl+=(want-rustleLvl)*(want>rustleLvl?.25:.06);

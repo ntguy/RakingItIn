@@ -1,6 +1,6 @@
 'use strict';
 // ============================================================ neighborhood
-const DRIVES=[],LOTS=[],FILLER_LOTS=[],ALL_LOTS=[],TREES=[],WALLS=[],STREETLIGHTS=[],CARS=[],STREET_CARS=[],MOUTHS=[],PATH=[],POTS=[],NETS=[],POOLS=[];
+const TUNNELS=[],DRIVES=[],LOTS=[],FILLER_LOTS=[],ALL_LOTS=[],TREES=[],WALLS=[],STREETLIGHTS=[],CARS=[],STREET_CARS=[],MOUTHS=[],PATH=[],POTS=[],NETS=[],POOLS=[];
 // per-pixel world maps. REG: 0 woods, 1 road, 2 verge, 3 sidewalk, 4 lot
 const REG=new Uint8Array(WORLD_W*H),LOT_AT=new Int8Array(WORLD_W*H).fill(-1),SURF=new Uint8Array(WORLD_W*H),NEAR=new Uint8Array(WORLD_W*H);
 // WATER: 0 dry, else pool index + 1
@@ -53,6 +53,13 @@ function buildLots(){
       for(let y=pl.y0;y<pl.y1;y++)for(let x=pl.x0;x<pl.x1;x++){if(pl.e){const dx=(x+.5-pl.e.cx)/pl.e.rx,dy=(y+.5-pl.e.cy)/pl.e.ry;if(dx*dx+dy*dy>=1)continue;}WATER[y*WORLD_W+x]=pl.id+1;}
       const n=L.nets[k++];if(n)n.pool=pl;}
   });
+  // At the bends and round the turning circle the curved sidewalk pulls away from the square corners of the yards,
+  // leaving slivers of woods (drawn as hedge, and solid) to snag on between the two. Grass them over as verge: woods
+  // whose nearest bit of road is a curve, close to the sidewalk and close to a yard
+  const GAP=36,REACH=24,lotNear=(x,y)=>{for(let k=1;k<=REACH;k+=2)for(const [qx,qy] of [[x+k,y],[x-k,y],[x,y+k],[x,y-k]])if(qx>=0&&qy>=0&&qx<WORLD_W&&qy<H&&LOT_AT[qy*WORLD_W+qx]>=0)return true;return false;};
+  CIRCLES.forEach((c,ci)=>{const R=c.r+VERGE+SWW+GAP;
+    for(let y=Math.max(0,c.y-R|0);y<Math.min(H,c.y+R);y++)for(let x=Math.max(0,c.x-R|0);x<Math.min(WORLD_W,c.x+R);x++){const i=y*WORLD_W+x;
+      if(REG[i]||NEAR[i]!==ROADS.length+ci||Math.hypot(x+.5-c.x,y+.5-c.y)>R||!lotNear(x,y))continue;REG[i]=2;SURF[i]=1;}});
   // streetlights on the verge, skipping driveway mouths and intersections
   for(const r of ROADS){const len=r.h?r.x1-r.x0:r.y1-r.y0;
     for(let a=90,side=-1;a<len-40;a+=210,side=-side){
@@ -73,7 +80,8 @@ function buildLots(){
         if(ROADS.some(o=>o!==r&&rectsHit(o,box,24)))continue;
         if(Math.hypot(cx-BULB.x,cy-BULB.y)<BULB.r+40)continue;
         if(MOUTHS.some(m=>rectsHit(m,box,6)))continue;
-        if(r===ROADS[0]&&cx<230)continue;
+        // (and none in the truck's spot at the start of the street)
+        if(r===ROADS[0]&&cx<TR.x+130)continue;
         const dir=r.h?(side>0?1:-1):(side<0?1:-1);
         STREET_CARS.push(makeCarObj(cx,cy,!r.h,R()<.8?dir:-dir,carCol(r.hood,R())));
       }
@@ -138,14 +146,16 @@ function orient(L,face,ox,oy){
   L.shrubs=(L.lshrubs||[]).map(b=>{const r=b.r;return{...TRc({x0:b.x-r*.85,y0:b.y-r*.75,x1:b.x+r*.85,y1:b.y+r*.7}),r};});
   // patio furniture is solid too (each piece's footprint)
   L.furn=(L.lfurn||[]).map(f=>TRc({x0:f.x-f.w/2,y0:f.y-f.h/2,x1:f.x+f.w/2,y1:f.y+f.h/2}));
-  L.structs=(L.lstructs||[]).map(TRc);
+  // (a struct with a tunnel through it is solid either side of the tunnel)
+  L.structs=(L.lstructs||[]).flatMap(q=>{if(!q.gap)return[q];const v=q.y1-q.y0>=q.x1-q.x0,[a,b]=q.gap;return v?[{...q,y1:a},{...q,y0:b}]:[{...q,x1:a},{...q,x0:b}];}).map(TRc);
   L.obst=[L.house,...L.structs,...L.cars,...L.shrubs,...L.furn];
   L.pots=L.lpots.map(p=>{const [x,y]=L.T(p.x,p.y),o={x:Math.round(x),y:Math.round(y),r:p.big?5:3,big:p.big,col:p.col,fl:p.fl,lot:L,broken:false,stress:0,wob:0,touch:false};POTS.push(o);return o;});
   L.nets=L.lnets.map(n=>{const [x,y]=L.T(n.x,n.y),[vx,vy]=L.V(Math.cos(n.a),Math.sin(n.a)),o={hx:x,hy:y,ha:Math.atan2(vy,vx),lot:L,held:false,n:0};o.x=o.hx;o.y=o.hy;o.a=o.ha;NETS.push(o);return o;});
   for(const p of L.lpaved)if(p.kind==='drive'&&p.y1===d)MOUTHS.push(TRc({x0:p.x0-10,y0:d,x1:p.x1+10,y1:d+FRONT}));
   for(const p of L.lpaved)if(p.kind!=='path')DRIVES.push(TRc({x0:p.x0,y0:p.y0,x1:p.x1,y1:p.y1===d?d+VERGE+SWW+30:p.y1}));
   // Willow Heights: little lamps lining the front walk, both sides
-  L.lamps=[];if(L.hood===2&&!L.filler){const p=L.lpaved.find(q=>q.kind==='path');if(p)for(let y=p.y0+10;y<p.y1-6;y+=22)for(const x of [p.x0-3,p.x1+3]){const [wx,wy]=L.T(x,y);L.lamps.push({x:Math.round(wx),y:Math.round(wy)});}}
+  // (plus any lamp posts the yard puts up)
+  L.lamps=(L.llamps||[]).map(q=>{const [x,y]=L.T(q.x,q.y);return{x:Math.round(x),y:Math.round(y)};});if(L.hood===2&&!L.filler){const p=L.lpaved.find(q=>q.kind==='path');if(p)for(let y=p.y0+10;y<p.y1-6;y+=22)for(const x of [p.x0-3,p.x1+3]){const [wx,wy]=L.T(x,y);L.lamps.push({x:Math.round(wx),y:Math.round(wy)});}}
   L.aprons=L.lpaved.filter(p=>p.kind==='drive'&&p.y1===d).map(p=>TRc({x0:p.x0,y0:d,x1:p.x1,y1:d+VERGE+SWW}));
   if(L.filler)FILLER_LOTS.push(L);
 }
@@ -163,7 +173,7 @@ const BACKYARD_FENCES=false;
 // cfg: {w,d,s (style),hood,level,name,tag, and optionally h:[x,y,w,h] for the house and dx for the door}
 function makeLot(k,cfg,R,filler,custom){
   const {w,d,s}=cfg;
-  const L={k,style:s,apt:!!cfg.apt,hood:cfg.hood??1,level:cfg.level||0,w,d,filler:!!filler,lshrubs:[],lz:[],lpaved:[],lcars:[],ltrees:[],lpots:[],lnets:[],deco:[],name:filler?'':cfg.name,tag:filler?'':cfg.tag,done:false,hauled:0,paidAmt:0};
+  const L={k,style:s,apt:!!cfg.apt,bdx:cfg.bdx||[],gdx:cfg.gdx||null,hood:cfg.hood??1,level:cfg.level||0,w,d,filler:!!filler,lshrubs:[],lz:[],lpaved:[],lcars:[],ltrees:[],lpots:[],lnets:[],deco:[],name:filler?'':cfg.name,tag:filler?'':cfg.tag,done:false,hauled:0,paidAmt:0};
   L.lfences=[{x0:0,y0:0,x1:6,y1:d},{x0:w-6,y0:0,x1:w,y1:d},{x0:0,y0:0,x1:w,y1:6}];
   // the house sits toward the street with a modest front lawn, leaving a real backyard behind it (unless it's placed)
   let hw=Math.round(clamp(w*.42,72,190)),hh=Math.round(clamp(d*.28,46,122)),F=Math.round(clamp(d*.34,64,150)+R()*8);
@@ -322,7 +332,7 @@ function planFurniture(L){
   // and whatever else the yard sets out (dumpsters, benches, bike racks)
   for(const q of L.lprops||[]){const [w,h]=PROP_SIZE[q.k]||[8,8];L.lfurn.push({kind:q.k,x:q.x,y:q.y,w,h,r:hash(q.x,q.y)});}
 }
-const PROP_SIZE={dumpster:[18,10],bench:[14,5],bikerack:[14,4]};
+const PROP_SIZE={dumpster:[18,10],bench:[14,5],bikerack:[14,4],pumpkin:[8,8],bin:[7,9]};
 function drawFurniture(c,f,L){
   const x=f.x,y=f.y,x0=Math.round(x-f.w/2),y0=Math.round(y-f.h/2),plastic=L.hood===0,teak=L.hood===2;
   const wood=teak?['#5a3a1e','#7a5232','#9a6a42']:['#5a3a24','#8a5a36','#a8744a'];
@@ -345,6 +355,9 @@ function drawFurniture(c,f,L){
   else if(f.kind==='dumpster'){c.fillStyle='rgba(0,0,0,.3)';c.fillRect(x0+2,y0+2,f.w,f.h);c.fillStyle='#1f3a2a';c.fillRect(x0-1,y0-1,f.w+2,f.h+2);c.fillStyle='#2f5a3a';c.fillRect(x0,y0,f.w,f.h);
     c.fillStyle='#3f7a4a';c.fillRect(x0,y0,f.w,2);c.fillStyle='#1f3a2a';c.fillRect(x0+Math.round(f.w/2),y0,1,f.h);c.fillStyle='#e8e4d8';c.fillRect(x0+f.w+1,y0+f.h-2,2,2);c.fillStyle='#c9352b';c.fillRect(x0-3,y0+f.h-1,2,1);}
   else if(f.kind==='bench'){c.fillStyle='rgba(0,0,0,.25)';c.fillRect(x0+1,y0+2,f.w,f.h);c.fillStyle='#2a2e33';c.fillRect(x0,y0+f.h-1,1,2);c.fillRect(x0+f.w-1,y0+f.h-1,1,2);c.fillStyle=wood[1];c.fillRect(x0,y0,f.w,f.h-1);c.fillStyle=wood[2];c.fillRect(x0,y0,f.w,1);c.fillRect(x0,y0+2,f.w,1);}
+  else if(f.kind==='pumpkin'){const r=4;c.fillStyle='#8a3d0c';pcircle(c,x,y+1,r);c.fillStyle='#ea7a1c';pcircle(c,x,y,r);c.fillStyle='#ffab4d';c.fillRect(x-r+2,y-r+1,2,1);
+    c.fillStyle='#b8560f';c.fillRect(x-1,y-r+1,1,r*2-1);c.fillRect(x+2,y-r+2,1,r*2-3);c.fillStyle='#3d6a24';c.fillRect(x,y-r-1,2,2);}
+  else if(f.kind==='bin'){c.fillStyle='rgba(0,0,0,.3)';c.fillRect(x0+1,y0+1,f.w,f.h);c.fillStyle='#1d2f3a';c.fillRect(x0,y0,f.w,f.h);c.fillStyle='#2f4a5a';c.fillRect(x0,y0,f.w,2);c.fillStyle='#3d5a6a';c.fillRect(x0+1,y0,f.w-2,1);}
   else if(f.kind==='bikerack'){c.fillStyle='#5d656d';c.fillRect(x0,y0+f.h-1,f.w,1);for(let k=0;k<f.w;k+=4){c.fillStyle='#8f989e';c.fillRect(x0+k,y0,1,f.h);}
     c.fillStyle='#c9352b';c.fillRect(x0+1,y0+1,5,1);c.fillStyle='#1d2326';c.fillRect(x0,y0,2,2);c.fillRect(x0+5,y0,2,2);}
   else if(f.kind==='umbrella'){// a striped canopy over the table, drawn on top of it

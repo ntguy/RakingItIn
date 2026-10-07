@@ -30,7 +30,7 @@ A top-down pixel-art leaf-blowing game. It is a static site with no build step: 
 |---|---|
 | `util.js` | rng (`mulberry`, `rnd`), `hash`, noise, pixel drawing helpers (`pcircle`, `pline`), `fmt$`, `clamp` |
 | `constants.js` | street geometry (`STREET` corners → `ROADS`/`CIRCLES`/`BULB`, `STREET_HOOD`), world size, money/rep tables (`REP_LEVELS`, `lotLocked`), rake/net/pool constants, palettes |
-| `houses.js` | **all house data.** Yard item helpers `B_ Q_ PT_ T_ P_ S_ C_ F_ GT_ PR_ ST_`, the `YARD` table, `HOUSES` (each: face, x, y, w, d, style s, hood, level, name, tag, house rect `h`, door `dx`, `yard` items), `FILLERS` (empty on purpose) |
+| `houses.js` | **all house data.** Yard item helpers `B_ Q_ PT_ T_ P_ S_ C_ F_ GT_ PR_ ST_`, plus `GV_` (gravel drive), `PK_` (parking lot with painted bays), `QC_` (a bed rounded into one of its own corners) and `LP_` (lamp post); `ST_` takes a roof (`'spa'`, `'sport'`); apartments can have back doors `bdx` and a garage mouth `gdx`, the `YARD` table, `HOUSES` (each: face, x, y, w, d, style s, hood, level, name, tag, house rect `h`, door `dx`, `yard` items), `FILLERS` (empty on purpose) |
 | `upgrades.js` | `UPG` store items, `ATT` nozzles, battery (`BATT_BASE`, `capacity`), tarps (`tarpsOwned` = 1 + level) |
 | `neighborhood.js` | world maps `REG` (road/verge/sidewalk/lot), `LOT_AT`, `ZONE_AT`, `WATER`; `buildLots`, sidewalk and traffic path shapes (`streetSide`, `bulbArc`), `orient` (lot local frame → world: `L.T`, `L.toLocal`), `makeLot`, patio furniture (`planFurniture`, `drawFurniture`, `FURN_GROUPS`), nets, pots |
 | `yard-format.js` | turns yard items into a lot: `resolveYardRect` (snapping beds to fences, `sq` keeps a bed square), `applyYard`, `yardFromLot` (for the editor) |
@@ -47,7 +47,7 @@ A top-down pixel-art leaf-blowing game. It is a static site with no build step: 
 | `update.js` | `update(dt)` (the order of every system), `updatePlayer`, `updateCamera` |
 | `render.js` | `renderView` (draw order), leaves, tarps, pools, the player, cars, people, lighting at night, mailboxes and walk lamps |
 | `hud.js` | `updateHUD`/`hudView`: money, battery, house panel, prompts, the goals panel |
-| `editor.js` | yard editor (saved to `localStorage` key `rakingitin-yards-v2`, which overrides a house's built-in yard) |
+| `editor.js` | yard editor, a dev tool players never see: open `index.html#editor`. Left menu: houses, decor (pumpkin, garbage can, dumpster, bench, bike rack, lamp post) and car models; MOVE tool (V) drags anything. SAVE DRAFT keeps edits in `localStorage` key `rakingitin-yards-v3` (only read under `#editor`); COPY YARDS puts the JSON on the clipboard to be built into `houses.js` |
 | `net.js` | online play over PeerJS: the host runs the game, the guest sends inputs and draws snapshots (`netHostTick`, `applySnapshot`) |
 | `tutorial.js` | `TUT_STEPS`, `tutOk` (what's unlocked), the red arrow, the tutorial modals |
 | `goals.js` | `GOAL_DEFS` (27, rewards $50→$500), the active three, tracking hooks (`goalAdd`, `goalBest`, `goalsHouse`), bed counts, `goalRows` (panel lines), `toggleGoals` |
@@ -77,7 +77,7 @@ repo root:
   and mail should reach every mailbox.
 - `node tools/run.js tools/scenarios/goals.js`: house goals, stealing, the night summary.
 - `node tools/run.js tools/scenarios/tutorial.js --hash tutorial`.
-- `node tools/run.js tools/scenarios/map.js --out map.png --size 1070x1190`: the whole map. `lots.js --args
+- `node tools/run.js tools/scenarios/map.js --out map.png --size 1317x1190`: the whole map. `lots.js --args
   '{"ids":[0,1],"sc":2}'` gives house close-ups and `crop.js --args '{"crop":[x,y,w,h]}'` any area. Look at the
   PNG to check layouts.
 - `node tools/run.js tools/scenarios/perf.js --throttle 4 --dpr 2 --size 1920x1080`: profiler readings on a slow CPU.

@@ -81,6 +81,5 @@ function setupTitle(){
   else mkb('START DAY 1','bounce',()=>{goalsLoad(null);beginGame(true);});
   mkb('TUTORIAL','',()=>{location.hash='tutorial';location.reload();});
   mkb('JOIN ONLINE','',openKeypad);
-  mkb('YARD EDITOR','gold',openEditor);
 }
 function beginGame(fresh){titleEl.classList.add('hide');ensureAudio();resetDay();state='play';document.body.style.cursor='none';if(fresh===true)openMenu(true);}

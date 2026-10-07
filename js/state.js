@@ -1,7 +1,7 @@
 'use strict';
 // ============================================================ state
-let P={x:110,y:Y1-26,vx:0,vy:0,walk:0};
-const TR={x:100,y:Y1-34,a:0,v:0,steer:0};
+let P={x:TUTORIAL?110:214,y:Y1-26,vx:0,vy:0,walk:0};
+const TR={x:TUTORIAL?100:204,y:Y1-34,a:0,v:0,steer:0};
 let aim={x:1,y:-.3};
 let power=0,mode=0,battery=BATT_BASE,bed=[1,1],swapT=0,tieT=0,time=0,airCount=0;
 let state='title',driving=false,money=0,day=1,hour=DAY_START,rep=0;

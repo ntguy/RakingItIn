@@ -9,10 +9,10 @@ const TUTORIAL=location.hash==='#tutorial';
 // turning circle. The full game winds through three neighborhoods, one street each: Birch Lane (small, older houses),
 // then Maple Avenue, then Willow Heights (the big houses, ending in the cul-de-sac). HOODS gives each stretch of road
 // (and the bend at its far end) its neighborhood: 0 Birch, 1 Maple, 2 Willow
-const STREET=TUTORIAL?[[0,420],[700,420],[700,960],[1120,960]]:[[0,290],[1150,290],[1150,900],[200,900],[200,1720],[1980,1720]];
+const STREET=TUTORIAL?[[0,420],[700,420],[700,960],[1120,960]]:[[0,290],[1254,290],[1254,900],[304,900],[304,1720],[2084,1720]];
 const STREET_HOOD=TUTORIAL?[1,1,1]:[0,1,1,1,2];
 const HOOD_NAMES=['BIRCH LANE','MAPLE AVENUE','WILLOW HEIGHTS'];
-const Y1=STREET[0][1],XC=STREET[1][0],BULB_R=90,WORLD_W=TUTORIAL?1260:2530,H=TUTORIAL?1100:2380;
+const Y1=STREET[0][1],XC=STREET[1][0],BULB_R=90,WORLD_W=TUTORIAL?1260:2634,H=TUTORIAL?1100:2380;
 const ROADS=STREET.slice(1).map(([x1,y1],i)=>{const [x0,y0]=STREET[i],h=y0===y1?1:0;
   return h?{x0:Math.min(x0,x1),y0:y0-RH,x1:Math.max(x0,x1),y1:y0+RH,h,c:y0,hood:STREET_HOOD[i]}:{x0:x0-RH,y0:Math.min(y0,y1),x1:x0+RH,y1:Math.max(y0,y1),h,c:x0,hood:STREET_HOOD[i]};});
 const BULB={x:STREET[STREET.length-1][0],y:STREET[STREET.length-1][1],r:BULB_R,hood:STREET_HOOD[STREET_HOOD.length-1]};
@@ -60,6 +60,8 @@ const POOL_CHANCE=[0,0,.12,.3,.5,.7,.9,1],POTS_PER=[1,2,2,3,4,5,6,8];
 const POT_PALS=[['#b5562e','#7a3418','#d9774a'],['#2a7a8a','#17505b','#44a3b3'],['#d8d3c4','#8f897d','#f4f1e8'],['#3a3a48','#22222c','#5a5a6c']];
 const POT_FLOWERS=['#e8c23a','#c9352b','#b06cff','#ff8a3a','#fff3d6','#ff5f8f'];
 const POT_COST=[30,60];
+// gravel drives: stones in three greys and the odd dark pebble
+const GRAVEL_COLS=['#958d80','#a39b8d','#857d71','#6a6358'];
 const ROOF_PALS=[
   ['#8e3a33','#6a2824','#b14c40','#8a3a31','#a4473d','#c65e4f'],
   ['#3a5570','#283d52','#4d6d8c','#3a5570','#46647f','#6488a8'],

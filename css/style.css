@@ -141,6 +141,9 @@ body.coop #view1 #goals{width:236px;}
 .pause h2{margin:0;font-size:26px;color:var(--gold);text-shadow:0 3px 0 rgba(0,0,0,.4);}
 .pause .sub{font-size:11px;max-width:560px;}
 .pause .btns{flex-wrap:wrap;justify-content:center;}
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:min(620px,88vw);}
+.mq{display:flex;flex-direction:column;justify-content:center;gap:10px;padding:12px;border-radius:10px;background:rgba(0,0,0,.18);border:2px solid rgba(255,255,255,.06);} .mq .netbox{margin:-4px 0 2px;}
+@media (max-width:520px){.pgrid{grid-template-columns:1fr;}}
 .mlist{display:flex;flex-direction:column;align-items:stretch;gap:12px;width:min(340px,84vw);} .mlist .netbox{margin:-4px 0 2px;}
 .setlist{display:flex;flex-direction:column;align-items:center;gap:16px;width:min(500px,88vw);}
 .setrow{display:flex;align-items:center;gap:10px;width:100%;font-size:13px;letter-spacing:1px;}
@@ -363,7 +366,17 @@ body.pad .padfocus.pf1{outline-color:#6fd18e;}
 .ebtn.warn{background:var(--red);color:#fff;box-shadow:0 3px 0 var(--red-d);}
 .ebtn .k{color:var(--gold);margin-right:4px;}
 .esw{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px;box-shadow:0 0 0 1px rgba(0,0,0,.5);}
-#ewrap{position:relative;flex:1;min-height:0;}
+#ebody{flex:1;min-height:0;display:flex;}
+#eside{position:relative;width:176px;flex:none;overflow-y:auto;padding:8px;background:var(--panel);border-right:3px solid var(--edge);}
+#eside.shut{width:40px;overflow:hidden;}#eside.shut #eMenus{display:none;}
+#eSideTog{display:block;margin:0 0 8px auto;}
+.esec{margin-bottom:8px;}
+.ehead{width:100%;text-align:left;font-family:inherit;font-size:11px;padding:6px 8px;border:0;border-radius:8px;background:var(--panel-in);color:var(--gold);cursor:pointer;box-shadow:0 3px 0 var(--shadow);}
+.elist{display:flex;flex-direction:column;gap:5px;padding:7px 0 2px;}.esec.shut .elist{display:none;}
+.elist .ebtn{text-align:left;overflow:hidden;text-overflow:ellipsis;}
+#ewrap{position:relative;flex:1;min-width:0;min-height:0;}
 #ecan{position:absolute;inset:0;width:100%;height:100%;display:block;}
 .ehint{position:absolute;left:14px;bottom:12px;font-size:10px;color:#9fb5b8;line-height:1.7;pointer-events:none;text-shadow:0 2px 0 #000;}
 .etag{position:absolute;right:14px;bottom:12px;font-size:12px;color:#fff;pointer-events:none;text-align:right;text-shadow:0 2px 0 #000;}
+.esec[data-sec=h] .elist{max-height:34vh;overflow-y:auto;padding-right:3px;}
+.elist .ebtn{flex:none;}

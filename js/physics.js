@@ -165,7 +165,10 @@ function updateLeaves(dt){
   }
   airCount=air;rustleLeaves=slide;leafActive=act;
 }
+// a tunnel's roof goes see-through while anyone's walking under it
+function fadeTunnels(dt){for(const t of TUNNELS){const inside=players.some(pl=>onFoot(pl)&&inRect(t,pl.P.x,pl.P.y,3));t.alpha+=((inside?.25:1)-t.alpha)*Math.min(1,dt*7);}}
 function updateTrees(dt){
+  fadeTunnels(dt);
   const B=blowers(.3);
   for(const t of TREES){
     const cxw=t.x,cyw=t.y-t.lift;let hit=0;

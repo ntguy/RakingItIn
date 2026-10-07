@@ -74,14 +74,16 @@
 <div id="modal" class="overlay hide"></div>
 <div id="editor" class="hide">
   <div class="etop">
-    <div class="egrp" id="eHouses"><span class="label">HOUSE</span></div>
     <div class="egrp" id="eTools"><span class="label">DRAW</span></div>
     <div class="egrp"><button class="ebtn" id="eUndo">UNDO</button><button class="ebtn" id="eClear">CLEAR YARD</button><button class="ebtn" id="eDef">USE DEFAULT</button></div>
-    <div class="egrp" style="margin-left:auto"><button class="ebtn warn" id="eCancel">CANCEL</button><button class="ebtn go" id="eSave">SAVE &amp; EXIT</button></div>
+    <div class="egrp" style="margin-left:auto"><button class="ebtn" id="eCopy">COPY YARDS</button><button class="ebtn warn" id="eCancel">EXIT</button><button class="ebtn go" id="eSave">SAVE DRAFT</button></div>
   </div>
-  <div id="ewrap"><canvas id="ecan"></canvas>
-    <div class="ehint">DRAG A ROUGH BOX TO ADD AN AREA &middot; TREES: CLICK, OR DRAG OUT THE SIZE<br>RIGHT CLICK (OR ERASE TOOL) REMOVES THINGS &middot; CTRL+Z UNDO<br>BEDS NEAR A FENCE SNAP ONTO IT, CORNER BEDS GET ROUNDED, PAVING RUNS OUT TO THE STREET<br>POTS: CLICK FOR A SMALL ONE, DRAG FOR A BIG ONE &middot; EVERY POOL GETS A NET LEFT BESIDE IT<br>SHRUBS: CLICK, OR DRAG OUT THE SIZE &middot; FENCES: DRAG A LINE (THEY RUN STRAIGHT) &middot; BOTH ARE SOLID</div>
-    <div class="etag" id="eTag"></div>
+  <div id="ebody">
+    <div id="eside"><button class="ebtn" id="eSideTog" title="Show or hide this menu">&laquo;</button><div id="eMenus"></div></div>
+    <div id="ewrap"><canvas id="ecan"></canvas>
+      <div class="ehint">MOVE (V): DRAG ANYTHING TO MOVE IT &middot; DRAG A ROUGH BOX TO ADD AN AREA &middot; TREES, SHRUBS: CLICK, OR DRAG OUT THE SIZE<br>RIGHT CLICK (OR ERASE TOOL) REMOVES THINGS &middot; CTRL+Z UNDO &middot; DECOR AND CARS ARE IN THE MENU ON THE LEFT: CLICK TO PLACE, CARS TURN TO WHERE YOU DRAG<br>BEDS NEAR A FENCE SNAP ONTO IT, CORNER BEDS GET ROUNDED, PAVING RUNS OUT TO THE STREET<br>POTS: CLICK FOR A SMALL ONE, DRAG FOR A BIG ONE &middot; EVERY POOL GETS A NET LEFT BESIDE IT &middot; FENCES: DRAG A LINE (THEY RUN STRAIGHT)</div>
+      <div class="etag" id="eTag"></div>
+    </div>
   </div>
 </div>
 

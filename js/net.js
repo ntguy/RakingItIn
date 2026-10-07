@@ -245,7 +245,8 @@ function guestFrame(dt){
     updateCamera(dt);viewOut(cur);
   }else if(state!=='play'||NET.localMenu){NET.acc+=dt;if(NET.acc>=.2){NET.acc=0;netSend({t:'i',mx:0,my:0,th:0,ax:R2(aim.x),ay:R2(aim.y),lo:0,hi:0,cam:[Math.round(camX),Math.round(camY),VW,VH],ev:[]});}}
   updateParticles(dt);
-  // trees go see-through over either player
+  // trees (and tunnel roofs) go see-through over either player
+  fadeTunnels(dt);
   for(const t of TREES){const cxw=t.x,cyw=t.y-t.lift;let inside=false;for(const pl of players){if(!onFoot(pl))continue;const dx=pl.P.x-cxw,dy=pl.P.y-12-cyw;if((dx*dx)/(t.r*t.r)+(dy*dy)/(t.r*t.r*.9)<1.15)inside=true;}
     t.alpha+=((inside?.28:.95)-t.alpha)*Math.min(1,dt*7);}
 }

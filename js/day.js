@@ -57,7 +57,8 @@ function openMenu(first,owner){
   if(state!=='play')return;
   menuOwner=owner||players[0];return withPl(menuOwner,()=>openMenuAs(first));
 }
-// the pause menu has three pages: the main list, the controls sheet and settings (the first-play screen is just the controls)
+// the pause menu's pages: the main grid, the controls sheet, settings and the main-menu check (the first-play screen is
+// just the controls)
 let menuPage='main';
 function openMenuAs(first){
   state='menu';menuFirst=!!first;dropInputs();for(const k in keys)keys[k]=false;document.body.style.cursor='default';
@@ -67,7 +68,7 @@ function openMenuAs(first){
 }
 const renderMenu=()=>withPl(menuOwner,renderMenuAs);
 function menuGo(page){const from=menuPage;menuPage=page;renderMenu();blip(560,.04,'square',.04);
-  if(page==='main'&&inputMode==='pad'){const b=document.getElementById(from==='controls'?'mCtl':from==='settings'?'mSet':'mResume');if(b)setFocus(b);}}
+  if(page==='main'&&inputMode==='pad'){const b=document.getElementById(from==='controls'?'mCtl':from==='settings'?'mSet':from==='quit'?'mMain':'mResume');if(b)setFocus(b);}}
 // Escape / B: back to the main list, or out of the menu from there
 function menuBack(){if(menuFirst||menuPage==='main')closeMenu();else menuGo('main');}
 function volRow(k,label,note){const v=Math.round(settings[k]*100);
@@ -84,19 +85,22 @@ function renderMenuAs(){
   else if(TUT.on)html=`<h2>PAUSED</h2><div class="sub">TUTORIAL</div><div class="mlist">
     <button class="btn green" id="mResume">RESUME ${G('back')}</button><button class="btn" id="mCtl">CONTROLS</button>
     <button class="btn" id="mSet">SETTINGS</button><button class="btn red" id="mExitTut">EXIT TUTORIAL</button></div>`;
-  else html=`<h2>PAUSED</h2><div class="sub">DAY ${day} &middot; ${fmtHour(hour)}</div><div class="mlist">
-    <button class="btn green" id="mResume">RESUME ${G('back')}</button>
-    <button class="btn" id="mCtl">CONTROLS</button>
-    <button class="btn" id="mSet">SETTINGS</button>
-    ${guest?'':'<button class="btn" id="mNet">HOST ONLINE</button><div class="netbox" id="netBox"></div>'}
-    ${players.length<2&&!NET.role?'<button class="btn gold" id="mAdd">LOCAL SPLITSCREEN</button>':''}
-    ${cur!==players[0]&&!guest?'<button class="btn gold" id="mLeave">LEAVE GAME</button>':''}
-    ${guest?'<button class="btn red" id="mNetLeave">LEAVE ONLINE GAME</button>':'<button class="btn red" id="mEnd">END THE DAY</button>'}</div>`;
+  else if(menuPage==='quit')html=`<h2>BACK TO THE MAIN MENU?</h2><div class="sub">${guest?'YOU\'LL LEAVE THE ONLINE GAME.':`TODAY ISN'T SAVED UNTIL THE DAY ENDS, SO NEXT TIME YOU'LL START DAY ${day} OVER.`}</div>
+    <div class="btns"><button class="btn green" id="mBack">KEEP PLAYING ${G('back')}</button><button class="btn red" id="mQuit">MAIN MENU</button></div>`;
+  // the main page is a grid of four: playing on, how it plays, playing with others, and leaving
+  else{const online=!guest&&(NET.role==='host'||players.length<2),split=players.length<2&&!NET.role,leave=cur!==players[0]&&!guest;
+    html=`<h2>PAUSED</h2><div class="sub">DAY ${day} &middot; ${fmtHour(hour)}</div><div class="pgrid">
+    <div class="mq"><button class="btn green" id="mResume">RESUME ${G('back')}</button>${guest?'':'<button class="btn red" id="mEnd">END THE DAY</button>'}</div>
+    <div class="mq"><button class="btn" id="mCtl">CONTROLS</button><button class="btn" id="mSet">SETTINGS</button></div>
+    <div class="mq">${online?'<button class="btn" id="mNet">HOST ONLINE</button><div class="netbox" id="netBox"></div>':''}${split?'<button class="btn gold" id="mAdd">LOCAL SPLITSCREEN</button>':''}
+      ${leave?'<button class="btn gold" id="mLeave">LEAVE GAME</button>':''}${guest?'<button class="btn red" id="mNetLeave">LEAVE ONLINE GAME</button>':''}
+      ${online||split||leave||guest?'':'<div class="sub">TWO PLAYERS ON THIS SCREEN</div>'}</div>
+    <div class="mq"><button class="btn" id="mMain">MAIN MENU</button></div></div>`;}
   modalEl.innerHTML=`<div class="panel pause">${html}</div>`;
   modalEl.classList.remove('hide');
   const on=(id,fn)=>{const b=document.getElementById(id);if(b)b.onclick=fn;};
   if(document.getElementById('ctlWrap')){modalEl.querySelectorAll('[data-cv]').forEach(b=>b.onclick=()=>pickCtl(b.dataset.cv));showCtl(ctlView);}
-  on('mResume',closeMenu);on('mExitTut',exitTutorial);on('mBack',()=>menuGo('main'));on('mCtl',()=>menuGo('controls'));on('mSet',()=>menuGo('settings'));
+  on('mResume',closeMenu);on('mExitTut',exitTutorial);on('mBack',()=>menuGo('main'));on('mCtl',()=>menuGo('controls'));on('mSet',()=>menuGo('settings'));on('mMain',()=>menuGo('quit'));on('mQuit',toMainMenu);
   on('mEnd',()=>{modalEl.classList.add('hide');state='play';endDay();});on('mNetLeave',guestLeave);
   on('mAdd',()=>{modalEl.classList.add('hide');state='play';document.body.style.cursor='none';joinPlayer({t:'wait'});});
   {const who=cur;on('mLeave',()=>{modalEl.classList.add('hide');state='play';leavePlayer(who);});}
@@ -108,6 +112,9 @@ function renderMenuAs(){
   modalEl.querySelectorAll('[data-vr]').forEach(r=>{r.oninput=()=>setVol(r.dataset.vr,r.value/100);if(r.dataset.vr==='sfx')r.onchange=()=>blip(660,.05,'square',.05);});
   refreshMenuNet();
 }
+// back to the title screen: a fresh page load, as the tutorial and the editor do (the save from the start of the day
+// stands; a guest leaves the online game)
+function toMainMenu(){if(NET.role==='guest'){guestLeave();return;}history.replaceState(null,'',location.pathname+location.search);location.reload();}
 function closeMenu(){if(state!=='menu')return;menuPage='main';NET.localMenu=false;modalEl.classList.add('hide');state='play';document.body.style.cursor='none';}
 function endDay(){
   if(state!=='play'||TUT.on)return;
