@@ -35,30 +35,43 @@ const P_=(x,y,big)=>({t:'pot',x,y,big:!!big}),T_=(x,y,r,pal)=>({t:'tree',x,y,r,p
 const gateFences=(w,hx0,hx1,y,gl,gr)=>[F_(6,gl[0],y),GT_(gl[0],gl[1],y-3),F_(gl[1],hx0,y),F_(hx1,gr[0],y),GT_(gr[0],gr[1],y-3),F_(gr[1],w-6,y)];
 const YARD={
   // a tiny lot: one rounded bed in the front corner and a strip along the back fence
-  kowalski:{h:[40,50,80,46],dx:70,yard:[B_('path',65,102,75,160),B_('mulch',104,112,154,160),B_('mulch',30,6,130,22),T_(132,62,20,2),T_(30,122,18,0),P_(90,104)]},
+  kowalski:{h:[40,50,80,46],dx:70,yard:[
+    {t:'path',x0:65,y0:102,x1:75,y1:160}, {t:'mulch',x0:115,y0:112,x1:165,y1:160}, {t:'mulch',x0:30,y0:6,x1:130,y1:22},
+    {t:'tree',x:132,y:62,r:20,pal:2}, {t:'tree',x:30,y:122,r:18,pal:0}, {t:'pot',x:90,y:104,big:false}, {t:'prop',k:'bin',x:42,y:43}]},
   // a duplex: a strip down the side fence, a corner of wildflowers out back, and a pot either side of the walk
-  baker:{h:[36,56,118,44],dx:66,yard:[B_('path',61,106,71,160),B_('mulch',164,30,184,150),B_('natural',6,6,60,44),B_('mulch',40,104,56,118),B_('mulch',76,104,150,118),
-    T_(100,26,20,1),T_(36,128,18,3),P_(52,126),P_(140,126)]},
+  baker:{h:[36,56,118,44],dx:66,yard:[
+    {t:'path',x0:61,y0:106,x1:71,y1:160}, {t:'tree',x:100,y:26,r:20,pal:1}, {t:'pot',x:116,y:113,big:false}, {t:'pot',x:146,y:112,big:false},
+    {t:'natural',x0:5,y0:4,x1:49,y1:34}, {t:'garden',x0:7,y0:37,x1:59,y1:54}, {t:'fence',x0:34,y0:56,x1:6,y1:54}, {t:'fence',x0:7,y0:35,x1:58,y1:32},
+    {t:'tree',x:165,y:65,r:9,pal:2}, {t:'pool',x0:156,y0:7,x1:184,y1:33}, {t:'prop',k:'bench',x:131,y:107}, {t:'mulch',x0:8,y0:61,x1:33,y1:77},
+    {t:'tree',x:47,y:133,r:9,pal:2}, {t:'tree',x:87,y:133,r:10,pal:0}]},
   // a rental: a bed down one side out front, a corner bed out back, and a car parked on the grass
-  flynn:{h:[46,70,90,50],dx:88,yard:[B_('path',83,126,93,180),Q_('mulch',6,100,26,180),B_('mulch',130,6,176,50),C_(152,148,true,-1),
-    T_(40,40,22,0),T_(100,30,16,2),T_(36,150,18,1),P_(108,130)]},
+  flynn:{h:[46,70,90,50],dx:88,yard:[
+    {t:'path',x0:83,y0:126,x1:93,y1:180}, {t:'mulch',x0:6,y0:100,x1:26,y1:180,sq:true}, {t:'mulch',x0:130,y0:6,x1:176,y1:50},
+    {t:'car',x:152,y:148,vert:true,dir:-1}, {t:'tree',x:60,y:38,r:22,pal:0}, {t:'tree',x:100,y:30,r:16,pal:2}, {t:'tree',x:36,y:150,r:18,pal:1},
+    {t:'car',x:14,y:26,vert:true,dir:-1,k:'o'}, {t:'shrub',x:28,y:11,r:7}, {t:'shrub',x:28,y:21,r:7}, {t:'shrub',x:28,y:32,r:7},
+    {t:'shrub',x:27,y:44,r:7}, {t:'prop',k:'pumpkin',x:15,y:50}, {t:'patio',x0:69,y0:48,x1:112,y1:67}]},
   // a bungalow: beds along the front, and an island bed in the middle of the backyard between two trees
   abernathy:{h:[44,76,100,50],dx:80,yard:[B_('path',75,132,85,180),B_('drive',150,126,180,180),C_(165,160,true,-1),B_('mulch',48,130,70,146),B_('mulch',90,130,140,146),
     Q_('mulch',70,22,120,52),T_(30,40,20,0),T_(160,44,20,2),P_(60,162)]},
   // a fence across the backyard with a gate each side; corner beds out back and one by the front walk
-  ramirez:{h:[50,64,90,48],dx:82,yard:[B_('path',77,118,87,170),B_('drive',146,112,176,170),C_(161,148,true,-1),
-    ...gateFences(200,50,140,88,[18,38],[156,176]),B_('mulch',6,6,56,46),B_('mulch',150,6,194,46),B_('mulch',54,116,72,130),
-    T_(100,36,22,1),T_(28,142,18,0),P_(98,124)]},
+  ramirez:{h:[50,64,90,48],dx:82,yard:[
+    {t:'path',x0:77,y0:118,x1:87,y1:170}, {t:'drive',x0:146,y0:112,x1:176,y1:170}, {t:'car',x:161,y:148,vert:true,dir:-1},
+    {t:'fence',x0:6,y0:88,x1:18,y1:88}, {t:'gate',x0:18,x1:38,y:85}, {t:'fence',x0:38,y0:88,x1:50,y1:88}, {t:'fence',x0:140,y0:88,x1:156,y1:88},
+    {t:'gate',x0:156,x1:176,y:85}, {t:'fence',x0:176,y0:88,x1:194,y1:88}, {t:'mulch',x0:6,y0:6,x1:56,y1:46}, {t:'mulch',x0:150,y0:6,x1:194,y1:46},
+    {t:'tree',x:90,y:38,r:22,pal:1}, {t:'tree',x:28,y:142,r:18,pal:0}, {t:'pot',x:95,y:166,big:false}, {t:'prop',k:'bench',x:106,y:10},
+    {t:'tree',x:169,y:31,r:5,pal:0}]},
   // a round above-ground pool out back, right up against a huge old tree
   nguyen:{h:[40,104,100,50],dx:78,yard:[
-    {t:'path',x0:73,y0:160,x1:83,y1:180}, {t:'pool',x0:103,y0:16,x1:153,y1:66,round:true}, {t:'tree',x:62,y:52,r:40,pal:0},
-    {t:'tree',x:178,y:29,r:7,pal:2}, {t:'mulch',x0:6,y0:128,x1:36,y1:180}, {t:'pot',x:132,y:165,big:false}, {t:'pot',x:75,y:98,big:false},
+    {t:'path',x0:73,y0:160,x1:83,y1:180}, {t:'pool',x0:108,y0:10,x1:158,y1:60,round:true}, {t:'tree',x:62,y:52,r:40,pal:0},
+    {t:'tree',x:178,y:35,r:7,pal:2}, {t:'mulch',x0:6,y0:128,x1:36,y1:180}, {t:'pot',x:132,y:165,big:false}, {t:'pot',x:91,y:99,big:false},
     {t:'mulch',x0:143,y0:134,x1:194,y1:156}, {t:'shrub',x:145,y:163,r:7}, {t:'shrub',x:159,y:163,r:7}, {t:'shrub',x:173,y:163,r:7},
-    {t:'shrub',x:187,y:163,r:7}, {t:'patio',x0:69,y0:80,x1:114,y1:102}]},
+    {t:'shrub',x:187,y:163,r:7}, {t:'patio',x0:39,y0:80,x1:84,y1:102}, {t:'prop',k:'bin',x:110,y:173}, {t:'prop',k:'bikerack',x:108,y:99}]},
   // a long vegetable garden all along the back fence, with mulch only in the two back corners
-  lindqvist:{h:[64,110,112,58],dx:104,yard:[B_('path',99,174,109,220),B_('drive',184,168,216,220),C_(200,198,true,-1),
-    B_('garden',52,6,188,40),B_('mulch',6,6,52,52),B_('mulch',188,6,234,52),B_('mulch',68,172,94,188),
-    T_(36,92,22,0),T_(206,92,22,3),T_(124,70,18,1),P_(120,52)]},
+  lindqvist:{h:[64,110,112,58],dx:104,yard:[
+    {t:'path',x0:99,y0:174,x1:109,y1:220}, {t:'drive',x0:184,y0:168,x1:216,y1:220}, {t:'car',x:200,y:198,vert:true,dir:-1},
+    {t:'garden',x0:52,y0:6,x1:188,y1:40}, {t:'mulch',x0:6,y0:6,x1:52,y1:52}, {t:'mulch',x0:188,y0:6,x1:234,y1:52}, {t:'tree',x:36,y:92,r:22,pal:0},
+    {t:'tree',x:206,y:92,r:22,pal:3}, {t:'tree',x:124,y:70,r:18,pal:1}, {t:'pot',x:42,y:87,big:false}, {t:'natural',x0:184,y0:134,x1:216,y1:169},
+    {t:'prop',k:'bin',x:93,y:212}, {t:'prop',k:'bin',x:83,y:212}]},
   // down the left side of the backyard, five beds stacked top to bottom (mulch, garden, mulch, garden, mulch) with
   // nothing between them; a big tree beside them and a small one above and below it
   osei:{h:[72,124,80,44],dx:100,yard:[B_('path',95,174,105,200),
@@ -188,40 +201,58 @@ const HOUSES=TUTORIAL?[
   // ---- Willow Heights
   // flower beds everywhere, a hedge of shrubs, and one enormous bed along the back fence
   {face:'S',x:404,y:1288,w:440,d:360,s:5,hood:2,level:3,name:'THE PATELS',tag:'CRAFTSMAN',h:[140,150,160,90],dx:198,yard:[
-    B_('path',193,246,203,360),B_('drive',306,240,346,360),C_(326,292,true,-1),
-    B_('mulch',60,6,380,40,1),B_('mulch',6,280,90,360,1),PT_(172,84,268,144,'brick',true),B_('mulch',144,244,186,262,1),B_('mulch',210,244,296,262,1),
-    B_('garden',350,100,430,180),
-    S_(112,196,8),S_(112,232,8),S_(118,160,7),S_(330,214,7),
-    T_(60,130,28,0),T_(396,262,24,2),T_(310,96,24,3),
-    P_(178,274,1),P_(220,274,1),P_(342,96),P_(346,188),P_(120,300),P_(272,300)]},
+    {t:'path',x0:193,y0:246,x1:203,y1:360}, {t:'drive',x0:306,y0:240,x1:346,y1:360}, {t:'car',x:326,y:292,vert:true,dir:-1},
+    {t:'mulch',x0:60,y0:6,x1:380,y1:40,fl:true}, {t:'mulch',x0:6,y0:280,x1:90,y1:360,fl:true},
+    {t:'patio',x0:172,y0:69,x1:268,y1:129,mat:'brick',round:true}, {t:'mulch',x0:144,y0:244,x1:186,y1:262,fl:true},
+    {t:'mulch',x0:210,y0:244,x1:296,y1:262,fl:true}, {t:'garden',x0:350,y0:100,x1:430,y1:180}, {t:'shrub',x:112,y:196,r:8},
+    {t:'shrub',x:112,y:232,r:8}, {t:'shrub',x:118,y:160,r:7}, {t:'tree',x:46,y:247,r:28,pal:0}, {t:'tree',x:377,y:218,r:24,pal:2},
+    {t:'pot',x:178,y:274,big:true}, {t:'pot',x:220,y:274,big:true}, {t:'pot',x:113,y:217,big:false}, {t:'pot',x:116,y:180,big:false},
+    {t:'prop',k:'bikerack',x:311,y:237}, {t:'prop',k:'bench',x:391,y:96}, {t:'pot',x:411,y:95,big:false}, {t:'pot',x:369,y:95,big:false},
+    {t:'path',x0:212,y0:127,x1:230,y1:150}, {t:'tree',x:306,y:97,r:43,pal:1}, {t:'tree',x:47,y:159,r:15,pal:2}, {t:'tree',x:59,y:75,r:15,pal:0}]},
   // a big pool with a tree hanging over it, a stone patio and two wildflower meadows
   {face:'S',x:1284,y:1248,w:500,d:400,s:5,hood:2,level:4,name:'THE NAKAMURAS',tag:'TUDOR',h:[60,170,170,92],dx:121,yard:[
-    B_('path',116,268,126,400),B_('drive',236,262,276,400),C_(256,312,true,-1),
-    B_('pool',270,30,450,140),PT_(300,152,470,200,'stone'),
-    B_('natural',6,6,140,120),B_('natural',380,290,494,400),
-    B_('mulch',64,266,110,284,1),B_('mulch',130,266,226,284,1),B_('mulch',6,190,40,320),
-    S_(300,236,8),S_(340,236,8),S_(380,236,8),
-    T_(200,64,30,0),T_(470,242,26,1),T_(332,330,24,2),T_(66,360,22,3),
-    P_(262,32),P_(458,30),P_(476,214),P_(104,300),P_(146,300,1),P_(296,206,1)]},
+    {t:'path',x0:116,y0:268,x1:126,y1:400}, {t:'drive',x0:236,y0:262,x1:276,y1:400}, {t:'car',x:256,y:312,vert:true,dir:-1},
+    {t:'pool',x0:270,y0:30,x1:450,y1:140}, {t:'patio',x0:275,y0:153,x1:445,y1:201,mat:'stone',round:false}, {t:'natural',x0:6,y0:6,x1:140,y1:120},
+    {t:'natural',x0:380,y0:290,x1:494,y1:400}, {t:'mulch',x0:64,y0:266,x1:110,y1:284,fl:true}, {t:'mulch',x0:130,y0:266,x1:226,y1:284,fl:true},
+    {t:'shrub',x:303,y:390,r:8}, {t:'shrub',x:331,y:390,r:8}, {t:'shrub',x:360,y:389,r:8}, {t:'tree',x:470,y:242,r:26,pal:1},
+    {t:'tree',x:66,y:360,r:22,pal:3}, {t:'pot',x:59,y:275,big:false}, {t:'pot',x:229,y:277,big:true}, {t:'pot',x:454,y:159,big:true},
+    {t:'pot',x:455,y:200,big:true}, {t:'tree',x:210,y:55,r:51,pal:2}, {t:'tree',x:354,y:283,r:40,pal:3}, {t:'patio',x0:59,y0:132,x1:114,y1:166},
+    {t:'tree',x:470,y:55,r:11,pal:3}, {t:'prop',k:'bench',x:68,y:136}, {t:'prop',k:'bench',x:104,y:136}, {t:'prop',k:'bin',x:224,y:161},
+    {t:'prop',k:'bin',x:214,y:161}, {t:'lamp',x:120,y:160}]},
   // the manor: a formal garden by the front walk, a meadow behind, a pool and patio, and a bed in every corner
   {face:'N',x:404,y:1792,w:560,d:450,s:6,hood:2,level:4,name:'THE WHITFORDS',tag:'MANOR',h:[170,140,190,112],dx:238,yard:[
-    B_('path',233,258,243,450),B_('drive',380,252,430,450),C_(405,302,true,-1),C_(405,360,true,-1),
-    B_('garden',270,326,362,404),B_('pool',380,20,540,120),PT_(380,130,540,172,'brick'),B_('natural',180,20,340,100),
-    B_('mulch',6,364,100,450,1),B_('mulch',6,6,100,92),B_('mulch',174,256,226,276,1),B_('mulch',250,256,356,276,1),Q_('mulch',524,220,554,420),
-    S_(150,172,9),S_(150,226,9),S_(150,282,8),S_(370,206,6),
-    T_(60,200,30,0),T_(462,230,28,3),T_(150,400,24,1),T_(468,400,22,2),
-    P_(374,18),P_(546,22),P_(222,294,1),P_(254,294,1),P_(264,322),P_(266,414),P_(150,130)]},
+    {t:'path',x0:233,y0:258,x1:243,y1:450}, {t:'drive',x0:374,y0:236,x1:424,y1:450}, {t:'car',x:409,y:302,vert:true,dir:-1},
+    {t:'car',x:387,y:302,vert:true,dir:-1}, {t:'mulch',x0:250,y0:256,x1:356,y1:276,fl:true}, {t:'mulch',x0:6,y0:364,x1:100,y1:450,fl:true},
+    {t:'mulch',x0:6,y0:6,x1:100,y1:92}, {t:'garden',x0:8,y0:112,x1:106,y1:190}, {t:'natural',x0:150,y0:8,x1:340,y1:56},
+    {t:'patio',x0:206,y0:84,x1:330,y1:136,mat:'stone',round:false}, {t:'pool',x0:384,y0:30,x1:526,y1:112},
+    {t:'patio',x0:376,y0:120,x1:538,y1:160,mat:'brick',round:false}, {t:'shrub',x:150,y:172,r:9}, {t:'shrub',x:150,y:226,r:9},
+    {t:'shrub',x:150,y:198,r:8}, {t:'tree',x:77,y:319,r:30,pal:0}, {t:'tree',x:363,y:33,r:28,pal:3}, {t:'tree',x:160,y:389,r:22,pal:1},
+    {t:'tree',x:324,y:390,r:22,pal:2}, {t:'pot',x:534,y:106,big:false}, {t:'pot',x:533,y:40,big:false}, {t:'pot',x:222,y:294,big:true},
+    {t:'pot',x:254,y:294,big:true}, {t:'pot',x:210,y:92,big:false}, {t:'pot',x:326,y:92,big:false}, {t:'tree',x:98,y:87,r:40,pal:0},
+    {t:'tree',x:186,y:111,r:9,pal:1}, {t:'fence',x0:168,y0:252,x1:7,y1:250}, {t:'fence',x0:422,y0:235,x1:554,y1:235},
+    {t:'fence',x0:374,y0:235,x1:363,y1:235}, {t:'tree',x:486,y:368,r:36,pal:1}, {t:'mulch',x0:6,y0:257,x1:233,y1:278},
+    {t:'prop',k:'pumpkin',x:209,y:264}, {t:'prop',k:'pumpkin',x:190,y:262}, {t:'prop',k:'bin',x:218,y:444}, {t:'prop',k:'bin',x:204,y:444},
+    {t:'tree',x:478,y:176,r:7,pal:2}]},
   // the estate: a loop drive, gardens either side of the front walk, a huge pool, a meadow and beds all round
   {face:'N',x:1104,y:1792,w:860,d:560,s:7,hood:2,level:5,name:'THE VANDERMEERS',tag:'THE ESTATE',h:[280,170,280,130],dx:420,yard:[
-    B_('path',415,306,425,560),B_('drive',290,330,330,560),B_('drive',510,330,550,560),B_('drive',290,330,550,360),
-    C_(352,345,false,1),C_(476,345,false,1),C_(530,430,true,-1),
-    B_('garden',340,392,400,500),B_('garden',440,392,500,500),B_('garden',30,30,180,110),
-    B_('pool',560,30,800,150),PT_(560,160,800,212,'tile'),PT_(330,94,510,166,'stone',true),B_('natural',600,240,780,380),
-    B_('mulch',6,452,128,560,1),B_('mulch',732,452,854,560,1),B_('mulch',240,6,500,26,1),Q_('mulch',6,170,34,370),Q_('mulch',826,250,854,390),
-    B_('mulch',284,304,404,322,1),B_('mulch',436,304,556,322,1),
-    S_(250,200,10),S_(250,262,10),S_(232,330,9),S_(578,236,9),S_(578,290,9),S_(620,410,8),
-    T_(120,250,34,0),T_(820,100,30,1),T_(240,470,26,2),T_(620,470,26,3),T_(420,48,30,0),T_(200,74,26,2),T_(720,300,28,1),T_(110,420,26,3),
-    P_(318,104,1),P_(522,104,1),P_(556,26),P_(804,26),P_(556,214),P_(804,214),P_(404,334),P_(436,334),P_(336,388),P_(504,388)]},
+    {t:'path',x0:415,y0:306,x1:425,y1:560}, {t:'drive',x0:290,y0:330,x1:330,y1:560}, {t:'drive',x0:510,y0:330,x1:550,y1:560},
+    {t:'drive',x0:290,y0:330,x1:550,y1:360}, {t:'car',x:386,y:347,vert:false,dir:1}, {t:'car',x:457,y:347,vert:false,dir:1},
+    {t:'car',x:530,y:430,vert:true,dir:-1}, {t:'garden',x0:340,y0:392,x1:400,y1:500}, {t:'garden',x0:440,y0:392,x1:500,y1:500},
+    {t:'pool',x0:560,y0:30,x1:800,y1:150}, {t:'patio',x0:561,y0:168,x1:801,y1:220,mat:'tile',round:false},
+    {t:'patio',x0:330,y0:94,x1:510,y1:166,mat:'stone',round:true}, {t:'natural',x0:645,y0:242,x1:825,y1:382},
+    {t:'mulch',x0:6,y0:452,x1:128,y1:560,fl:true}, {t:'mulch',x0:732,y0:452,x1:854,y1:560,fl:true}, {t:'mulch',x0:826,y0:242,x1:854,y1:382,sq:true},
+    {t:'mulch',x0:284,y0:304,x1:404,y1:322,fl:true}, {t:'mulch',x0:436,y0:304,x1:556,y1:322,fl:true}, {t:'shrub',x:273,y:314,r:9},
+    {t:'shrub',x:565,y:315,r:9}, {t:'tree',x:184,y:247,r:34,pal:0}, {t:'tree',x:820,y:100,r:30,pal:1}, {t:'tree',x:164,y:494,r:26,pal:2},
+    {t:'tree',x:420,y:48,r:30,pal:0}, {t:'tree',x:187,y:91,r:26,pal:2}, {t:'tree',x:675,y:272,r:28,pal:1}, {t:'tree',x:56,y:418,r:26,pal:3},
+    {t:'pot',x:345,y:133,big:true}, {t:'pot',x:498,y:134,big:true}, {t:'pot',x:556,y:26,big:false}, {t:'pot',x:804,y:26,big:false},
+    {t:'pot',x:556,y:214,big:false}, {t:'pot',x:804,y:214,big:false}, {t:'pot',x:292,y:313,big:false}, {t:'pot',x:547,y:314,big:false},
+    {t:'tree',x:763,y:428,r:48,pal:1}, {t:'fence',x0:858,y0:556,x1:733,y1:556}, {t:'fence',x0:2,y0:556,x1:130,y1:558},
+    {t:'path',x0:418,y0:149,x1:799,y1:168}, {t:'garden',x0:74,y0:67,x1:169,y1:281}, {t:'path',x0:171,y0:150,x1:417,y1:167},
+    {t:'shrub',x:576,y:291,r:16}, {t:'shrub',x:260,y:290,r:16}, {t:'fence',x0:74,y0:69,x1:63,y1:280}, {t:'fence',x0:170,y0:149,x1:177,y1:69},
+    {t:'fence',x0:170,y0:279,x1:183,y1:169}, {t:'mulch',x0:7,y0:3,x1:168,y1:67}, {t:'tree',x:59,y:93,r:22,pal:1}, {t:'tree',x:59,y:243,r:23,pal:0},
+    {t:'tree',x:370,y:520,r:17,pal:0}, {t:'tree',x:472,y:521,r:17,pal:3}, {t:'pot',x:389,y:380,big:true}, {t:'pot',x:450,y:379,big:true},
+    {t:'lamp',x:282,y:416}, {t:'lamp',x:557,y:417}, {t:'lamp',x:557,y:448}, {t:'lamp',x:557,y:484}, {t:'lamp',x:556,y:517}, {t:'lamp',x:282,y:448},
+    {t:'lamp',x:282,y:483}, {t:'lamp',x:284,y:519}, {t:'lamp',x:534,y:516}]},
   // ---- the rest of each street
   {s:0,hood:0,level:0,face:'S',x:116,y:58,w:160,d:160,name:'THE KOWALSKIS',tag:'TINY HOUSE',...YARD.kowalski},
   {s:1,hood:0,level:0,face:'S',x:744,y:48,w:200,d:170,name:'THE RAMIREZES',tag:'SHOTGUN HOUSE',...YARD.ramirez},
