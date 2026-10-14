@@ -229,7 +229,7 @@ function renderNight(){
   modalEl.innerHTML=`<div class="night ${nightTab==='shop'?'wide':''}">
     <div class="logo" style="font-size:40px">${[...'NIGHT '+day].map((c,i)=>c===' '?'<span style="width:.4em"></span>':`<span style="animation-delay:${-i*.18}s">${c}</span>`).join('')}</div>
     <div class="tabbody">${body}</div>
-    <div class="nightfoot ${nightTab==='sum'?'flat':''}">${nightTab==='shop'?`<button class="btn small" id="bBack">&larr; SUMMARY ${G('tabL')}</button><button class="btn big green bounce" id="bDay">START DAY ${day+1} ${G('start')}</button>`:`<button class="btn big gold bounce" id="bNext">HARDWARE STORE &rarr; ${G('start')}</button>`}</div></div>`;
+    <div class="nightfoot ${nightTab==='sum'?'flat':''}">${nightTab==='shop'?`<button class="btn small" id="bBack">&larr; SUMMARY ${G('tabL')}</button><button class="btn big green bounce" id="bDay">START DAY ${day+1} ${G('start')}</button>${coop()?'':`<div class="bankchip"><b>${fmt$(withPl(players[0],()=>money))}</b></div>`}`:`<button class="btn big gold bounce" id="bNext">HARDWARE STORE &rarr; ${G('start')}</button>`}</div></div>`;
   const plOf=b=>players[+(b.dataset.pl||0)]||players[0];
   modalEl.querySelectorAll('[data-up]').forEach(b=>b.onclick=()=>buyUpgrade(plOf(b),b.dataset.up));
   modalEl.querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>{if(NET.role==='guest'){if(plOf(b)===players[1])netSend({t:'act',a:'buy',id:b.dataset.buy});return;}const a=ATT.find(x=>x.id===b.dataset.buy);let ok=false;withPl(plOf(b),()=>{if(!owned.includes(a.id)&&money>=a.price){money-=a.price;owned.push(a.id);equipped=a.id;ok=true;}});if(ok){chaChing();renderNight();}});
@@ -257,15 +257,14 @@ function storeCards(pl,ids,withAtts){
         <div class="pips">${Array.from({length:u.max},(_,i)=>`<i class="${i<lvl?'on':''}"></i>`).join('')}</div>
         <button class="btn small ${can?'green':''}" data-up="${id}"${da} ${can?'':'disabled'}>${maxed?'MAXED':'BUY '+fmt$(price)}</button></div>`;};
   // the upgrades sit in four themed boxes (2 x 2 on a wide screen), each showing only the ones this column offers
-  const cards=`<div class="ugroups">${UPG_GROUPS.map(([nm,gids])=>{const g=gids.filter(id=>ids.includes(id));return g.length?`<div class="ugroup"><div class="sect">${nm}</div><div class="cards">${g.map(card).join('')}</div></div>`:'';}).join('')}</div>`;
+  const cards=`<div class="ugroups">${UPG_GROUPS.map(([nm,gids],gi)=>{const g=gids.filter(id=>ids.includes(id));return g.length?`<div class="ugroup g${gi}"><div class="sect">${nm}</div><div class="cards">${g.map(card).join('')}</div></div>`:'';}).join('')}</div>`;
   if(!withAtts)return cards;
   const atts=ATT.map(a=>{const own=owned.includes(a.id),can=!own&&money>=a.price;
       const btn=own?'<button class="btn small" disabled>OWNED</button>':`<button class="btn small ${can?'green':''}" data-buy="${a.id}"${da} ${can?'':'disabled'}>BUY ${fmt$(a.price)}</button>`;
       return `<div class="ucard"><div class="t"><span>${a.name}</span><span class="ic" style="background:${a.tip}">${a.id==='fan'?'&lt;':a.id==='jet'?'!':a.id==='long'?'=':a.id==='vortex'?'@':a.id==='eco'?'%':a.id==='twin'?'&lt;&gt;':'o'}</span></div>
         <div class="d">${a.desc}</div>${statBars(a)}${btn}</div>`;}).join('');
   if(pl)return `${cards}<div class="sect">NOZZLES</div><div class="cards atts">${atts}</div>`;
-  return `<div class="panel" style="text-align:center;margin-bottom:14px"><span class="label">BANK</span> <span style="font-size:22px;color:var(--gold);font-weight:700">${fmt$(money)}</span></div>
-      ${cards}
+  return `${cards}
       <div class="sect">BLOWER ATTACHMENTS &middot; SWAP ANYTIME WITH ${G('nozzles')}</div><div class="cards atts">${atts}</div>`;
 }
 // co-op store: one column per player. Each starts with a copy of the truck's upgrades, which the two of you share
