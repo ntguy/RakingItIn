@@ -51,7 +51,6 @@ function trySwap(){
 function tarpAction(){
   if(driving||tieT>0||carryPkg)return;
   if(heldNet){emptyNet(false);return;}
-  if(cur.raking&&cur.rakeN){rakeDump(false);return;}
   if(bundle){
     for(const k in bundle.counts){for(let n=0;n<bundle.counts[k];n++){const a=rnd()*Math.PI*2,d=rnd()*10;const i=addLeaf(P.x+Math.cos(a)*d,P.y+Math.sin(a)*d*.7,2+rnd()*6,randCol(),+k);if(i>=0){VX[i]=Math.cos(a)*30;VY[i]=Math.sin(a)*30;}}}
     bundle=null;floatText(P.x,P.y-14,'DROPPED','#ffcf4a');blip(180,.12,'triangle',.06);return;
@@ -141,22 +140,24 @@ function toggleRake(){
 // back to the blower. Anything still in the rake is left where the head is
 function stopRake(quiet){
   if(!cur.raking)return;rakeDump(true);
-  const k=cur.rake;cur.raking=false;k.prev=null;k.drop=null;k.contact=0;k.load=0;dropInputs();
+  const k=cur.rake;cur.raking=false;k.down=false;k.prev=null;k.drop=null;k.contact=0;k.load=0;dropInputs();
   if(!quiet){const a=att();floatText(P.x,P.y-16,a.name,a.tip);blip(560,.05,'square',.05);setTimeout(()=>blip(420,.06,'square',.04),60);}
 }
-// drop the catch in a neat pile at the head. It has to be on dry ground unless we're putting the rake away
-function rakeDump(force){
+// drop the catch in a neat pile at the head. It has to be on dry ground unless we're putting the rake away.
+// Loose is letting go of the click: the leaves fall out of the lifted head, a bit more spread out, wherever it is
+function rakeDump(force,loose){
   const pl=cur,n=pl.rakeN;if(!n)return;
   const k=pl.rake,hx=P.x+aim.x*k.eff,hy=P.y+aim.y*k.eff,S=rakeSolids(pl);
-  if(!force&&wet(hx,hy)){floatText(P.x,P.y-14,'NOT IN THE POOL!','#fe5f55');blip(110,.12,'sawtooth',.04,70);return;}
-  const idx=players.indexOf(pl),r=1.5+Math.sqrt(n)*.55;
+  if(!force&&!loose&&wet(hx,hy)){floatText(P.x,P.y-14,'NOT IN THE POOL!','#fe5f55');blip(110,.12,'sawtooth',.04,70);return;}
+  const idx=players.indexOf(pl),r=loose?2.5+Math.sqrt(n)*.8:1.5+Math.sqrt(n)*.55;
   for(let i=0;i<N;i++){if(ST[i]!==5||UN[i]!==idx)continue;const a=rnd()*Math.PI*2,d=Math.sqrt(rnd())*r;
     const [qx,qy]=rakeReachPt(S,hx,hy,hx+aim.x+Math.cos(a)*d,hy+aim.y+Math.sin(a)*d*.75);
-    ST[i]=0;LX[i]=qx;LY[i]=qy;LZ[i]=.5+rnd();VX[i]=Math.cos(a)*4;VY[i]=Math.sin(a)*3;VZ[i]=4+rnd()*4;VR[i]=(rnd()-.5)*4;}
+    ST[i]=0;LX[i]=qx;LY[i]=qy;LZ[i]=loose?3+rnd()*5:.5+rnd();VX[i]=Math.cos(a)*4;VY[i]=Math.sin(a)*3;VZ[i]=loose?0:4+rnd()*4;VR[i]=(rnd()-.5)*4;}
   // where the head was becomes a no-stick zone covering the pile and the head, so the rake can't scoop the pile straight
   // back up. It goes away once the whole head has left it
   k.drop={x:hx,y:hy,r:Math.max(rakeHW(pl),r)+3};pl.rakeN=0;statsT=1;
-  if(!force){tutEv('rakeDump');floatText(hx,hy-10,`PILED ${n}`,'#4bc26a');blip(200,.1,'triangle',.06,140);rumble(.15,.25,80);}
+  if(TUT.on&&loose){const t=tarps.find(t=>t.st==='down'&&hx>=t.x0-4&&hx<t.x1+4&&hy>=t.y0-4&&hy<t.y1+4);if(t)TUT.onTarp+=n;}
+  if(!force||loose){floatText(hx,hy-10,`${loose?'DROPPED':'PILED'} ${n}`,'#4bc26a');blip(200,.1,'triangle',.06,140);rumble(.15,.25,80);}
 }
 // ---------- flowerpots
 function breakPot(p){

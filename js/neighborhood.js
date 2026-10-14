@@ -142,7 +142,7 @@ function orient(L,face,ox,oy){
   for(const z of L.zones)z.outline=zoneOutline(z,L.house);
   const [dx,dy]=L.T(L.ldoor.x,L.ldoor.y);L.door={x:Math.round(dx),y:Math.round(dy)};
   L.cars=L.lcars.map(c=>{const [x,y]=L.T(c.cx,c.cy),[vx,vy]=L.V(c.vert?0:c.dir,c.vert?c.dir:0);return makeCarObj(x,y,vx===0,Math.sign(vx||vy),c.col);});
-  L.trees=L.ltrees.map(t=>{const [x,y]=L.T(t.x,t.y),tw={x:Math.round(x),y:Math.round(y),r:t.r,pal:t.pal,lot:L,rate:t.rate};TREES.push(tw);return tw;});
+  L.trees=L.ltrees.map(t=>{const [x,y]=L.T(t.x,t.y),tw={x:Math.round(x),y:Math.round(y),r:t.r,pal:t.pal,lot:L};TREES.push(tw);return tw;});
   L.shrubs=(L.lshrubs||[]).map(b=>{const r=b.r;return{...TRc({x0:b.x-r*.85,y0:b.y-r*.75,x1:b.x+r*.85,y1:b.y+r*.7}),r};});
   // patio furniture is solid too (each piece's footprint)
   L.furn=(L.lfurn||[]).map(f=>TRc({x0:f.x-f.w/2,y0:f.y-f.h/2,x1:f.x+f.w/2,y1:f.y+f.h/2}));
@@ -284,7 +284,7 @@ function makeLot(k,cfg,R,filler,custom){
     if(L.lz.some(z=>!z.good&&inRect(zoneBox(z),tx,ty,10)))continue;
     if(L.ltrees.some(t=>Math.hypot(t.x-tx,t.y-ty)<(t.r+r)*.75))continue;
     if((BACKYARD_FENCES&&Math.abs(ty-fy-3)<9)||L.gates.some(g=>tx>g.x0-10&&tx<g.x1+10&&Math.abs(ty-fy)<22))continue;
-    L.ltrees.push({x:tx,y:ty,r,pal:(R()*4)|0,rate:.22+s*.1});i++;
+    L.ltrees.push({x:tx,y:ty,r,pal:(R()*4)|0});i++;
   }
   return finish();
 }

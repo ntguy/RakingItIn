@@ -64,12 +64,17 @@ function drawNetSprite(c,x0,y0,x1,y1,wetHead){
 }
 // the rake: handle from the hands out to a 2px crossbar (only as wide as it's clear of fences) with short teeth
 // pointing back at the player
-function drawRakeSprite(c,x0,y0,hx,hy,ax,ay,vL,vR){
+// f is how full the head is (a darker 40% fill running along the bar) and up is when it's lifted: the head floats
+// above a gap-shadow and the tines are drawn pale, where a held-down head sits right on its shadow with soil-dark tips
+function drawRakeSprite(c,x0,y0,hx,hy,ax,ay,vL,vR,f=0,up=false){
   const tx=-ay,ty=ax,y=hy,ex=hx+ax,ey=y+ay;
+  c.fillStyle=up?'rgba(0,0,0,.22)':'rgba(0,0,0,.38)';pline(c,hx+tx*vL,y+ty*vL+(up?5:1),hx+tx*vR,y+ty*vR+(up?5:1),1);
   c.fillStyle='#5a3a1a';pline(c,x0,y0+1,hx,y+1,1);c.fillStyle='#c08a4a';pline(c,x0,y0,hx,y,1);
   c.fillStyle='#8f989e';for(let k=vL;k<=vR+.01;k+=2){const bx=hx+tx*k,by=y+ty*k;pline(c,bx,by,bx-ax*2.5,by-ay*2.5,1);}
   c.fillStyle='#3a4045';pline(c,hx+tx*vL,y+ty*vL+1,hx+tx*vR,y+ty*vR+1,1);pline(c,ex+tx*vL,ey+ty*vL+1,ex+tx*vR,ey+ty*vR+1,1);
-  c.fillStyle='#8f989e';pline(c,ex+tx*vL,ey+ty*vL,ex+tx*vR,ey+ty*vR,1);c.fillStyle='#c8ccd0';pline(c,hx+tx*vL,y+ty*vL,hx+tx*vR,y+ty*vR,1);
+  c.fillStyle='#8f989e';pline(c,ex+tx*vL,ey+ty*vL,ex+tx*vR,ey+ty*vR,1);c.fillStyle=up?'#e6eaec':'#c8ccd0';pline(c,hx+tx*vL,y+ty*vL,hx+tx*vR,y+ty*vR,1);
+  if(!up){c.fillStyle='#4a3a2a';for(let k=vL;k<=vR+.01;k+=2)c.fillRect(Math.round(hx+tx*k-ax*2.5),Math.round(y+ty*k-ay*2.5),1,1);}
+  if(f>0){const m=vL+(vR-vL)*Math.min(1,f);c.fillStyle='rgba(0,0,0,.4)';pline(c,hx+tx*vL,y+ty*vL,hx+tx*m,y+ty*m,1);pline(c,ex+tx*vL,ey+ty*vL,ex+tx*m,ey+ty*m,1);}
 }
 function drawPotSprite(c,x,y,p,wob){
   const r=p.big?5:3,h=p.big?7:5,pal=POT_PALS[p.col],fl=POT_FLOWERS[p.fl];
@@ -122,7 +127,7 @@ function drawPlayer(cx,cy){
   const net=()=>{if(!heldNet)return;const [hx,hy]=netHead();drawNetSprite(ctx,x+ax*3,by+ay*3,hx-cx,hy-cy-4,wet(hx,hy));
     ctx.fillStyle='#f2c29a';ctx.fillRect(Math.round(x+ax*4)-1,Math.round(by+ay*4)-1,2,2);ctx.fillRect(Math.round(x+ax*9)-1,Math.round(by+ay*9)-1,2,2);};
   const rake=()=>{if(!cur.raking||tieT>0)return;const k=cur.rake;
-    drawRakeSprite(ctx,x+ax*3,by+ay*3,P.x+ax*k.eff-cx,P.y+ay*k.eff-cy,ax,ay,k.vL,k.vR);
+    drawRakeSprite(ctx,x+ax*3,by+ay*3,P.x+ax*k.eff-cx,P.y+ay*k.eff-cy-(k.down?0:4),ax,ay,k.vL,k.vR,cur.rakeN/rakeCap(cur),!k.down);
     ctx.fillStyle='#f2c29a';ctx.fillRect(Math.round(x+ax*4)-1,Math.round(by+ay*4)-1,2,2);ctx.fillRect(Math.round(x+ax*8)-1,Math.round(by+ay*8)-1,2,2);};
   const tube=()=>{
     if(busy)return;
@@ -230,9 +235,48 @@ function drawZoneHints(cx,cy,L){
     for(let k=0;k<o.length;k+=2){const x=o[k],y=o[k+1];if(((x+y+ph)%6+6)%6<3)continue;const sx=x-cx,sy=y-cy;if(sx>=0&&sy>=0&&sx<VW&&sy<VH)ctx.fillRect(sx,sy,1,1);}
   }
 }
+// the bouncing yellow caret (tutorial marker and the knock cue), pointing down at sx,sy
+function drawCaret(sx,sy){
+  for(let k=0;k<6;k++){const w=(6-k)*2+1;ctx.fillStyle='#1a0f0a';ctx.fillRect(sx-w/2-1|0,sy-8+k,w+2,1);}
+  for(let k=0;k<5;k++){const w=(5-k)*2+1;ctx.fillStyle='#ffcf4a';ctx.fillRect(sx-(w>>1),sy-8+k,w,1);}
+}
+// a lawn sign by the walk for a house that needs more reputation: board on two stakes, a star and the number
+const STAR_PX=['00100','00100','11111','01110','11011'];
+// wider yards get more of them: one up to 260 wide, two up to 420, three beyond
+function signSpots(L){
+  if(L.signs)return L.signs;
+  const m=L.lmailbox,{w,d}=L,n=w<260?1:w<420?2:3,all=[];
+  for(let x=10;x<=w-10;x+=2)all.push(x);
+  const bad=r=>L.lpaved.some(p=>rectsHit(p,r,2))||L.lfences.some(f=>rectsHit(f,r))||L.lcars.some(c=>rectsHit({x0:c.cx-17,y0:c.cy-17,x1:c.cx+17,y1:c.cy+17},r))||L.ltrees.some(t=>rectsHit({x0:t.x-t.r*.5,y0:t.y-t.r*.5,x1:t.x+t.r*.5,y1:t.y+t.r*.5},r))||L.lstructs.some(q=>rectsHit(q,r,2))||L.deco.some(o=>Math.abs(o.x-(r.x0+r.x1)/2)<10&&o.y>r.y0-4&&o.y<r.y1+4)||rectsHit({x0:m.x-4,y0:m.y-8,x1:m.x+12,y1:m.y+10},r)||rectsHit({x0:L.ldoor.x-9,y0:L.ldoor.y-2,x1:L.ldoor.x+9,y1:d},r);
+  const xs=[];
+  for(let i=0;i<n;i++){
+    // one sign sits beside the door as before; several spread evenly along the frontage
+    const want=n===1?L.ldoor.x-26:w*(i+1)/(n+1),cand=all.filter(x=>xs.every(o=>Math.abs(o-x)>=20)).sort((a,b)=>Math.abs(a-want)-Math.abs(b-want));
+    const x=cand.find(x=>!bad({x0:x-7,y0:d-17,x1:x+7,y1:d-2}));if(x!=null)xs.push(x);else if(!xs.length)xs.push(cand[0]);
+  }
+  const [fx,fy]=L.front;
+  // the board is drawn upright, so pull it in off the sidewalk: up-facing yards need the whole board height, side-facing half its width
+  return L.signs=xs.map(x=>{const [sx,sy]=L.T(x,d-4);return{x:Math.round(sx-fx*6),y:Math.round(sy+(fy<0?15:0))};});
+}
+function drawSign(L,s,cx,cy){
+  const x=s.x-cx,y=s.y-cy;if(x<-12||x>VW+12||y<-18||y>VH+8)return;
+  const n=String(lotNeed(L)),bw=n.length*4+3,bx=x-(bw>>1);
+  ctx.fillStyle='rgba(0,0,0,.28)';ctx.fillRect(bx+1,y,bw,1);
+  ctx.fillStyle='#5a3a24';ctx.fillRect(bx+1,y-3,1,4);ctx.fillRect(bx+bw-2,y-3,1,4);
+  ctx.fillStyle='#1a0f0a';ctx.fillRect(bx,y-16,bw,14);
+  ctx.fillStyle='#f4efe0';ctx.fillRect(bx+1,y-15,bw-2,12);
+  ctx.fillStyle='#e0a418';const sx0=x-2;for(let r=0;r<5;r++)for(let k=0;k<5;k++)if(STAR_PX[r][k]==='1')ctx.fillRect(sx0+k,y-14+r,1,1);
+  pxText(n,bx+2,y-8,'#2a2e33');
+}
 function drawDoorBadges(cx,cy){
   const nd=nearDoor();
+  // past the first rating, cue the knock on the house you're working, with the rep it'd pay right now
+  if(!TUT.on&&curLot&&!curLot.done&&!lotLocked(curLot)&&statsCache&&statsCache.pct>=REP_HOUSE[REP_HOUSE.length-1][0]){
+    const L=curLot,x=L.door.x-cx,y=L.door.y-cy-12+Math.round(Math.sin(time*3));
+    if(x>-12&&x<VW+12&&y>-8&&y<VH+8){drawCaret(x,y);const t='+'+repForPct(statsCache.pct)+'%',tw=t.length*4-1;pxText(t,x-(tw>>1),y-21,'#ffcf4a');}
+  }
   for(const L of LOTS){
+    if(L===curLot&&!TUT.on&&!L.done&&statsCache&&statsCache.pct>=REP_HOUSE[REP_HOUSE.length-1][0]&&!lotLocked(L))continue;
     const x=L.door.x-cx,y=L.door.y-cy-14+Math.round(Math.sin(time*4+L.k)*1.5);if(x<-10||x>VW+10||y<-10||y>VH+10)continue;
     if(L.done){ctx.fillStyle='#1a0f0a';pcircle(ctx,x,y,6);ctx.fillStyle='#4bc26a';pcircle(ctx,x,y,5);ctx.fillStyle='#fff';ctx.fillRect(x-3,y,2,1);ctx.fillRect(x-2,y+1,2,1);ctx.fillRect(x,y,1,1);ctx.fillRect(x+1,y-1,1,1);ctx.fillRect(x+2,y-2,1,1);}
     else if(nd===L){ctx.fillStyle='#1a0f0a';pcircle(ctx,x,y,6);ctx.fillStyle='#ffcf4a';pcircle(ctx,x,y,5);ctx.fillStyle='#1a0f0a';ctx.fillRect(x,y-3,1,4);ctx.fillRect(x,y+2,1,1);}
@@ -240,7 +284,7 @@ function drawDoorBadges(cx,cy){
 }
 // co-op: a badge on the edge of the view for each other player who's off screen (or the truck, if they're in it),
 // in their shirt colour with their number on it and an arrow pointing the way to them
-const PX_GLYPH={P:[7,5,7,4,4],1:[2,6,2,2,7],2:[7,1,7,4,7],3:[7,1,3,1,7],4:[5,5,7,1,1]};
+const PX_GLYPH={P:[7,5,7,4,4],0:[7,5,5,5,7],1:[2,6,2,2,7],2:[7,1,7,4,7],3:[7,1,3,1,7],4:[5,5,7,1,1],5:[7,4,7,1,7],6:[7,4,7,5,7],7:[7,1,1,1,1],8:[7,5,7,5,7],9:[7,5,7,1,7],'+':[0,2,7,2,0],'%':[5,1,2,4,5]};
 function pxText(str,x,y,col){ctx.fillStyle=col;let ox=x;for(const ch of str){const g=PX_GLYPH[ch];if(g)for(let r=0;r<5;r++)for(let k=0;k<3;k++)if(g[r]>>(2-k)&1)ctx.fillRect(ox+k,y+r,1,1);ox+=4;}}
 function drawMates(cx,cy){
   if(state!=='play'||players.length<2)return;
@@ -371,6 +415,7 @@ function renderView(){
   for(const k of packages)spr.push([k===carryPkg?P.y+.5:k.y,()=>drawPackage(k,cx,cy)]);
   for(const q of squirrels)spr.push([q.y,()=>drawSquirrel(q,cx,cy)]);
   for(const m of MAILBOXES)spr.push([m.y+8,()=>drawMailbox(m,cx,cy)]);
+  for(const L of LOTS)if(lotLocked(L))for(const s of signSpots(L))spr.push([s.y,()=>drawSign(L,s,cx,cy)]);
   {const lit=sky(hour).dark>.05;for(const L of ALL_LOTS)for(const l of L.lamps||[])spr.push([l.y,()=>drawYardLamp(l,cx,cy,lit)]);}
   for(const b of birds){ctx.fillStyle='rgba(0,0,0,.16)';ctx.fillRect(Math.round(b.x-cx)-1,Math.round(b.y-cy),3,1);}
   for(const c of CARS)spr.push([c.y1,()=>drawCar(c,cx,cy)]);

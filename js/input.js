@@ -35,8 +35,9 @@ addEventListener('keydown',e=>{
     if(e.code==='KeyE'||e.code==='Enter')confirmCloseout();
     if(e.code==='Escape')closeModal();
   }else if(state==='shop'){
-    if(e.code==='Enter')startDay();
-    if(e.code==='Tab'||e.code==='Digit1'||e.code==='Digit2'){nightTab=e.code==='Digit1'?'sum':e.code==='Digit2'?'shop':(nightTab==='sum'?'shop':'sum');renderNight();}
+    // Enter is always the big bottom button, never whatever card has focus (so no stray purchases)
+    if(e.code==='Enter'){e.preventDefault();nightPrimary();}
+    if(e.code==='Backspace'&&nightTab==='shop')nightGo('sum');
   }
 });
 addEventListener('keyup',e=>{keys[e.code]=false;if(e.code==='Enter')enterDownAt=0;});

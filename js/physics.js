@@ -174,14 +174,6 @@ function updateTrees(dt){
     const cxw=t.x,cyw=t.y-t.lift;let hit=0;
     for(const pl of B){const b=pl.bl,dx=cxw-b.nx,dy=cyw-b.ny,d=Math.hypot(dx,dy);if(d<b.range+t.r*.6&&d>0&&(dx*pl.aim.x+dy*pl.aim.y)/d>b.cosH-.2)hit=Math.max(hit,pl.power*(1-Math.min(1,d/(b.range+t.r))));}
     t.shake+=(hit-t.shake)*Math.min(1,dt*5);
-    if(!t.lot.done&&!t.lot.filler){
-      t.timer-=dt*t.rate*.5*(1+t.shake*10);
-      if(t.timer<=0){
-        t.timer=.6+rnd()*.8;
-        const a=rnd()*Math.PI*2,d=Math.sqrt(rnd())*t.r*.8,x=t.x+Math.cos(a)*d,y=t.y+Math.sin(a)*d*.75;
-        if(okLeafSpot(t.lot,x,y)){const tc=TREE_LEAF_COLS[t.pal];addLeaf(x,y,t.lift+4+rnd()*16,tc[(rnd()*3)|0],t.lot.k);}
-      }
-    }
     // see-through when anyone's under it, or aiming into it
     let inside=false,aimed=false;
     for(const pl of players){if(!onFoot(pl))continue;const Q=pl.P,dx=Q.x-cxw,dy=Q.y-12-cyw;if((dx*dx)/(t.r*t.r)+(dy*dy)/(t.r*t.r*.9)<1.15)inside=true;
@@ -260,7 +252,7 @@ function rakeReachPt(S,x0,y0,x1,y1){
   for(let k=1;k<=n;k++){const t=k/n,x=x0+(x1-x0)*t,y=y0+(y1-y0)*t;if(rakeHit(S,x,y))return[px,py];px=x;py=y;}
   return[px,py];
 }
-// Pulled back, a moving head scoops up the ground leaves it passes over and they ride in its teeth until dumped.
+// Only while a mouse button or trigger is held (the head is down). Pulled back, a moving head scoops up the ground leaves it passes over and they ride in its teeth until dumped.
 // Pushed forward it nudges leaves a little and passes over them, or with the Rake Shovel shoves what it meets along
 // in a bank in front of it (a thicker bank the more there are), which stays put wherever the stroke ends
 function updateRakes(dt){
@@ -274,7 +266,7 @@ function updateRakes(dt){
     const eff=headAt(false),hx=pl.P.x+ax*eff,hy=pl.P.y+ay*eff;
     // flowerpots stop the head too, but where it would have gone without them is what hits the pot: knocked into one
     // at walking speed, it breaks; a gentle bump only wobbles it, and scraping along one wears it down
-    {const ef=S.pots.length?headAt(true):eff,fx=pl.P.x+ax*ef,fy=pl.P.y+ay*ef,fp=k.fprev||[fx,fy],fsp=dt>0?Math.hypot(fx-fp[0],fy-fp[1])/dt:0;k.fprev=[fx,fy];
+    if(k.down){const ef=S.pots.length?headAt(true):eff,fx=pl.P.x+ax*ef,fy=pl.P.y+ay*ef,fp=k.fprev||[fx,fy],fsp=dt>0?Math.hypot(fx-fp[0],fy-fp[1])/dt:0;k.fprev=[fx,fy];
       for(const p of S.pots){const dx=p.x-fx,dy=p.y-fy,v=clamp(dx*tx+dy*ty,-hw,hw),ex=dx-tx*v,ey=dy-ty*v,key='rtouch'+pl.i,touch=ex*ex+ey*ey<(p.r+.8)*(p.r+.8);
         if(touch){
           if(!p[key]&&fsp>12){p.stress+=Math.max(0,fsp-15)/45;p.wob=Math.min(1,fsp/45);blip(820+rnd()*200,.04,'square',.03);}
@@ -284,6 +276,8 @@ function updateRakes(dt){
     let vL=0,vR=0;for(let v=1;v<=hw;v++){if(rakeHit(S,hx-tx*v,hy-ty*v))break;vL=-v;}for(let v=1;v<=hw;v++){if(rakeHit(S,hx+tx*v,hy+ty*v))break;vR=v;}
     if(vL===-Math.floor(hw))vL=-hw;if(vR===Math.floor(hw))vR=hw;
     k.eff=eff;k.vL=vL;k.vR=vR;
+    // lifted off the ground it touches nothing
+    if(!k.down){k.prev=null;k.contact=0;k.load=0;continue;}
     const pv=k.prev||[hx,hy],mx=hx-pv[0],my=hy-pv[1];
     k.prev=[hx,hy];k.hx=hx;k.hy=hy;
     if(k.drop&&Math.hypot(hx-k.drop.x,hy-k.drop.y)>k.drop.r+hw)k.drop=null;

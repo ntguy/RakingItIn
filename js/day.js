@@ -1,17 +1,33 @@
 'use strict';
 // ============================================================ day cycle + night screens
 const newToday=()=>({coop:players.length>1,pot:0,goalEarn:0,goals:0,stolen:0,stealEarn:0,h90:0,houseEarn:0,hauled:0,bundles:0,houses:0,complaints:0,damage:0,pots:0,potDamage:0,crashes:0,damageRep:0,lateHigh:0,tickets:0,ticketCost:0,mailSent:false,copSent:false,vanSent:false,vanHour:7+rnd()*4,courierHits:0,pkgReturns:0,copHour:9.5+rnd()*9,carHour:DAY_START+.4+rnd()*.8,startMoney:money});
+// the truck starts the day parked in the curb lane out front of the first house of the highest level you can work
+// (nearest the lot's edge first, then the door, so it lands by the frontage rather than across a corner)
+function startSpot(){
+  const open=LOTS.filter(L=>!L.filler&&!lotLocked(L));if(!open.length)return null;
+  const top=Math.max(...open.map(L=>L.level||0)),L=open.find(l=>(l.level||0)===top);let best=null,bd=1e9;
+  for(let i=60;i<TPX.length-60;i+=2){const a=TPA[i],c=Math.cos(a),sn=Math.sin(a);if(Math.abs(c)>.02&&Math.abs(sn)>.02)continue;
+    for(const side of [1,-1]){
+      // the right-hand lane faces the way traffic goes, the far one faces the other way, like real parked cars
+      const x=TPX[i]-sn*PARK_LAT*side,y=TPY[i]+c*PARK_LAT*side,d=Math.hypot(Math.max(L.x0-x,0,x-L.x1),Math.max(L.y0-y,0,y-L.y1))*3+Math.hypot(x-L.door.x,y-L.door.y);if(d>=bd)continue;
+      const on=ROADS.filter(r=>inRect(r,x,y));if(on.length!==1)continue;const r=on[0];
+      if((r.h?Math.min(x-r.x0,r.x1-x):Math.min(y-r.y0,r.y1-y))<40||CIRCLES.some(q=>Math.hypot(x-q.x,y-q.y)<q.r+30))continue;
+      const vert=Math.abs(c)<.02,hx=vert?TRUCK_HW:TRUCK_HL,hy=vert?TRUCK_HL:TRUCK_HW,b={x0:x-hx-4,y0:y-hy-4,x1:x+hx+4,y1:y+hy+4};
+      if(CARS.some(o=>rectsHit(o,b,4))||MOUTHS.some(m=>rectsHit(m,b,4)))continue;
+      const o={x:TR.x,y:TR.y,a:TR.a},ta=side>0?a:a+Math.PI;TR.x=x;TR.y=y;TR.a=ta;TR.v=0;const ok=!illegalPark();Object.assign(TR,o);
+      if(ok){bd=d;best={x,y,a:ta};}}}
+  return best;
+}
 function resetDay(){
   N=0;for(const L of ALL_LOTS)L.potsBroken=0;
   for(const p of POTS){p.broken=false;p.stress=0;p.wob=0;p.touch=false;}
   for(const n of NETS){n.x=n.hx;n.y=n.hy;n.a=n.ha;n.held=false;n.n=0;}heldNet=null;ripples.length=0;
   clearVisitors();traffic.length=0;officers.length=0;envelopes.length=0;pendingTraffic.length=0;for(const o of couriers)if(o.bub)o.bub.el.remove();couriers.length=0;packages.length=0;squirrels.length=0;birds.length=0;truckTicket=false;for(const m of MAILBOXES)m.flag=false;
   for(const L of LOTS){L.done=false;L.hauled=0;L.paidAmt=0;L.paidPct=0;spawnLot(L);}
-  for(const t of TREES){t.timer=rnd()*2;}
   tarps.length=0;truckBundles.length=0;bed=Array.from({length:spareMax()},()=>1);hour=DAY_START;
   today=newToday();roadLeaves=0;roadT=0;repShown=null;carryPkg=null;
   for(const p of peds)if(p.bub)p.bub.el.remove();peds.length=0;spawnCameo();
-  TR.v=0;TR.steer=0;
+  TR.v=0;TR.steer=0;if(!TUTORIAL){const s=startSpot();if(s)Object.assign(TR,s);}
   for(const pl of players)withPl(pl,()=>{bundle=null;tarpsUsed=0;battery=capacity();swapT=0;tieT=0;driving=false;cur.riding=false;heldNet=null;carryPkg=null;
     cur.raking=false;cur.rakeN=0;Object.assign(cur.rake,{eff:RAKE_REACH,prev:null,drop:null,contact:0,load:0});
     const [x,y]=fromTruck(SPAWN_AT-pl.i*14,-(TRUCK_HW+8));P.x=x;P.y=y;P.vx=P.vy=0;collidePlayer();
@@ -44,9 +60,9 @@ function kbmHTML(){
     </div>
     <div class="ctlbox"><div class="ctlhead">MOUSE</div>
       <div class="mwrap">
-        <div class="lft"><div class="klab b">LEFT CLICK<small>LOW SPEED</small></div><div class="klab y" style="margin-top:16px">WHEEL<small>SWAP NOZZLE</small></div></div>
+        <div class="lft"><div class="klab b">LEFT CLICK<small>LOW SPEED &middot; HOLD TO RAKE</small></div><div class="klab y" style="margin-top:16px">WHEEL<small>SWAP NOZZLE</small></div></div>
         <div class="mgrid"><div class="mcord"></div><div class="mouse"><div class="mb l"></div><div class="mb r"></div><div class="mw"></div></div></div>
-        <div class="rgt"><div class="klab r">RIGHT CLICK<small>HIGH SPEED</small></div><div class="klab" style="margin-top:16px;color:#fff">MOVE<small>AIM THE BLOWER</small></div></div>
+        <div class="rgt"><div class="klab r">RIGHT CLICK<small>HIGH SPEED &middot; HOLD TO RAKE</small></div><div class="klab" style="margin-top:16px;color:#fff">MOVE<small>AIM THE BLOWER</small></div></div>
       </div>
     </div>
   </div>`;
@@ -156,7 +172,6 @@ function statBars(a){
 }
 function renderNight(){
   storePl();const fs=focusSnap(),scr={m:modalEl.scrollTop,c:[...modalEl.querySelectorAll('.shopcol')].map(e=>e.scrollTop)};
-  const tabs=`<div class="tabs">${G('tabL')}<button class="tab ${nightTab==='sum'?'on':''}" data-tab="sum">DAY SUMMARY</button><button class="tab ${nightTab==='shop'?'on':''}" data-tab="shop">HARDWARE STORE</button>${G('tabR')}</div>`;
   let body='';
   if(nightTab==='sum'){
     // only what actually happened today: a chip per thing, nothing for zeros, houses you never touched left out
@@ -211,14 +226,15 @@ function renderNight(){
   }else{
     body=coop()?coopStore():withPl(players[0],()=>storeCards(null,Object.keys(UPG),true));
   }
-  modalEl.innerHTML=`<div class="night">
+  modalEl.innerHTML=`<div class="night ${nightTab==='shop'?'wide':''}">
     <div class="logo" style="font-size:40px">${[...'NIGHT '+day].map((c,i)=>c===' '?'<span style="width:.4em"></span>':`<span style="animation-delay:${-i*.18}s">${c}</span>`).join('')}</div>
-    <div class="nighthead">${tabs}<button class="btn bounce" id="bDay">START DAY ${day+1} ${G('start')}</button></div><div class="tabbody">${body}</div></div>`;
-  modalEl.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{nightTab=b.dataset.tab;renderNight();});
+    <div class="tabbody">${body}</div>
+    <div class="nightfoot ${nightTab==='sum'?'flat':''}">${nightTab==='shop'?`<button class="btn small" id="bBack">&larr; SUMMARY ${G('tabL')}</button><button class="btn big green bounce" id="bDay">START DAY ${day+1} ${G('start')}</button>`:`<button class="btn big gold bounce" id="bNext">HARDWARE STORE &rarr; ${G('start')}</button>`}</div></div>`;
   const plOf=b=>players[+(b.dataset.pl||0)]||players[0];
   modalEl.querySelectorAll('[data-up]').forEach(b=>b.onclick=()=>buyUpgrade(plOf(b),b.dataset.up));
   modalEl.querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>{if(NET.role==='guest'){if(plOf(b)===players[1])netSend({t:'act',a:'buy',id:b.dataset.buy});return;}const a=ATT.find(x=>x.id===b.dataset.buy);let ok=false;withPl(plOf(b),()=>{if(!owned.includes(a.id)&&money>=a.price){money-=a.price;owned.push(a.id);equipped=a.id;ok=true;}});if(ok){chaChing();renderNight();}});
-  document.getElementById('bDay').onclick=startDay;
+  const bd=document.getElementById('bDay'),bn=document.getElementById('bNext'),bb=document.getElementById('bBack');
+  if(bd)bd.onclick=startDay;if(bn)bn.onclick=()=>nightGo('shop');if(bb)bb.onclick=()=>nightGo('sum');
   // put every scroll position back where it was, so buying something doesn't jump the page
   if(NET.role==='host')sendNight();
   modalEl.scrollTop=scr.m;modalEl.querySelectorAll('.shopcol').forEach((e,i)=>{if(scr.c[i]!=null)e.scrollTop=scr.c[i];});
@@ -226,24 +242,31 @@ function renderNight(){
   focusRestore(fs);
   if(nightTab==='sum')animateSummary();
 }
+// summary -> store -> next day is a flow: each screen's big button is also Enter / the menu button
+function nightGo(tab){if(tab===nightTab)return;nightTab=tab;renderNight();modalEl.scrollTop=0;setFocus(modalEl.querySelector('#bDay,#bNext'));blip(500,.04,'square',.03);}
+function nightPrimary(){if(nightTab==='sum')nightGo('shop');else startDay();}
+// which upgrades share a box in the store, in reading order: top left, top right, bottom left, bottom right
+const UPG_GROUPS=[['HARDWARE',['tune','boots','light']],['BATTERIES',['spare','cap','solar']],['RAKE',['rakecap','rakewide','rakeshovel']],['TARPS',['tarp','bigtarp','sticky']]];
 // the store's cards for one player (pl=null on your own); ids picks which upgrades to show
 function storeCards(pl,ids,withAtts){
   const da=pl?` data-pl="${pl.i}"`:'';
-  const cards=ids.map(id=>{const u=UPG[id];
+  const card=id=>{const u=UPG[id];
       const lvl=upg[id],maxed=lvl>=u.max,price=maxed?0:u.price(lvl),can=!maxed&&money>=price;
       return `<div class="ucard"><div class="t"><span>${u.name}</span><span class="ic" style="background:${u.col}">${u.ic}</span></div>
         <div class="d">${upDesc(u,lvl)}</div>
         <div class="pips">${Array.from({length:u.max},(_,i)=>`<i class="${i<lvl?'on':''}"></i>`).join('')}</div>
-        <button class="btn small ${can?'green':''}" data-up="${id}"${da} ${can?'':'disabled'}>${maxed?'MAXED':'BUY '+fmt$(price)}</button></div>`;}).join('');
+        <button class="btn small ${can?'green':''}" data-up="${id}"${da} ${can?'':'disabled'}>${maxed?'MAXED':'BUY '+fmt$(price)}</button></div>`;};
+  // the upgrades sit in four themed boxes (2 x 2 on a wide screen), each showing only the ones this column offers
+  const cards=`<div class="ugroups">${UPG_GROUPS.map(([nm,gids])=>{const g=gids.filter(id=>ids.includes(id));return g.length?`<div class="ugroup"><div class="sect">${nm}</div><div class="cards">${g.map(card).join('')}</div></div>`:'';}).join('')}</div>`;
   if(!withAtts)return cards;
   const atts=ATT.map(a=>{const own=owned.includes(a.id),can=!own&&money>=a.price;
       const btn=own?'<button class="btn small" disabled>OWNED</button>':`<button class="btn small ${can?'green':''}" data-buy="${a.id}"${da} ${can?'':'disabled'}>BUY ${fmt$(a.price)}</button>`;
       return `<div class="ucard"><div class="t"><span>${a.name}</span><span class="ic" style="background:${a.tip}">${a.id==='fan'?'&lt;':a.id==='jet'?'!':a.id==='long'?'=':a.id==='vortex'?'@':a.id==='eco'?'%':a.id==='twin'?'&lt;&gt;':'o'}</span></div>
         <div class="d">${a.desc}</div>${statBars(a)}${btn}</div>`;}).join('');
-  if(pl)return `<div class="sect">UPGRADES</div><div class="cards">${cards}</div><div class="sect">NOZZLES</div><div class="cards">${atts}</div>`;
+  if(pl)return `${cards}<div class="sect">NOZZLES</div><div class="cards atts">${atts}</div>`;
   return `<div class="panel" style="text-align:center;margin-bottom:14px"><span class="label">BANK</span> <span style="font-size:22px;color:var(--gold);font-weight:700">${fmt$(money)}</span></div>
-      <div class="sect">UPGRADES</div><div class="cards">${cards}</div>
-      <div class="sect">BLOWER ATTACHMENTS &middot; SWAP ANYTIME WITH ${G('nozzles')}</div><div class="cards">${atts}</div>`;
+      ${cards}
+      <div class="sect">BLOWER ATTACHMENTS &middot; SWAP ANYTIME WITH ${G('nozzles')}</div><div class="cards atts">${atts}</div>`;
 }
 // co-op store: one column per player. Each starts with a copy of the truck's upgrades, which the two of you share
 // (either can pay, and buying one in either column buys it for both), then that player's own gear
@@ -251,7 +274,7 @@ function coopStore(){
   const shared=SHARED_UPG.filter(id=>UPG[id]),personal=Object.keys(UPG).filter(id=>!SHARED_UPG.includes(id));
   const col=pl=>withPl(pl,()=>`<div class="shopcol p${pl.i}"><div class="colhead"><span>PLAYER ${pl.i+1}</span><b>${fmt$(money)}</b></div>
     <div class="sect">SHARED UPGRADES</div><div class="shnote">FOR THE TRUCK: EITHER OF YOU CAN BUY THESE, AND THEY WORK FOR YOU BOTH</div>
-    <div class="cards">${storeCards(pl,shared,false)}</div>${storeCards(pl,personal,true)}</div>`);
+    ${storeCards(pl,shared,false)}${storeCards(pl,personal,true)}</div>`);
   return `<div class="shopcols">${players.map(col).join('')}</div>`;
 }
 function buyUpgrade(pl,id){

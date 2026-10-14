@@ -36,7 +36,7 @@ function newPlayer(i,dev,prof){
   return{i,dev,pal:PLAYER_PALS[i],P:{x:0,y:0,vx:0,vy:0,walk:0},aim:{x:1,y:-.3},cam:{x:0,y:0},
     power:0,mode:0,battery:BATT_BASE,swapT:0,tieT:0,bundle:null,heldNet:null,carryPkg:null,driving:false,riding:false,
     equipped:pr.equipped||'std',owned:(pr.owned||['std']).slice(),upg:clampUpg({spare:0,cap:0,tune:0,boots:0,tarp:0,bigtarp:0,sticky:0,light:0,solar:0,rakecap:0,rakewide:0,rakeshovel:0,...pr.upg}),money:pr.money||0,tarpsUsed:0,
-    bl:{nx:0,ny:0,range:0,cosH:1,tx:0,ty:0},raking:false,rakeN:0,rake:{eff:RAKE_REACH,vL:-RAKE_WIDTHS[0]/2,vR:RAKE_WIDTHS[0]/2,prev:null,hx:0,hy:0,contact:0,load:0,drop:null,fullT:-9},lastEmptyBuzz:0,wasEmpty:false,netPrev:null,netFullT:-9,curLot:null,statsCache:null,statsT:0,autoMode:'kbm',vortexD:40,autoPad:-1};
+    bl:{nx:0,ny:0,range:0,cosH:1,tx:0,ty:0},raking:false,rakeN:0,rake:{down:false,eff:RAKE_REACH,vL:-RAKE_WIDTHS[0]/2,vR:RAKE_WIDTHS[0]/2,prev:null,hx:0,hy:0,contact:0,load:0,drop:null,fullT:-9},lastEmptyBuzz:0,wasEmpty:false,netPrev:null,netFullT:-9,curLot:null,statsCache:null,statsT:0,autoMode:'kbm',vortexD:40,autoPad:-1};
 }
 function usePl(pl){if(cur)storePl();cur=pl;P=pl.P;aim=pl.aim;PPAL=pl.pal;power=pl.power;mode=pl.mode;battery=pl.battery;swapT=pl.swapT;tieT=pl.tieT;bundle=pl.bundle;heldNet=pl.heldNet;
   carryPkg=pl.carryPkg;driving=pl.driving;equipped=pl.equipped;owned=pl.owned;upg=pl.upg;money=pl.money;tarpsUsed=pl.tarpsUsed;bl=pl.bl;lastEmptyBuzz=pl.lastEmptyBuzz;
@@ -135,20 +135,20 @@ const floats=[];
 function floatText(x,y,txt,col,big){const els=views.map(v=>{const el=document.createElement('div');el.className='float';el.textContent=txt;el.style.color=col;if(big)el.style.fontSize='22px';v.fx.appendChild(el);return el;});floats.push({els,x,y,t:0,life:1.4});}
 function bubble(p,txt){if(p.bub)p.bub.el.remove();const els=views.map(v=>{const el=document.createElement('div');el.className='bubble';el.textContent=txt;v.fx.appendChild(el);return el;});
   p.bub={els,t:2.2,el:{remove:()=>els.forEach(e=>e.remove()),get textContent(){return els[0].textContent;}}};}
-// a full rake or pool net: the button that empties it pulses slowly on the head of the rake or net, fading up to
+// a full pool net: the button that empties it pulses slowly on the head of the net, fading up to
 // FULLCUE_MAX opacity and back over FULLCUE_FADE seconds, then staying hidden for FULLCUE_GAP. It shows the key, or
 // the controller button if that's what they're playing with
 const FULLCUE_MAX=.7,FULLCUE_FADE=1.6,FULLCUE_GAP=.5;
 function updateFullCues(){
   for(const pl of players){
-    const full=onFoot(pl)&&((pl.heldNet&&pl.heldNet.n>=NET_CAP)||(pl.raking&&pl.rakeN>=rakeCap(pl))),els=pl.fullEls||(pl.fullEls=[]);
+    const full=onFoot(pl)&&(pl.heldNet&&pl.heldNet.n>=NET_CAP),els=pl.fullEls||(pl.fullEls=[]);
     views.forEach((v,j)=>{let el=els[j];
       if(!full||!v.pl){if(el)el.style.display='none';return;}
       if(!el||!el.isConnected){el=document.createElement('div');el.className='fullcue';v.fx.appendChild(el);els[j]=el;}
       const g=withPl(pl,()=>glyphInner('tarp'));if(el.dataset.g!==g){el.dataset.g=g;el.innerHTML=g;}
       const t=time%(FULLCUE_FADE+FULLCUE_GAP),o=t<FULLCUE_FADE?FULLCUE_MAX*.5*(1-Math.cos(t*Math.PI*2/FULLCUE_FADE)):0;
-      // the middle of the rake head (as drawn, stopped short of fences), or of the net's hoop
-      const net=!!pl.heldNet,d=net?NET_REACH:pl.rake.eff,hx=pl.P.x+pl.aim.x*d,hy=pl.P.y+pl.aim.y*d-(net?4:0);
+      // the middle of the net's hoop
+      const hx=pl.P.x+pl.aim.x*NET_REACH,hy=pl.P.y+pl.aim.y*NET_REACH-4;
       el.style.display='block';el.style.opacity=o.toFixed(3);
       el.style.transform=`translate(${(hx-v.pl.cam.x)*v.sc}px,${(hy-v.pl.cam.y)*v.sc}px) translate(-50%,-50%)`;});
   }

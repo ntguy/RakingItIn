@@ -1,6 +1,6 @@
 'use strict';
 // ============================================================ leaves (SoA)
-// (the full neighborhood starts the day with ~24k leaves, and its trees keep dropping more)
+// (the full neighborhood starts the day with ~24k leaves)
 const MAX=44000;
 const LX=new Float32Array(MAX),LY=new Float32Array(MAX),LZ=new Float32Array(MAX);
 const VX=new Float32Array(MAX),VY=new Float32Array(MAX),VZ=new Float32Array(MAX);

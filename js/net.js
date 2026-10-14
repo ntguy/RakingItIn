@@ -98,7 +98,7 @@ function netHostTick(dt){
     pl:players.map(pl=>({x:R1(pl.P.x),y:R1(pl.P.y),vx:R1(pl.P.vx),vy:R1(pl.P.vy),w:R2(pl.P.walk),ax:R2(pl.aim.x),ay:R2(pl.aim.y),pw:R2(pl.power),md:pl.mode,bt:R1(pl.battery),dr:pl.driving?1:0,rd:pl.riding?1:0,
       bu:pl.bundle?pl.bundle.total:-1,hn:pl.heldNet?NETS.indexOf(pl.heldNet):-1,cp:pl.carryPkg?packages.indexOf(pl.carryPkg):-1,sw:R2(pl.swapT),ti:R2(pl.tieT),eq:pl.equipped,ow:pl.owned,up:pl.upg,mo:Math.round(pl.money),tu:pl.tarpsUsed,
       bl:[R1(pl.bl.nx),R1(pl.bl.ny),R2(pl.bl.cosH),pl.bl.vort?1:0,R1(pl.bl.tx||0),R1(pl.bl.ty||0)],b2:pl.bl2?[R1(pl.bl2.nx),R1(pl.bl2.ny)]:null,
-      rk:[pl.raking?1:0,R1(pl.rake.eff),pl.rakeN,R1(pl.rake.vL),R1(pl.rake.vR)]})),
+      rk:[pl.raking?1:0,R1(pl.rake.eff),pl.rakeN,R1(pl.rake.vL),R1(pl.rake.vR),pl.rake.down?1:0]})),
     tf:traffic.map(v=>[v.nid,v.kind,R1(v.x),R1(v.y),R2(v.a),v.col||'',v.lights?1:0,v.ghost?1:0]),
     pd:peds.map(p=>[p.nid,R1(p.x),R1(p.y),p.shirt||'',p.hair||'',p.dog?1:0,p.fdir,R2(p.mx),R2(p.my),R2(p.walk),p.stop>0?1:0,p.mad>0?1:0,p.cameo?1:0,p.who||'',p.run>0?1:0]),
     of:officers.map(o=>[R1(o.x),R1(o.y),R2(o.walk),o.stop>0?1:0,o.fdir,R2(o.mx),R2(o.my)]),
@@ -177,7 +177,7 @@ function guestData(m){
   if(m.t==='s')applySnapshot(m.j,m.lv);
   else if(m.t==='n'){storePl();day=m.day;rep=m.rep;today=m.today;daySummary=m.daySummary;
     m.pl.forEach((d,i)=>{const pl=players[i];if(!pl)return;pl.money=d.money;pl.upg=d.upg;pl.owned=d.owned;pl.equipped=d.equipped;});reloadPl();
-    if(NET.localMenu){NET.localMenu=false;}state='shop';modalEl.classList.remove('hide');document.body.style.cursor='default';renderNight();}
+    if(NET.localMenu){NET.localMenu=false;}if(state!=='shop')nightTab='sum';state='shop';modalEl.classList.remove('hide');document.body.style.cursor='default';renderNight();}
 }
 function reloadPl(){const c=cur;cur=null;usePl(c);}
 function applySnapshot(j,lv){
@@ -210,7 +210,7 @@ function applySnapshot(j,lv){
   j.pl.forEach((d,i)=>{const pl=players[i];if(!pl)return;smooth(pl.P,d.x,d.y);pl.P.vx=d.vx;pl.P.vy=d.vy;pl.P.walk=d.w;if(pl!==cur){pl.aim.x=d.ax;pl.aim.y=d.ay;}
     Object.assign(pl,{power:d.pw,mode:d.md,battery:d.bt,driving:!!d.dr,riding:!!d.rd,bundle:d.bu>=0?{total:d.bu,counts:{}}:null,heldNet:d.hn>=0?NETS[d.hn]:null,carryPkg:d.cp>=0?packages[d.cp]:null,
       swapT:d.sw,tieT:d.ti,equipped:d.eq,owned:d.ow,upg:d.up,money:d.mo,tarpsUsed:d.tu});
-    pl.bl={nx:d.bl[0],ny:d.bl[1],cosH:d.bl[2],vort:!!d.bl[3],tx:d.bl[4],ty:d.bl[5],range:60};pl.raking=!!d.rk[0];pl.rake.eff=d.rk[1];pl.rakeN=d.rk[2];pl.rake.vL=d.rk[3];pl.rake.vR=d.rk[4];pl.bl2=d.b2?{nx:d.b2[0],ny:d.b2[1],cosH:d.bl[2],range:60,ax:-pl.aim.x,ay:-pl.aim.y}:null;});
+    pl.bl={nx:d.bl[0],ny:d.bl[1],cosH:d.bl[2],vort:!!d.bl[3],tx:d.bl[4],ty:d.bl[5],range:60};pl.raking=!!d.rk[0];pl.rake.eff=d.rk[1];pl.rakeN=d.rk[2];pl.rake.vL=d.rk[3];pl.rake.vR=d.rk[4];pl.rake.down=!!d.rk[5];pl.bl2=d.b2?{nx:d.b2[0],ny:d.b2[1],cosH:d.bl[2],range:60,ax:-pl.aim.x,ay:-pl.aim.y}:null;});
   reloadPl();
   for(const e of j.ev){if(e[0]==='f')floatText(e[1],e[2],e[3],e[4],!!e[5]);else if(e[0]==='s')blip(e[1],e[2],e[3],e[4],e[5]||undefined);
     else if(e[0]==='b'){const p=peds.find(q=>q.nid===e[1])||couriers.find(q=>q.nid===e[1]);if(p)bubble(p,e[2]);}}

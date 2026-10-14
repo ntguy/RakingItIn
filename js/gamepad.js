@@ -135,19 +135,19 @@ function menuNav(dt){
   if(state!=='title'&&Math.abs(pad.ry)>.2)(navScrollEl||modalEl).scrollTop+=pad.ry*700*dt;
   if(padHit(BTN.use)&&padFocus){padFocus.click();return;}
   if(padHit(BTN.honk)){if(state==='tut')tutModalOk();else if(state==='menu')menuBack();else if(state==='closeout')closeModal();else if(state==='joinpad')closeKeypad();return;}
-  if(padHit(BTN.pause)){if(state==='menu')closeMenu();else if(state==='shop')startDay();else if(state==='joinpad')kpPress('>');else if(state==='title')(padFocus||defaultFocus())?.click();return;}
+  if(padHit(BTN.pause)){if(state==='menu')closeMenu();else if(state==='shop')nightPrimary();else if(state==='joinpad')kpPress('>');else if(state==='title')(padFocus||defaultFocus())?.click();return;}
   if(padHit(BTN.prev)||padHit(BTN.next)){const d=padHit(BTN.next)?1:-1;
     if(state==='menu'){if(document.getElementById('ctlWrap')){const v=['kbm','xbox','ps'];pickCtl(v[(v.indexOf(ctlView)+d+3)%3]);}}
-    else if(state==='shop'){nightTab=nightTab==='sum'?'shop':'sum';renderNight();setFocus(modalEl.querySelector('[data-tab].on'));blip(500,.04,'square',.03);}}
+    else if(state==='shop')nightGo(d>0?'shop':'sum');}
 }
 // re-rendered screens (the shop) keep the ring on the same button, or the one nearest where it was
 function focusSnap(){
   if(!padFocus||!padFocus.isConnected)return null;const r=padFocus.getBoundingClientRect();
-  const at=['data-up','data-buy','data-tab','data-cv','id'].find(a=>padFocus.hasAttribute(a));
+  const at=['data-up','data-buy','data-cv','id'].find(a=>padFocus.hasAttribute(a));
   return{sel:at?`[${at}="${padFocus.getAttribute(at)}"]`:null,x:r.left+r.width/2,y:r.top+r.height/2};
 }
 // find the same button after the store re-renders (by what it buys), for a co-op player's own focus ring
-function refocus(old){const at=['data-up','data-buy','data-tab'].find(a=>old.hasAttribute(a));if(!at)return null;
+function refocus(old){const at=['data-up','data-buy'].find(a=>old.hasAttribute(a));if(!at)return null;
   const sel=`[${at}="${old.getAttribute(at)}"]`+(old.dataset.pl!=null?`[data-pl="${old.dataset.pl}"]`:'');const el=modalEl.querySelector(sel);
   if(el&&!el.disabled){el.classList.add('padfocus');if(old.classList.contains('pf1'))el.classList.add('pf1');return el;}return null;}
 function focusRestore(f){
@@ -200,7 +200,7 @@ const PAD_TGT={
   ps:{low:[80,9],prev:[70,24],ls:[112,110,19],high:[220,9],next:[230,24],pause:[202,40,7],rake:[230,54,10],goals:[246,70,10],tarp:[214,70,10],use:[230,86,10],rs:[188,110,19]},
   xbox:{low:[82,11],prev:[68,27],ls:[78,72,19],high:[218,11],next:[232,27],pause:[170,72,6],rake:[222,56,10],goals:[238,72,10],tarp:[206,72,10],use:[222,88,10],rs:[186,112,19]}};
 const PAD_FACE={ps:[230,70],xbox:[222,72]};
-const PAD_LBL={goals:['GOALS','r','IN THE TRUCK: HONK'],low:['LOW SPEED','b','IN THE TRUCK: BRAKE / REVERSE'],prev:['PREV NOZZLE','p'],ls:['MOVE','g','IN THE TRUCK: STEER'],high:['HIGH SPEED','r','IN THE TRUCK: GAS'],next:['NEXT NOZZLE','p'],tarp:['TARP','o'],rake:['RAKE','y'],use:['USE','b'],rs:['AIM','w','TURN TO FACE'],pause:['PAUSE','w']};
+const PAD_LBL={goals:['GOALS','r','IN THE TRUCK: HONK'],low:['LOW SPEED','b','HOLD TO RAKE · TRUCK: BRAKE'],prev:['PREV NOZZLE','p'],ls:['MOVE','g','IN THE TRUCK: STEER'],high:['HIGH SPEED','r','HOLD TO RAKE · TRUCK: GAS'],next:['NEXT NOZZLE','p'],tarp:['TARP','o'],rake:['RAKE','y'],use:['USE','b'],rs:['AIM','w','TURN TO FACE'],pause:['PAUSE','w']};
 const PAD_ROWS={ps:{L:[['low',56],['prev',92],['ls',176]],R:[['pause',12],['high',34],['next',62],['rake',88],['goals',114],['tarp',146],['use',172],['rs',212]]},
   xbox:{L:[['low',56],['prev',92],['ls',136]],R:[['pause',12],['high',34],['next',62],['rake',88],['goals',114],['tarp',146],['use',172],['rs',212]]}};
 const FACE_COL={a:'#4bc26a',b:'#fe5f55',x:'#009dff',y:'#ffcf4a'};

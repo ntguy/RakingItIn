@@ -52,6 +52,9 @@ function updatePlayer(dt){
   if(swapT>0){swapT-=dt;if(swapT<=0){swapT=0;swapBattery();blip(523,.1,'square',.06);setTimeout(()=>blip(784,.18,'square',.06),90);rumble(.2,.5,120);
     for(let k=0;k<22;k++){const a=rnd()*Math.PI*2,s=30+rnd()*50;sparks.push({x:P.x,y:P.y,z:10,vx:Math.cos(a)*s,vy:Math.sin(a)*s*.7,vz:60+rnd()*60,l:.6+rnd()*.5,c:rnd()<.5?'#4bc26a':'#b8ffcf'});}}}
   let want=0;if(!driving&&!bundle&&!heldNet&&!carryPkg&&!cur.raking&&swapT<=0&&tieT<=0&&tutOk('blowLo')){if((usesKeys&&mouse.r)||(!pad.lock&&pad.rt>.3)||(ni&&ni.hi))want=2;else if((usesKeys&&mouse.l)||(!pad.lock&&pad.lt>.3)||(ni&&ni.lo))want=1;}
+  // the rake is only on the ground while a click or trigger is held; letting go drops whatever it caught
+  const held=cur.raking&&!driving&&swapT<=0&&tieT<=0&&((usesKeys&&(mouse.l||mouse.r))||(!pad.lock&&(pad.lt>.3||pad.rt>.3))||(ni&&(ni.lo||ni.hi)));
+  if(cur.rake.down&&!held&&cur.rakeN)rakeDump(true,true);cur.rake.down=!!held;
   if(want===2&&!tutOk('blowHi'))want=0;
   if(want&&battery<=0){want=0;if(time-lastEmptyBuzz>.45){lastEmptyBuzz=time;rumble(.25,0,60);blip(110,.12,'sawtooth',.05,70);}}
   mode=want;if(mode)cur.lastMode=mode;

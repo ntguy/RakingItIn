@@ -46,7 +46,7 @@ function applyYard(L,items){
   for(const it of items){
     if(it.t==='fence'){const f=fenceRect(L,it);if(f.x1-f.x0>=6&&f.y1-f.y0>=6&&!rectsHit(f,L.lhouse))L.lfences.push({...f,custom:true});continue;}
     if(it.t==='shrub'){if(!inRect(L.lhouse,it.x,it.y,it.r))L.lshrubs.push({x:Math.round(it.x),y:Math.round(it.y),r:it.r});continue;}
-    if(it.t==='tree'){if(!inRect(L.lhouse,it.x,it.y,4))L.ltrees.push({x:Math.round(it.x),y:Math.round(it.y),r:it.r,pal:it.pal,rate:.22+s*.1});continue;}
+    if(it.t==='tree'){if(!inRect(L.lhouse,it.x,it.y,4))L.ltrees.push({x:Math.round(it.x),y:Math.round(it.y),r:it.r,pal:it.pal});continue;}
     if(it.t==='pot'){if(!inRect(L.lhouse,it.x,it.y,3))L.lpots.push(makePot(it.x,it.y,it.big));continue;}
     if(it.t==='struct'){L.lstructs.push({k:it.k,x0:Math.round(it.x0),y0:Math.round(it.y0),x1:Math.round(it.x1),y1:Math.round(it.y1),...(it.roof?{roof:it.roof}:{}),...(it.gap?{gap:it.gap}:{})});continue;}
     if(it.t==='lamp'){L.llamps.push({x:Math.round(it.x),y:Math.round(it.y)});continue;}

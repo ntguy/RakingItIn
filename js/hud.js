@@ -90,7 +90,7 @@ function hudView(dt){
     else if(nearNet()&&tutOk('net')){cls='swap';txt=bundle?'HANDS FULL  ·  LOAD THE TARP FIRST':`${G('use')} GRAB THE POOL NET`;}
     else if(part==='back'&&(bundle||(battery<cap-.5&&tutOk('swap')))){cls='swap';txt=bundle?`${G('use')} LOAD THE TIED TARP (${bundle.total} LEAVES)`:bestSpare()>.05?`${G('use')} SWAP BATTERY (BEST ONE ${Math.round(bestSpare()*100)}%)`:'NO CHARGED SPARES LEFT';}
     else if(part==='front'&&tutOk('drive')){cls='swap';txt=bundle?'LOAD THE TARP AT THE BACK FIRST':`${G('use')} DRIVE THE TRUCK`;}
-    else if(cur.raking&&cur.rakeN>=rakeCap(cur)){cls='dead';txt=`${G('tarp')} EMPTY RAKE`;}
+    else if(cur.raking&&cur.rakeN>=rakeCap(cur)){cls='dead';txt='RAKE FULL  ·  LET GO TO DROP IT';}
     else if(battery<=0){cls='dead';txt=bestSpare()>.05?'REPLACE BATTERY IN TRUCK':`OUT OF BATTERIES! ${G('end')} IN TRUCK TO END DAY`;}
     else if(bundle){cls='info';txt=`CARRY BUNDLE TO THE TRUCK  ·  ${G('tarp')} DROP`;}
     else if(tutOk('tie')&&tarps.some(t=>t.st==='down'&&t.owner===cur&&Math.hypot(Math.max(t.x0-P.x,0,P.x-t.x1),Math.max(t.y0-P.y,0,P.y-t.y1))<10)){cls='info';txt=`${G('tarp')} TIE UP THE TARP`;}

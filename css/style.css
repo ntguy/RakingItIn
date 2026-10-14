@@ -212,7 +212,6 @@ body.coop #view1 #goals{width:236px;}
 .overlay.hide{display:none;}
 #modal{justify-content:safe center;}
 .night{margin:auto;}
-.nighthead{display:flex;gap:16px;align-items:center;flex-wrap:wrap;justify-content:center;}
 .logo{font-size:clamp(40px,8vw,96px);font-weight:700;letter-spacing:4px;display:flex;}
 .logo span{display:inline-block;animation:wave 2.4s ease-in-out infinite;text-shadow:0 6px 0 #1a0f0a,0 10px 0 rgba(0,0,0,.35);}
 .logo span:nth-child(3n+1){color:var(--orange);} .logo span:nth-child(3n+2){color:var(--red);} .logo span:nth-child(3n){color:var(--gold);}
@@ -237,10 +236,9 @@ body.coop #view1 #goals{width:236px;}
 .line .neg{color:var(--red);} .line .pos{color:var(--green);} .line .dim{color:#7f9396;}
 
 .night{width:min(1000px,94vw);display:flex;flex-direction:column;align-items:center;gap:14px;padding:24px 0;}
-.tabs{display:flex;gap:10px;}
-.tab{font-family:inherit;font-size:16px;font-weight:700;padding:10px 20px;border-radius:10px 10px 4px 4px;border:0;cursor:pointer;background:var(--panel-in);color:#7f9396;box-shadow:0 5px 0 var(--shadow);transition:transform .08s;}
-.tab.on{background:var(--red);color:#fff;box-shadow:0 5px 0 var(--red-d);transform:translateY(-4px);text-shadow:0 2px 0 rgba(0,0,0,.35);}
-.tab:not(.on):hover{color:#cfe3e6;}
+/* the night is a flow (summary, then store): the next-step button stays pinned to the bottom of the screen */
+.nightfoot{position:sticky;bottom:0;z-index:3;width:100%;margin-bottom:-24px;padding:14px 16px 18px;display:flex;gap:16px;align-items:center;justify-content:center;background:linear-gradient(to bottom,rgba(16,23,26,0),rgba(16,23,26,.96) 35%);}
+.btn.big{font-size:24px;padding:14px 34px;}
 .tabbody{width:100%;}
 .sumwrap{display:grid;grid-template-columns:1fr 1.3fr;gap:16px;}
 @media (max-width:760px){.sumwrap{grid-template-columns:1fr;}}
@@ -250,6 +248,12 @@ body.coop #view1 #goals{width:236px;}
 .tagp{padding:3px 8px;border-radius:6px;font-size:11px;white-space:nowrap;}
 .tagp.g{background:var(--green);box-shadow:0 3px 0 var(--green-d);} .tagp.y{background:var(--orange);box-shadow:0 3px 0 var(--orange-d);} .tagp.x{background:var(--panel-in);color:#7f9396;}
 .sect{font-size:14px;color:var(--gold);margin:6px 0 10px;text-shadow:0 2px 0 rgba(0,0,0,.4);letter-spacing:1px;}
+.ugroups{display:grid;grid-template-columns:1fr 1fr;gap:6px 22px;width:100%;} @media (max-width:900px){.ugroups{grid-template-columns:1fr;}}
+.ugroup{min-width:0;}
+.night.wide{width:min(1260px,94vw);}
+/* the blower attachments: as many across as fit, but never more than 7 */
+.cards.atts{grid-template-columns:repeat(auto-fill,minmax(max(150px,calc((100% - 6*14px)/7)),1fr));}
+.shopcol .ugroups{grid-template-columns:1fr;}
 .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;width:100%;margin-bottom:12px;}
 .ucard{background:#e9e2cf;color:#2a3033;border-radius:12px;padding:10px;box-shadow:0 6px 0 #8a8272,0 10px 18px rgba(0,0,0,.35);border:3px solid #fff;display:flex;flex-direction:column;gap:8px;transition:transform .12s;}
 .ucard:nth-child(odd){transform:rotate(-1deg);} .ucard:nth-child(even){transform:rotate(1deg);}
@@ -324,7 +328,7 @@ body.pad .ucard:has(.padfocus){transform:translateY(-6px) rotate(0);}
 .shopcols{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:6px;}
 .shopcol{background:rgba(0,0,0,.18);border-radius:12px;padding:10px;border:3px solid #c8352c;max-height:max(280px,calc(100vh - 360px));overflow-y:auto;scrollbar-width:thin;}
 .shopcol.p1{border-color:#2f9a5a;}
-.shopcol .cards{grid-template-columns:repeat(auto-fill,minmax(132px,1fr));}
+.shopcol .cards,.shopcol .cards.atts{grid-template-columns:repeat(auto-fill,minmax(132px,1fr));}
 .colhead{display:flex;justify-content:space-between;align-items:center;font-size:14px;margin-bottom:8px;letter-spacing:1px;} .colhead b{color:var(--gold);}
 .shnote{font-size:9px;color:#9fb5b8;letter-spacing:1px;line-height:1.5;margin:-6px 0 10px;}
 .buy2{display:flex;gap:6px;flex-wrap:wrap;} .buy2 .btn{flex:1;padding:8px 4px;font-size:12px;}
@@ -380,3 +384,4 @@ body.pad .padfocus.pf1{outline-color:#6fd18e;}
 .etag{position:absolute;right:14px;bottom:12px;font-size:12px;color:#fff;pointer-events:none;text-align:right;text-shadow:0 2px 0 #000;}
 .esec[data-sec=h] .elist{max-height:34vh;overflow-y:auto;padding-right:3px;}
 .elist .ebtn{flex:none;}
+.nightfoot.flat{background:none;}

@@ -532,4 +532,4 @@ function makeCanopy(t,seed){
   }
   x.putImageData(img,0,0);return c;
 }
-function initTrees(){TREES.forEach((t,i)=>{t.can=makeCanopy(t,i*97+11);t.alpha=1;t.shake=0;t.timer=rnd()*2;t.ph=rnd()*6;t.lift=Math.round(8+t.r*.12);});}
+function initTrees(){TREES.forEach((t,i)=>{t.can=makeCanopy(t,i*97+11);t.alpha=1;t.shake=0;t.ph=rnd()*6;t.lift=Math.round(8+t.r*.12);});}

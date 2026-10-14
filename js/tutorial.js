@@ -2,11 +2,13 @@
 // ============================================================ tutorial
 // One goal at a time, shown top right. Things the player hasn't been shown yet stay locked (the blower speeds, the
 // door, the truck, the tarp, the rake and the net), so it's always clear what to try next
-const TUT={on:TUTORIAL,i:0,flashT:0,moved:0,turned:0,lastA:null,lo:0,hi:0,ev:{},pct:0,pctT:0,modal:null};
-const tutEv=k=>{if(TUT.on)TUT.ev[k]=true;};
+const TUT_RAKE_GOAL=30;
+const TUT={on:TUTORIAL,i:0,onTarp:0,flashT:0,moved:0,turned:0,lastA:null,lo:0,hi:0,ev:{},pct:0,pctT:0,modal:null};
+const tutEv=k=>{if(TUT.on){TUT.ev[k]=true;if(k==='swap')TUT.swapped=true;}};
 // where to park at the second house: the curb lane along its frontage, on the right coming round the corner
 const tutPark=()=>{const L=LOTS[1];return{x:XC-38,y:(L.y0+L.y1)/2};};
-const tutParked=()=>Math.hypot(TR.x-tutPark().x,TR.y-tutPark().y)<40&&Math.abs(TR.v)<3&&!illegalPark();
+// the goal is met as soon as any part of the truck is over the highlighted spot (the outline is 26 x 54): no need to stop or sit straight
+const tutParked=()=>{const t=tutPark();for(let lx=-TRUCK_HL;lx<=TRUCK_HL;lx+=5)for(let ly=-TRUCK_HW;ly<=TRUCK_HW;ly+=4){const [x,y]=fromTruck(lx,ly);if(Math.abs(x-t.x)<=13&&Math.abs(y-t.y)<=27)return true;}return false;};
 const TUT_STEPS=[
   {id:'move',text:()=>`MOVE WITH ${G('ls')}`,done:()=>TUT.moved>70},
   {id:'turn',text:()=>`TURN WITH ${G('rs')}`,done:()=>TUT.turned>Math.PI*.75},
@@ -23,9 +25,8 @@ const TUT_STEPS=[
     done:()=>driving&&tutParked(),at:tutPark,spot:true},
   {id:'out',text:()=>`GET OUT ${G('use')}`,done:()=>!driving},
   {id:'tarp',text:()=>`THROW A TARP ${G('tarp')}`,done:()=>tarps.some(t=>t.st==='down')},
-  {id:'rake',text:()=>`SWITCH TO THE RAKE ${G('rake')}`,done:()=>cur.raking},
-  {id:'fill',text:()=>'PULL THE RAKE THROUGH LEAVES',sub:()=>`${cur.rakeN} / ${rakeCap(cur)}`,done:()=>cur.raking&&cur.rakeN>=rakeCap(cur)},
-  {id:'dump',text:()=>`EMPTY THE RAKE ONTO THE TARP ${G('tarp')}`,done:()=>TUT.ev.rakeDump,at:()=>{const t=tarps.find(t=>t.st==='down');return t&&{x:(t.x0+t.x1)/2,y:(t.y0+t.y1)/2};}},
+  {id:'rake',text:()=>`SWITCH TO THE RAKE ${G('rake')}`,done:()=>cur.raking,after:()=>tutModal('rake')},
+  {id:'dump',text:()=>'RELEASE RAKED LEAVES ONTO THE TARP',sub:()=>`${Math.min(TUT.onTarp,TUT_RAKE_GOAL)} / ${TUT_RAKE_GOAL}`,done:()=>TUT.onTarp>=TUT_RAKE_GOAL,at:()=>{const t=tarps.find(t=>t.st==='down');return t&&{x:(t.x0+t.x1)/2,y:(t.y0+t.y1)/2};}},
   {id:'net',text:()=>`PICK UP THE POOL NET ${G('use')}`,done:()=>!!heldNet,at:()=>{const n=LOTS[1].nets[0];return n&&{x:n.x+Math.cos(n.a)*NET_STICK/2,y:n.y+Math.sin(n.a)*NET_STICK/2};}},
   {id:'scoop',text:()=>'SWEEP THE NET THROUGH THE POOL',sub:()=>`${heldNet?heldNet.n:0} / 10 LEAVES`,done:()=>!!heldNet&&heldNet.n>=10},
   {id:'netdump',text:()=>`EMPTY THE NET ONTO THE TARP ${G('tarp')}`,done:()=>TUT.ev.netDump,at:()=>{const t=tarps.find(t=>t.st==='down');return t&&{x:(t.x0+t.x1)/2,y:(t.y0+t.y1)/2};}},
@@ -40,11 +41,15 @@ function startTutorial(){
   // a few leaves are already floating in the pool, so there's something to net straight away
   const pool=POOLS.find(p=>p.lot===LOTS[1]);
   if(pool)for(let k=0;k<22;k++){const i=addLeaf(pool.x0+2+rnd()*(pool.x1-pool.x0-4),pool.y0+2+rnd()*(pool.y1-pool.y0-4),0,randCol(),1);if(i>=0)ST[i]=3;}
+  // only the first two yards are part of the tutorial; leaves anywhere else just lead people astray
+  for(let i=N-1;i>=0;i--)if(HOME[i]>1)removeLeaf(i);
   state='play';document.body.style.cursor='none';tutShow();
 }
 function exitTutorial(){history.replaceState(null,'',location.pathname+location.search);location.reload();}
 function tutUpdate(dt){
   tutArrow();
+  // until the first swap the battery can't run flat, so nobody gets stuck before learning how to replace it
+  if(TUT.on&&!TUT.swapped)battery=Math.max(battery,capacity()*.1);
   if(!TUT.on||TUT.i>=TUT_STEPS.length||state!=='play')return;
   if(TUT.flashT>0){TUT.flashT-=dt;if(TUT.flashT<=0)tutShow();return;}
   // what the current goal is watching for
@@ -55,7 +60,7 @@ function tutUpdate(dt){
   const st=TUT_STEPS[TUT.i];
   if(st.done()){
     // done: flash it green for a moment, then on to the next one
-    TUT.i++;TUT.flashT=.8;TUT.moved=TUT.turned=TUT.lo=TUT.hi=0;TUT.lastA=null;TUT.ev={};
+    TUT.i++;TUT.flashT=.8;TUT.moved=TUT.turned=TUT.lo=TUT.hi=TUT.onTarp=0;TUT.lastA=null;TUT.ev={};
     $('tutBox').classList.add('done');$('tutT').innerHTML='&#10003; '+st.text();$('tutS').textContent='';
     blip(660,.07,'square',.05);setTimeout(()=>blip(990,.12,'square',.05),80);rumble(.1,.3,90);
     const nx=TUT_STEPS[TUT.i];if(nx&&nx.enter)nx.enter();
@@ -81,7 +86,11 @@ function tutShow(){
 function tutModal(kind){
   if(kind==='end')$('tutBox').style.display='none';
   TUT.modal=kind;state='tut';dropInputs();document.body.style.cursor='default';
-  modalEl.innerHTML=kind==='rep'?`<div class="panel tutpop"><h2>REPUTATION ${STAR_ICON}</h2><div class="rl">
+  modalEl.innerHTML=kind==='rake'?`<div class="panel tutpop"><h2>THE RAKE</h2><div class="rl">
+      <div><b>1</b>HOLD ${cur.dev.t==='auto'?'EITHER MOUSE BUTTON':'EITHER TRIGGER'} DOWN AND DRAG THE RAKE BACKWARDS THROUGH LEAVES</div>
+      <div><b>2</b>RELEASE ${cur.dev.t==='auto'?'THE MOUSE':'THE TRIGGER'} TO DROP THE COLLECTED LEAVES</div></div>
+      <button class="btn green bounce" id="tutOk">GOT IT ${G('ok')}</button></div>`
+    :kind==='rep'?`<div class="panel tutpop"><h2>REPUTATION ${STAR_ICON}</h2><div class="rl">
       <div><b class="pos">+</b>GAIN REPUTATION BY FINISHING A HOUSE WITH THE YARD PRISTINE (50/70/90% OF LEAVES CLEANED UP GIVES +10/20/40)</div>
       <div><b class="neg">&minus;</b>BREAKING THINGS, SCARING PEOPLE, LEAVES IN THE ROAD, PARKING TICKETS, NOISE COMPLAINTS</div>
       <div><b>&#9733;</b>BIGGER HOUSES ONLY HIRE YOU AT HIGHER REPUTATION</div>
@@ -100,12 +109,15 @@ function drawTutMarker(cx,cy){
     for(let k=0;k<26;k+=2){ctx.fillRect(x0+k,y0,1,1);ctx.fillRect(x0+k,y0+54,1,1);}for(let k=0;k<55;k+=2){ctx.fillRect(x0,y0+k,1,1);ctx.fillRect(x0+26,y0+k,1,1);}}
   const sx=Math.round(t.x-cx),sy=Math.round(t.y-cy-12+Math.sin(time*5)*2);
   if(sx>4&&sx<VW-4&&sy>4&&sy<VH-4){
-    for(let k=0;k<6;k++){const w=(6-k)*2+1;ctx.fillStyle='#1a0f0a';ctx.fillRect(sx-w/2-1|0,sy-8+k,w+2,1);}
-    for(let k=0;k<5;k++){const w=(5-k)*2+1;ctx.fillStyle='#ffcf4a';ctx.fillRect(sx-(w>>1),sy-8+k,w,1);}
+    drawCaret(sx,sy);
   }else{
-    const ex=clamp(sx,14,VW-14),ey=clamp(sy,14,VH-14),dx=sx-ex,dy=sy-ey,dl=Math.hypot(dx,dy)||1;
-    ctx.fillStyle='#1a0f0a';pcircle(ctx,ex,ey,7);ctx.fillStyle='#ffcf4a';pcircle(ctx,ex,ey,6);
-    ctx.fillStyle='#ffcf4a';for(let k=8;k<13;k++){const w=13-k;ctx.fillRect(Math.round(ex+dx/dl*k-w/2),Math.round(ey+dy/dl*k-w/2),w,w);}
-    ctx.fillStyle='#1a0f0a';ctx.fillRect(ex-1,ey-4,2,5);ctx.fillRect(ex-1,ey+2,2,2);
+    // off screen: a big pulsing disc with a chunky arrowhead and a ring, bigger still when the goal is the yard and you've wandered off
+    const yard=(st.id==='mulch'||st.id==='knock'||st.id==='swap')&&!(P.x>LOTS[0].x0&&P.x<LOTS[0].x1&&P.y>LOTS[0].y0&&P.y<LOTS[0].y1),pu=.5+.5*Math.sin(time*7),R=Math.round((yard?11:9)+pu*2);
+    const ex=clamp(sx,R+8,VW-R-8),ey=clamp(sy,R+8,VH-R-8),dx=sx-ex,dy=sy-ey,dl=Math.hypot(dx,dy)||1,ux=dx/dl,uy=dy/dl;
+    const rr=R+4+Math.round(pu*4);ctx.fillStyle=`rgba(255,207,74,${(.55-pu*.4).toFixed(2)})`;for(let k=0;k<24;k++){const g=k/24*Math.PI*2;ctx.fillRect(Math.round(ex+Math.cos(g)*rr),Math.round(ey+Math.sin(g)*rr),2,2);}
+    ctx.fillStyle='#1a0f0a';pcircle(ctx,ex,ey,R+1);ctx.fillStyle=yard?'#ff8a1f':'#ffcf4a';pcircle(ctx,ex,ey,R);
+    const out=R+2+Math.round(pu*2);for(let k=0;k<9;k++){const w=9-k,x=ex+ux*(out+k)-w/2,y=ey+uy*(out+k)-w/2;ctx.fillStyle='#1a0f0a';ctx.fillRect(Math.round(x)-1,Math.round(y)-1,w+2,w+2);}
+    for(let k=0;k<9;k++){const w=9-k,x=ex+ux*(out+k)-w/2,y=ey+uy*(out+k)-w/2;ctx.fillStyle=yard?'#ff8a1f':'#ffcf4a';ctx.fillRect(Math.round(x),Math.round(y),w,w);}
+    ctx.fillStyle='#1a0f0a';ctx.fillRect(ex-1,ey-5,3,7);ctx.fillRect(ex-1,ey+3,3,3);
   }
 }
