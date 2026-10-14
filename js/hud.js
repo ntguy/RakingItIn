@@ -33,8 +33,9 @@ function updateHUD(dt){
 }
 function paintLot(q,L,s){
   const pct=Math.round(s.pct*100);
-  q('lotName').textContent=L.name;q('lotTag').textContent=TUTORIAL?L.tag:`${L.tag} · ${HOOD_NAMES[L.hood]}`;
-  q('lotBar').style.width=pct+'%';q('lotBar').style.background=pct>=90?'#4bc26a':pct>=70?'#ffcf4a':pct>=50?'#ff9800':'#fe5f55';
+  q('lotName').textContent=L.name;q('lotTag').textContent=TUTORIAL?'':HOOD_NAMES[L.hood];
+  q('lotBar').style.width=pct+'%';{const f=bonusesFor(L);q('lotPanel').querySelectorAll('.tips b').forEach((b,i)=>{b.textContent=f[i]>=1000?'$'+f[i]/1000+'K':fmt$(f[i]);});}
+  q('lotBar').style.background=pct>=90?'#4bc26a':pct>=70?'#ffcf4a':pct>=50?'#ff9800':'#fe5f55';
   const marks=[50,70,90];q('lotPanel').querySelectorAll('.bar i').forEach((m,i)=>m.classList.toggle('hit',pct>=marks[i]));
   q('lotGood').textContent=s.good;q('lotTotal').textContent=s.total;
   const bd=q('lotBadge'),lk=lotLocked(L);bd.className='lotbadge '+(L.done?'paid':lk?'locked':'open');

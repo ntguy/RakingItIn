@@ -20,8 +20,17 @@ const BULB={x:STREET[STREET.length-1][0],y:STREET[STREET.length-1][1],r:BULB_R,h
 const CIRCLES=[...STREET.slice(1,-1).map(([x,y],i)=>({x,y,r:RH,hood:STREET_HOOD[i]})),BULB];
 const DRIVE_CFG=[null,{w:30,cars:1,p:.7},null,{w:32,cars:1,p:.8},{w:34,cars:1,p:1},{w:52,cars:2,p:1},{w:56,cars:2,p:1},{loop:true}];
 const DAY_SECONDS=320,DAY_START=7,DAY_END=22;
-const FANCY_PEN=3,TIPS=[[.9,.3],[.7,.2],[.5,.1]];
-const tipFor=pct=>(TIPS.find(t=>pct>=t[0])||[0,0])[1];
+const LEAF_PAY=.5,FANCY_PEN=1.5; // $ per leaf in a good zone, and taken off per leaf in a fancy zone or pool
+// the bonus a house pays at 50/70/90% cleaned, by family name (a house not listed pays the starter rate)
+const BONUS_PCT=[.5,.7,.9],BONUS_DEF=[50,100,200];
+const BONUSES={'THE KOWALSKIS':[25,50,100],'THE BAKERS':[40,80,160],'THE FLYNNS':[30,60,120],'THE COOPERS':[35,70,140],'THE DUFFYS':[30,60,120],'THE RAMIREZES':[30,60,120],'THE WANGS':[30,60,120],
+  'THE OSEIS':[70,140,280],'THE ABERNATHYS':[60,125,250],'THE NGUYENS':[70,140,280],'THE OKAFORS':[60,120,250],'THE MILLERS':[100,200,400],'THE MORGANS':[80,150,300],'BIRCH COURT':[125,250,500],
+  'THE LINDQVISTS':[150,300,600],'THE SMITHS':[150,300,600],'MAPLE GARDENS':[180,360,720],'THE GARCIAS':[150,300,600],
+  'THE DELACROIXS':[200,400,750],'THE PETROVS':[300,600,1200],'THE ASHFORDS':[250,500,800],'THE PATELS':[300,600,1200],
+  'THE HARTWELLS':[200,300,600],'THE NAKAMURAS':[750,1250,2000],'THE WILLOWS':[750,1250,2000],'THE WHITFORDS':[800,1500,3000],
+  'THE VANDERMEERS':[1000,2000,4000]};
+const bonusesFor=L=>(L&&BONUSES[L.name])||BONUS_DEF;
+const bonusFor=(pct,L)=>{const f=bonusesFor(L);let r=0;BONUS_PCT.forEach((p,i)=>{if(pct>=p)r=f[i];});return r;};
 // reputation, scored at the end of each day. Houses finished at 50/70/90% earn a flat bonus;
 // damage costs 1 point per $10 of it, plus per-scare, per-road-leaf and late-night noise penalties
 const REP_HOUSE=[[.9,40],[.7,20],[.5,10]],REP_PED=3,REP_ROAD_PER=10,REP_ROAD_CAP=25,LATE_HOUR=20,REP_LATE_PER_SEC=1;

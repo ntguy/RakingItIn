@@ -181,9 +181,9 @@ function lotStats(L){
   return{total,good,fancy,pool,pct:total?good/total:1};
 }
 function calcPay(L,s){
-  const base=s.good,pen=(s.fancy+s.pool)*FANCY_PEN;
-  const tipPct=tipFor(s.pct),tip=Math.round(base*tipPct);
-  return{base,pen,tip,tipPct,total:Math.max(0,base-pen+tip)};
+  const base=Math.round(s.good*LEAF_PAY),pen=Math.round((s.fancy+s.pool)*FANCY_PEN);
+  const tip=bonusFor(s.pct,L);
+  return{base,pen,tip,total:Math.max(0,base-pen+tip)};
 }
 let pendingLot=null,pendingPay=null;
 function openCloseout(L){
@@ -197,11 +197,11 @@ function openCloseout(L){
   modalEl.innerHTML=`<div class="panel receipt">
     <h2>${L.name}</h2><div class="lottag">${L.tag} &middot; ${pct}% OF LEAVES ORGANIZED</div>
     <div class="quote">${q}</div>
-    <div class="line"><span>IN BEDS &amp; NATURAL AREAS</span><span>${s.good-L.hauled} &times; $1</span></div>
-    <div class="line"><span>HAULED AWAY</span><span>${L.hauled} &times; $1</span></div>
-    ${L.zones.some(z=>!z.good&&z.type!=='pool')||s.fancy?`<div class="line"><span>LEAVES IN FANCY ZONES</span><span class="neg">${s.fancy} &times; -$${FANCY_PEN}</span></div>`:''}
-    ${L.zones.some(z=>z.type==='pool')?`<div class="line"><span>LEAVES IN THE POOL</span><span class="neg">${s.pool} &times; -$${FANCY_PEN}</span></div>`:''}
-    <div class="line"><span>TIP ${p.tipPct?Math.round(p.tipPct*100)+'%':'(50% FOR A TIP)'}</span><span class="pos">${p.tip?'+'+fmt$(p.tip):'-'}</span></div>
+    <div class="line"><span>IN BEDS &amp; NATURAL AREAS</span><span>${s.good-L.hauled} &times; $${LEAF_PAY.toFixed(2)}</span></div>
+    <div class="line"><span>HAULED AWAY</span><span>${L.hauled} &times; $${LEAF_PAY.toFixed(2)}</span></div>
+    ${L.zones.some(z=>!z.good&&z.type!=='pool')||s.fancy?`<div class="line"><span>LEAVES IN FANCY ZONES</span><span class="neg">${s.fancy} &times; -$${FANCY_PEN.toFixed(2)}</span></div>`:''}
+    ${L.zones.some(z=>z.type==='pool')?`<div class="line"><span>LEAVES IN THE POOL</span><span class="neg">${s.pool} &times; -$${FANCY_PEN.toFixed(2)}</span></div>`:''}
+    <div class="line"><span>BONUS ${p.tip?'':'(REACH 50%)'}</span><span class="pos">${p.tip?'+'+fmt$(p.tip):'-'}</span></div>
     <div class="line total"><span>PAYMENT</span><span>${fmt$(p.total)}</span></div>
     <div class="btns" style="margin-top:14px;justify-content:center"><button class="btn green" id="bPay">${G('use')} COLLECT</button><button class="btn red" id="bNo">${G('back')} NOT YET</button></div>
   </div>`;
@@ -211,7 +211,7 @@ function openCloseout(L){
 function closeModal(){modalEl.classList.add('hide');state='play';document.body.style.cursor='none';pendingLot=null;}
 function confirmCloseout(){
   const L=pendingLot,p=pendingPay;if(!L)return;
-  L.done=true;L.paidAmt=p.total;L.paidPct=L.pct;L.paidTip=p.tipPct;earn(p.total);today.houseEarn+=p.total;today.houses++;statsT=1;
+  L.done=true;L.paidAmt=p.total;L.paidPct=L.pct;L.paidTip=p.tip;earn(p.total);today.houseEarn+=p.total;today.houses++;statsT=1;
   if(!TUT.on)goalsHouse(L,L.pct);
   closeModal();floatText(L.door.x,L.door.y-10,'+'+fmt$(p.total),'#ffcf4a',true);chaChing();rumble(.15,.5,110);setTimeout(()=>rumble(.15,.6,140),170);
   for(let k=0;k<30;k++){const a=rnd()*Math.PI*2,s=30+rnd()*60;sparks.push({x:L.door.x,y:L.door.y+6,z:8,vx:Math.cos(a)*s,vy:Math.sin(a)*s*.7,vz:60+rnd()*80,l:.7+rnd()*.6,c:rnd()<.5?'#ffcf4a':'#4bc26a'});}

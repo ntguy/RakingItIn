@@ -273,7 +273,7 @@ function drawDoorBadges(cx,cy){
   // past the first rating, cue the knock on the house you're working, with the rep it'd pay right now
   if(!TUT.on&&curLot&&!curLot.done&&!lotLocked(curLot)&&statsCache&&statsCache.pct>=REP_HOUSE[REP_HOUSE.length-1][0]){
     const L=curLot,x=L.door.x-cx,y=L.door.y-cy-12+Math.round(Math.sin(time*3));
-    if(x>-12&&x<VW+12&&y>-8&&y<VH+8){drawCaret(x,y);const t='+'+repForPct(statsCache.pct)+'%',tw=t.length*4-1;pxText(t,x-(tw>>1),y-21,'#ffcf4a');}
+    if(x>-12&&x<VW+12&&y>-8&&y<VH+8){drawCaret(x,y);const t='+'+bonusFor(statsCache.pct,L),tw=t.length*4-1;pxText(t,x-(tw>>1),y-17,'#ffcf4a');}
   }
   for(const L of LOTS){
     if(L===curLot&&!TUT.on&&!L.done&&statsCache&&statsCache.pct>=REP_HOUSE[REP_HOUSE.length-1][0]&&!lotLocked(L))continue;

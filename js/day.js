@@ -57,7 +57,7 @@ function kbmHTML(){
         <div class="krow home">${k('A','A','g',.6)}${k('S','S','g',1.2)}${k('D','D','g',1.8)}<i class="key" style="visibility:hidden"></i><div class="kc"><span class="klab r">GOALS</span>${k('G','G')}</div></div>
         <div class="klab g">MOVE<small>IN THE TRUCK: W GAS &middot; S BRAKE</small></div>
       </div>
-      <div class="krow" style="gap:4px;margin-top:4px">${[1,2,3,4,5,6].map(n=>sk(n,'p')).join('')}</div>
+      <div class="krow" style="gap:4px;margin-top:4px">${[1,2,3].map(n=>sk(n,'p')).join('')}<span class="klab p" style="align-self:center;padding:0 4px">...</span></div>
       <div class="klab p" style="margin-top:-6px">NOZZLES</div>
     </div>
     <div class="ctlbox"><div class="ctlhead">MOUSE</div>
@@ -204,7 +204,6 @@ function renderNight(){
     // where reputation sits in its rank, and how far to the next one
     const lv=repLevel(rep),lv0=repLevel(r.before),lo=rep<0?-100:REP_LEVELS[lv],nxt=REP_LEVELS[lv+1],fill=v=>nxt!=null?clamp((v-lo)/(nxt-lo),0,1):1;
     // newly reached levels open up bigger houses
-    const opened=lv>lv0?LOTS.filter(L=>L.level>lv0&&L.level<=lv):[];
     const worked=daySummary.filter(h=>h.done||h.pct>=.01);
     const tiles=worked.map((h,i)=>{const pct=Math.round(h.pct*100),col=pct>=90?'#4bc26a':pct>=70?'#ffcf4a':pct>=50?'#ff9800':'#fe5f55';
       return`<div class="htile ${h.done?'paid':''}" style="animation-delay:${.4+i*.08}s">${pxIcon(h.done?'house':'housegray',4+Math.round((h.s??h.k)/2.5))}
@@ -220,7 +219,6 @@ function renderNight(){
           <div class="rankname">LEVEL ${lv} &middot; ${repRank(rep)}</div>
           <div class="rankbar"><i data-to="${(fill(rep)*100).toFixed(1)}" style="width:${(lv0===lv?fill(r.before)*100:0).toFixed(1)}%"></i></div>
           <div class="rankrow"><span>${rep}</span><span>${nxt!=null?nxt+' &middot; LEVEL '+(lv+1):'MAX LEVEL'}</span></div>
-          ${opened.length?`<div class="chips">${opened.map((L,i)=>chip('house',L.name.replace(/^THE /,'')+' WILL HIRE YOU',null,'',i)).join('')}</div>`:''}
           ${repC.length?`<div class="chips">${repC.map((c,i)=>chip(c[0],c[1],c[2],c[3],i)).join('')}</div>`:''}</div>
       </div>
       ${tiles?`<div class="htiles">${tiles}</div>`:''}
