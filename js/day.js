@@ -11,6 +11,8 @@ function startSpot(){
       // the right-hand lane faces the way traffic goes, the far one faces the other way, like real parked cars
       const x=TPX[i]-sn*PARK_LAT*side,y=TPY[i]+c*PARK_LAT*side,d=Math.hypot(Math.max(L.x0-x,0,x-L.x1),Math.max(L.y0-y,0,y-L.y1))*3+Math.hypot(x-L.door.x,y-L.door.y);if(d>=bd)continue;
       const on=ROADS.filter(r=>inRect(r,x,y));if(on.length!==1)continue;const r=on[0];
+      // STREET runs from the cheapest end to the grandest, so "forward" is further into pricier neighborhoods: park in the lane whose traffic heads that way
+      const j=ROADS.indexOf(r),fa=Math.atan2(Math.sign(STREET[j+1][1]-STREET[j][1]),Math.sign(STREET[j+1][0]-STREET[j][0])),ta0=side>0?a:a+Math.PI;if(Math.abs(Math.atan2(Math.sin(ta0-fa),Math.cos(ta0-fa)))>.1)continue;
       if((r.h?Math.min(x-r.x0,r.x1-x):Math.min(y-r.y0,r.y1-y))<40||CIRCLES.some(q=>Math.hypot(x-q.x,y-q.y)<q.r+30))continue;
       const vert=Math.abs(c)<.02,hx=vert?TRUCK_HW:TRUCK_HL,hy=vert?TRUCK_HL:TRUCK_HW,b={x0:x-hx-4,y0:y-hy-4,x1:x+hx+4,y1:y+hy+4};
       if(CARS.some(o=>rectsHit(o,b,4))||MOUTHS.some(m=>rectsHit(m,b,4)))continue;
@@ -25,7 +27,7 @@ function resetDay(){
   clearVisitors();traffic.length=0;officers.length=0;envelopes.length=0;pendingTraffic.length=0;for(const o of couriers)if(o.bub)o.bub.el.remove();couriers.length=0;packages.length=0;squirrels.length=0;birds.length=0;truckTicket=false;for(const m of MAILBOXES)m.flag=false;
   for(const L of LOTS){L.done=false;L.hauled=0;L.paidAmt=0;L.paidPct=0;spawnLot(L);}
   tarps.length=0;truckBundles.length=0;bed=Array.from({length:spareMax()},()=>1);hour=DAY_START;
-  today=newToday();roadLeaves=0;roadT=0;repShown=null;carryPkg=null;
+  today=newToday();repPeak=rep;roadLeaves=0;roadT=0;repShown=null;carryPkg=null;
   for(const p of peds)if(p.bub)p.bub.el.remove();peds.length=0;spawnCameo();
   TR.v=0;TR.steer=0;if(!TUTORIAL){const s=startSpot();if(s)Object.assign(TR,s);}
   for(const pl of players)withPl(pl,()=>{bundle=null;tarpsUsed=0;battery=capacity();swapT=0;tieT=0;driving=false;cur.riding=false;heldNet=null;carryPkg=null;
@@ -164,7 +166,7 @@ function repTally(){
 }
 function scoreRep(){
   roadLeaves=countRoadLeaves();const r=repTally();
-  r.before=rep;rep+=r.total;today.rep=r;
+  r.before=rep;rep+=r.total;repPeak=rep;today.rep=r;
 }
 function statBars(a){
   const rows=[['REACH',a.range/1.5],['WIDTH',a.coneLo/60],['POWER',a.force/2.2],['LIFT',a.lift/1.7],['BATTERY',(1/a.drain)/1.9]];

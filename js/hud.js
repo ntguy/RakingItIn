@@ -15,6 +15,10 @@ function updateHUD(dt){
   if(C){setIfG('sday',day,v=>{$('sDay').textContent='DAY '+v;});setIfG('sclock',fmtHour(hour),v=>{$('sClock').textContent=v;});
     players.forEach((pl,i)=>setIfG('sm'+i,Math.round(pl===cur?money:pl.money),v=>{$('sM'+i).textContent=fmt$(v);}));}
   if(state==='play'||state==='menu'||state==='closeout'){const t=NET.role==='guest'?NET.repT:repTally().total;
+    // reputation is live: reaching a new level mid-day opens its houses straight away
+    if(rep+t>repPeak){const lv0=repLevel(Math.max(rep,repPeak));repPeak=rep+t;const lv1=repLevel(repPeak);
+      if(lv1>lv0&&state==='play'&&!TUT.on){const op=LOTS.filter(L=>!L.filler&&(L.level||0)>lv0&&(L.level||0)<=lv1);
+        if(op.length){floatText(P.x,P.y-26,op.length>1?op.length+' NEW HOUSES NOW HIRING':op[0].name+' IS NOW HIRING','#ffcf4a');blip(660,.07,'square',.05);setTimeout(()=>blip(990,.12,'square',.05),80);}}}
     if(t!==repShown||RT.dataset.v===undefined){RT.dataset.v=1;const el=RT,tot=rep+t;el.textContent=(tot<0?'\u2212':'')+Math.abs(tot);el.className=tot<0?'neg':'';
       if(repShown!=null&&state==='play'&&t!==repShown){const d=t-repShown,p=document.createElement('span');p.className='reppop';p.textContent=(d>0?'+':'\u2212')+Math.abs(d);p.style.color=d>0?'var(--green)':'var(--red)';RB.querySelectorAll('.reppop').forEach(q=>q.remove());RB.appendChild(p);setTimeout(()=>p.remove(),1500);}
       repShown=t;}}

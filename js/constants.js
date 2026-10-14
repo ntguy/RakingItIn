@@ -30,9 +30,11 @@ const REP_LEVELS=[0,50,100,200,300,500],REP_NAMES=['NEW IN TOWN','GETTING NOTICE
 const repForPct=pct=>(REP_HOUSE.find(t=>pct>=t[0])||[0,0])[1];
 const repLevel=r=>{let l=0;for(let i=1;i<REP_LEVELS.length;i++)if(r>=REP_LEVELS[i])l=i;return l;};
 const repRank=r=>r<0?'SKETCHY':REP_NAMES[repLevel(r)];
-// a house too grand for your reputation won't pay yet (checked against reputation banked at the start of the day)
+// a house too grand for your reputation won't pay yet. Reputation is live: what you've earned so far today counts as soon as
+// you earn it, and the best it reached today stays (a later penalty doesn't lock a house you already opened)
+let repPeak=0;
 const lotNeed=L=>REP_LEVELS[L.level||0];
-const lotLocked=L=>!!L&&!L.filler&&!TUTORIAL&&repLevel(rep)<(L.level||0);
+const lotLocked=L=>!!L&&!L.filler&&!TUTORIAL&&repLevel(Math.max(rep,repPeak))<(L.level||0);
 const TRUCK_HL=26,TRUCK_HW=12;
 // where the day starts: beside the truck, this far along it from the middle (+ toward the front)
 const SPAWN_AT=8;
