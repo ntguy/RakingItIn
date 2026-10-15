@@ -451,21 +451,8 @@ function drawGates(c,L){
 // vehicles (sprites face +x)
 let truckBase,truckTmp;
 const TB_SPOTS=[[9,15],[14,15],[9,9],[14,9],[11,12],[7,12],[16,12],[11,7]];
-function buildTruck(){
-  truckBase=mk(52,24);const c=truckBase.getContext('2d');
-  c.fillStyle='#0d0d10';for(const [x,y] of [[7,0],[36,0],[7,22],[36,22]])c.fillRect(x,y,9,2);
-  c.fillStyle='#16303d';c.fillRect(0,1,52,22);c.fillStyle='#2f6f8f';c.fillRect(1,2,50,20);
-  c.fillStyle='#1d4658';c.fillRect(4,4,24,16);c.fillStyle='#183a49';for(let y=6;y<20;y+=3)c.fillRect(4,y,24,1);
-  c.fillStyle='#24566c';c.fillRect(1,2,3,20);c.fillStyle='#3d88ab';c.fillRect(1,2,28,1);
-  c.fillStyle='#3a86ab';c.fillRect(29,3,21,18);c.fillStyle='#1a2a3a';c.fillRect(30,4,2,16);
-  c.fillStyle='#4fa3cc';c.fillRect(32,4,10,16);c.fillStyle='#7cc4e6';c.fillRect(32,4,10,1);
-  c.fillStyle='#1a2a3a';c.fillRect(42,4,3,16);c.fillStyle='#6fb3d9';c.fillRect(43,5,1,4);
-  c.fillStyle='#2f6f8f';c.fillRect(45,3,6,18);c.fillStyle='#ffe38a';c.fillRect(50,3,2,3);c.fillRect(50,18,2,3);
-  c.fillStyle='#fe3b3b';c.fillRect(0,3,1,3);c.fillRect(0,18,1,3);
-  c.fillStyle='#16303d';c.fillRect(33,0,2,2);c.fillRect(33,22,2,2);
-  c.fillStyle='#fff';c.fillRect(34,9,6,6);c.fillStyle='#4bc26a';c.fillRect(35,10,4,4);
-  truckTmp=mk(52,24);
-}
+// the body comes from the owner's look (js/custom.js); the wrapper canvas is drawn on every frame
+function buildTruck(){truckBase=truckSprite(CUST.truck,CUST.paint);if(!truckTmp)truckTmp=mk(52,24);}
 // a car's colour string can carry its kind: 'o:#hex' is an old beater (Birch Lane), 'l:#hex' a luxury car (Willow
 // Heights), a plain '#hex' an ordinary car
 function makeCar(spec){

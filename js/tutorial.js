@@ -90,6 +90,10 @@ function tutModal(kind){
       <div><b>1</b>HOLD ${cur.dev.t==='auto'?'EITHER MOUSE BUTTON':'EITHER TRIGGER'} DOWN AND DRAG THE RAKE BACKWARDS THROUGH LEAVES</div>
       <div><b>2</b>RELEASE ${cur.dev.t==='auto'?'THE MOUSE':'THE TRIGGER'} TO DROP THE COLLECTED LEAVES</div></div>
       <button class="btn green bounce" id="tutOk">GOT IT ${G('ok')}</button></div>`
+    :kind==='vac'?`<div class="panel tutpop"><h2>THE VACUUM</h2><div class="rl">
+      <div><b>1</b>VACUUM UP LEAVES USING ${cur.dev.t==='auto'?'LEFT CLICK':'THE LEFT TRIGGER'}, AND BLOW THEM BACK OUT USING ${cur.dev.t==='auto'?'RIGHT CLICK':'THE RIGHT TRIGGER'}</div>
+      <div><b>2</b>SUCTION POWER AND MOVEMENT SPEED GRADUALLY DECREASE AS YOU HOLD MORE LEAVES</div></div>
+      <button class="btn green bounce" id="tutOk">GOT IT ${G('ok')}</button></div>`
     :kind==='rep'?`<div class="panel tutpop"><h2>REPUTATION ${STAR_ICON}</h2><div class="rl">
       <div><b class="pos">+</b>GAIN REPUTATION BY FINISHING A HOUSE WITH THE YARD PRISTINE (50/70/90% OF LEAVES CLEANED UP GIVES +10/20/40)</div>
       <div><b class="neg">&minus;</b>BREAKING THINGS, SCARING PEOPLE, LEAVES IN THE ROAD, PARKING TICKETS, NOISE COMPLAINTS</div>

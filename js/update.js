@@ -34,7 +34,7 @@ function updatePlayer(dt){
   // in the truck: R2 is gas, L2 is reverse and the stick only steers (keys still use W/S)
   if(driving){if(ni)iy=ni.th;else if(usesKeys){iy=0;if(keys.KeyW||keys.ArrowUp)iy--;if(keys.KeyS||keys.ArrowDown)iy++;}else iy=0;if(!ni&&!pad.lock)iy+=pad.lt-pad.rt;updateTruck(dt,clamp(ix,-1,1),clamp(iy,-1,1));}
   else{
-    const il=Math.hypot(ix,iy)||1,im=Math.min(1,Math.hypot(ix,iy)),carry=bundle?1-Math.min(.35,bundle.total/1800):1,wade=wet(P.x,P.y)?.6:1,spd=(swapT>0||tieT>0)?0:78*moveMul()*carry*wade*rakeSpeed(cur);
+    const il=Math.hypot(ix,iy)||1,im=Math.min(1,Math.hypot(ix,iy)),carry=bundle?1-Math.min(.35,bundle.total/1800):1,wade=wet(P.x,P.y)?.6:1,spd=(swapT>0||tieT>0)?0:78*moveMul()*carry*wade*rakeSpeed(cur)*vacSlow(cur.vacN||0);
     const acc=Math.min(1,dt*14);P.vx+=(ix/il*im*spd-P.vx)*acc;P.vy+=(iy/il*im*spd-P.vy)*acc;
     const ox=P.x,oy=P.y;P.x+=P.vx*dt;if(!walkable(P.x,P.y))P.x=ox;P.y+=P.vy*dt;if(!walkable(P.x,P.y))P.y=oy;collidePlayer();
     const sp=Math.hypot(P.vx,P.vy);if(sp>8)P.walk+=dt*sp*.16;
@@ -56,8 +56,11 @@ function updatePlayer(dt){
   const held=cur.raking&&!driving&&swapT<=0&&tieT<=0&&((usesKeys&&(mouse.l||mouse.r))||(!pad.lock&&(pad.lt>.3||pad.rt>.3))||(ni&&(ni.lo||ni.hi)));
   if(cur.rake.down&&!held&&cur.rakeN)rakeDump(true,true);cur.rake.down=!!held;
   if(want===2&&!tutOk('blowHi'))want=0;
+  if(att().vac&&want===2&&!cur.vacN)want=0;
   if(want&&battery<=0){want=0;if(time-lastEmptyBuzz>.45){lastEmptyBuzz=time;rumble(.25,0,60);blip(110,.12,'sawtooth',.05,70);}}
   mode=want;if(mode)cur.lastMode=mode;
+  if(att().vac&&mode===2)vacBlowOut(dt);
+  if(att().vac&&!seenVac&&cur.dev.t!=='net'&&!driving&&state==='play'&&!TUT.on){seenVac=true;save();tutModal('vac');}
   if(mode===2&&hour>=LATE_HOUR)today.lateHigh+=dt;
   let target=mode;const bpct=battery/capacity();
   if(mode&&bpct<.12)target*=.55+.45*(Math.sin(time*37)>-.2?1:0);
@@ -67,6 +70,15 @@ function updatePlayer(dt){
   // the vortex nozzle swirls leaves to a point: where the mouse is, or on a controller as far out as the right stick
   // is pushed (an online friend sends theirs)
   if(att().vortex){const f=ni?ni.vf??.55:inputMode==='pad'||cur.dev.t==='pad'?padVortexF(cur,pad):mouseVortexF();setVortex(f);}
+}
+// the vacuum's right click: shoot the tank's leaves out of the nozzle, a stream of them at a time
+function vacBlowOut(dt){
+  cur.vacAcc+=dt*VAC_OUT*Math.min(1,power);let n=Math.min(Math.floor(cur.vacAcc),cur.vacN);if(n<=0)return;cur.vacAcc-=Math.floor(cur.vacAcc);
+  const pi=players.indexOf(cur),tube=att().tube,nx=P.x+aim.x*tube,ny=P.y-3+aim.y*tube,base=Math.atan2(aim.y,aim.x);
+  for(let i=N-1;i>=0&&n>0;i--){if(ST[i]!==6||UN[i]!==pi)continue;
+    const a=base+(rnd()*2-1)*.32,s=64+rnd()*55;
+    ST[i]=0;UN[i]=0;LX[i]=nx;LY[i]=ny;LZ[i]=2+rnd()*2;VX[i]=Math.cos(a)*s;VY[i]=Math.sin(a)*s;VZ[i]=2.3+rnd()*11.5;
+    cur.vacN--;n--;UH[HOME[i]]=1;statsT=1;}
 }
 // How far out the vortex point sits, as a share f of its span: from VORT_NEAR px past the nozzle out to 85% of the air's
 // reach at full high speed. vortexAim is where it's aimed (the controller's crosshair sits there); vortexD is where the

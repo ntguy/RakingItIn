@@ -1,6 +1,6 @@
 // profiler readings for the heavy cases (estate with traffic, night, split screen). Try --throttle 4 --dpr 2
 
-localStorage.clear();document.querySelector('#titleBtns button').click();await new Promise(r=>setTimeout(r,300));closeMenu();
+localStorage.clear();document.querySelector('#titleBtns button').click();await new Promise(r=>setTimeout(r,300));introSkip();closeMenu();
 perfSet(true);const W=ms=>new Promise(r=>setTimeout(r,ms));const out={};
 const at=(k,pl)=>{const L=LOTS[k];pl.P.x=L.door.x;pl.P.y=L.door.y+L.front[1]*24;};
 // evening traffic: a dozen cars on the road

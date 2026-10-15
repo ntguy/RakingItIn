@@ -73,6 +73,7 @@ function padInput(dt){
     for(const k in pads){const p=pads[k];if(!p.startTap)continue;p.startTap=false;
       if(state==='play'&&!padOwnedNow(p.idx)){if(!coop())setInputMode('pad',p.idx);openMenu(false,coop()?padOwner(p.idx)||players[0]:players[0]);}}
   }else{for(const k in pads)pads[k].startTap=false;
+    if(state==='intro'){const sv=pad;pad=MERGED;introPad();pad=sv;return;}
     if(state==='shop'&&coop()){for(const pl of players)if(devPad(pl)!==ZERO_PAD)shopPadNav(pl,dt);}
     else if(state==='title'||state==='menu'||state==='closeout'||state==='shop'||state==='joinpad'||state==='tut'){const sv=pad;pad=MERGED;menuNav(dt);pad=sv;}}
 }
@@ -156,15 +157,16 @@ function focusRestore(f){
   setFocus(el);
 }
 // ---------- button glyphs for prompts: keycaps, Xbox letters or PlayStation shapes
-const KB_GLY={gas:'W',brake:'S',steer:'A',steer2:'D',goals:'G',ls:'WASD',rs:'MOUSE',use:'E',tarp:'Q',rake:'R',honk:'SPACE',end:'N',pause:'ESC',back:'ESC',ok:'ENTER',start:'ENTER',low:'L-CLICK',high:'R-CLICK',prev:'WHEEL',next:'WHEEL'};
-const PAD_GLY={gas:'rt',brake:'lt',steer:'ls',goals:'b',use:'a',ok:'a',honk:'b',back:'b',tarp:'x',end:'y',rake:'y',prev:'lb',next:'rb',tabL:'lb',tabR:'rb',low:'lt',high:'rt',pause:'menu',start:'menu',ls:'ls',rs:'rs'};
+const KB_GLY={gas:'W',brake:'S',steer:'A',steer2:'D',goals:'G',ls:'WASD',rs:'MOUSE',use:'E',tarp:'Q',rake:'R',honk:'SPACE',end:'N',pause:'ESC',back:'ESC',ok:'ENTER',start:'ENTER',low:'L-CLICK',talk:'ENTER',high:'R-CLICK',prev:'WHEEL',next:'WHEEL'};
+const PAD_GLY={gas:'rt',brake:'lt',steer:'ls',goals:'b',use:'a',ok:'a',honk:'b',back:'b',tarp:'x',end:'y',rake:'y',prev:'lb',next:'rb',tabL:'lb',tabR:'rb',low:'lt',high:'rt',pause:'menu',start:'menu',talk:'x',ls:'ls',rs:'rs'};
 const PS_FACE={a:'<path d="M3.5 3.5l7 7M10.5 3.5l-7 7" stroke="#8ab4ff"/>',b:'<circle cx="7" cy="7" r="4" stroke="#ff7070"/>',x:'<rect x="3.2" y="3.2" width="7.6" height="7.6" stroke="#ff8fd6"/>',y:'<path d="M7 2.8l4.6 8H2.4z" stroke="#4fe0b0"/>'};
 const PS_NAME={lb:'L1',rb:'R1',lt:'L2',rt:'R2',menu:'OPTIONS'};
 const MENU_ICON='<svg width="11" height="9" viewBox="0 0 11 9"><path d="M0 1h11M0 4.5h11M0 8h11" stroke="#fff" stroke-width="2"/></svg>';
 function glyphInner(a,st=glyphStyle()){
   if(st==='kbm'){if(a==='nozzles')return`1-${ATT.length} OR THE MOUSE WHEEL`;const t=KB_GLY[a];return t?`<i class="gb kb">${t}</i>`:'';}
   if(a==='nozzles')return glyphInner('prev',st)+' / '+glyphInner('next',st);
-  const b=PAD_GLY[a];if(!b)return'';
+  // (the cutscene's "press X" is the cross on a PlayStation pad)
+  const b=a==='talk'&&st==='ps'?'a':PAD_GLY[a];if(!b)return'';
   if(b==='ls'||b==='rs')return`<i class="gb stk">${b[0].toUpperCase()}</i>`;
   if(b.length===1)return st==='ps'?`<i class="gb face ps"><svg viewBox="0 0 14 14" fill="none" stroke-width="2">${PS_FACE[b]}</svg></i>`:`<i class="gb face x${b}">${b.toUpperCase()}</i>`;
   if(st==='ps')return`<i class="gb sh">${PS_NAME[b]}</i>`;

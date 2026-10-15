@@ -31,7 +31,7 @@ function resetDay(){
   for(const p of peds)if(p.bub)p.bub.el.remove();peds.length=0;spawnCameo();
   TR.v=0;TR.steer=0;if(!TUTORIAL){const s=startSpot();if(s)Object.assign(TR,s);}
   for(const pl of players)withPl(pl,()=>{bundle=null;tarpsUsed=0;battery=capacity();swapT=0;tieT=0;driving=false;cur.riding=false;heldNet=null;carryPkg=null;
-    cur.raking=false;cur.rakeN=0;Object.assign(cur.rake,{eff:RAKE_REACH,prev:null,drop:null,contact:0,load:0});
+    cur.raking=false;cur.rakeN=0;cur.vacN=0;Object.assign(cur.rake,{eff:RAKE_REACH,prev:null,drop:null,contact:0,load:0});
     const [x,y]=fromTruck(SPAWN_AT-pl.i*14,-(TRUCK_HW+8));P.x=x;P.y=y;P.vx=P.vy=0;collidePlayer();
     const v=pl.view||views[0];pl.cam.x=clamp(P.x-v.w/2,0,WORLD_W-v.w);pl.cam.y=clamp(P.y-v.h/2,0,H-v.h);});
   camX=players[0].cam.x;camY=players[0].cam.y;
@@ -98,8 +98,11 @@ function renderMenuAs(){
   if(first)html=`<h2>HOW TO PLAY</h2><div class="goal">GET LEAVES INTO THE <span style="color:var(--green)">MULCH BEDS</span> AND OUT OF <span style="color:var(--red)">FANCY AREAS</span>.<br>DON'T BREAK ANYTHING! KNOCK ON THE FRONT DOOR TO GET PAID.</div>
     ${ctlSeg()}<div id="ctlWrap"></div><div class="btns"><button class="btn green bounce" id="mResume">GOT IT! ${G('ok')}</button></div>`;
   else if(menuPage==='controls')html=`<h2>CONTROLS</h2>${ctlSeg()}<div id="ctlWrap"></div>${back}`;
+  else if(menuPage==='unlock')html=`<h2>FULL GAME UNLOCK</h2><div class="sub">TYPE IN YOUR CODE</div><div class="setlist"><input id="unlockCode" class="codein" type="text" maxlength="32" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="CODE"><div class="codemsg" id="unlockMsg"></div></div>
+    <div class="btns"><button class="btn green" id="mUnlockGo">UNLOCK</button><button class="btn" id="mBack">BACK ${G('back')}</button></div>`;
+  else if(menuPage==='custom')html=`${custHTML()}<div class="btns"><button class="btn" id="mBack">BACK ${G('back')}</button></div>`;
   else if(menuPage==='settings')html=`<h2>SETTINGS</h2><div class="setlist">${volRow('music','MUSIC','NO MUSIC YET')}${volRow('sfx','SOUND EFFECTS')}
-    ${guest?'':'<button class="btn gold" id="mCheat">DEV CHEAT: +1K$</button>'}<button class="btn" id="mPerf">PERFORMANCE OVERLAY: ${PERF.on?'ON':'OFF'} (F3)</button></div>${back}`;
+    ${guest||!fullUnlock?'':'<button class="btn gold" id="mCheat">DEV CHEAT: +1K$</button>'}<button class="btn" id="mPerf">PERFORMANCE OVERLAY: ${PERF.on?'ON':'OFF'} (F3)</button></div>${back}`;
   else if(TUT.on)html=`<h2>PAUSED</h2><div class="sub">TUTORIAL</div><div class="mlist">
     <button class="btn green" id="mResume">RESUME ${G('back')}</button><button class="btn" id="mCtl">CONTROLS</button>
     <button class="btn" id="mSet">SETTINGS</button><button class="btn red" id="mExitTut">EXIT TUTORIAL</button></div>`;
@@ -110,18 +113,23 @@ function renderMenuAs(){
     html=`<h2>PAUSED</h2><div class="sub">DAY ${day} &middot; ${fmtHour(hour)}</div><div class="pgrid">
     <div class="mq"><button class="btn green" id="mResume">RESUME ${G('back')}</button>${guest?'':'<button class="btn red" id="mEnd">END THE DAY</button>'}</div>
     <div class="mq"><button class="btn" id="mCtl">CONTROLS</button><button class="btn" id="mSet">SETTINGS</button></div>
-    <div class="mq">${online?'<button class="btn" id="mNet">HOST ONLINE</button><div class="netbox" id="netBox"></div>':''}${split?'<button class="btn gold" id="mAdd">LOCAL SPLITSCREEN</button>':''}
+    <div class="mq">${online?'<button class="btn" id="mNet">HOST ONLINE</button><div class="netbox" id="netBox"></div>':''}${split?'<button class="btn gold" id="mAdd">LOCAL CO-OP</button>':''}
       ${leave?'<button class="btn gold" id="mLeave">LEAVE GAME</button>':''}${guest?'<button class="btn red" id="mNetLeave">LEAVE ONLINE GAME</button>':''}
       ${online||split||leave||guest?'':'<div class="sub">TWO PLAYERS ON THIS SCREEN</div>'}</div>
-    <div class="mq"><button class="btn" id="mMain">MAIN MENU</button></div></div>`;}
-  modalEl.innerHTML=`<div class="panel pause">${html}</div>`;
+    <div class="mq">${guest?'':fullUnlock?(cur===players[0]?'<button class="btn gold" id="mCustom">CUSTOMIZATION</button>':''):`<button class="btn gold lockedbtn" id="mCustomLocked">CUSTOMIZATION <svg class="px" width="16" height="16" viewBox="0 0 8 8"><path d="M2 1h4v1h1v2h1v4H0V4h1V2h1zM3 2v2h2V2z" fill="#e6edee"/></svg></button>`}<button class="btn" id="mMain">MAIN MENU</button></div></div>
+    ${guest||fullUnlock?'':'<div class="unlockbar"><button class="btn gold" id="mUnlock">FULL GAME UNLOCK</button></div>'}`;}
+  const keepY=modalEl.scrollTop;modalEl.innerHTML=`<div class="panel pause${menuPage==='custom'?' wide':''}">${html}</div>`;modalEl.scrollTop=keepY;
   modalEl.classList.remove('hide');
   const on=(id,fn)=>{const b=document.getElementById(id);if(b)b.onclick=fn;};
   if(document.getElementById('ctlWrap')){modalEl.querySelectorAll('[data-cv]').forEach(b=>b.onclick=()=>pickCtl(b.dataset.cv));showCtl(ctlView);}
-  on('mResume',closeMenu);on('mExitTut',exitTutorial);on('mBack',()=>menuGo('main'));on('mCtl',()=>menuGo('controls'));on('mSet',()=>menuGo('settings'));on('mMain',()=>menuGo('quit'));on('mQuit',toMainMenu);
+  on('mResume',closeMenu);on('mExitTut',exitTutorial);on('mBack',()=>menuGo('main'));on('mCtl',()=>menuGo('controls'));on('mSet',()=>menuGo('settings'));on('mMain',()=>menuGo('quit'));on('mUnlock',()=>menuGo('unlock'));on('mCustom',()=>menuGo('custom'));on('mCustomLocked',()=>blip(150,.12,'sawtooth',.04,90));
+  modalEl.querySelectorAll('[data-ci]').forEach(b=>b.onclick=()=>{const [k,id]=b.dataset.ci.split(':');custClick(k,id);renderMenu();if(inputMode==='pad'){const n=modalEl.querySelector(`[data-ci="${b.dataset.ci}"]`);if(n)setFocus(n);}});on('mQuit',toMainMenu);
   on('mEnd',()=>{modalEl.classList.add('hide');state='play';endDay();});on('mNetLeave',guestLeave);
   on('mAdd',()=>{modalEl.classList.add('hide');state='play';document.body.style.cursor='none';joinPlayer({t:'wait'});});
   {const who=cur;on('mLeave',()=>{modalEl.classList.add('hide');state='play';leavePlayer(who);});}
+  {const inp=document.getElementById('unlockCode');if(inp){
+    const go=()=>{if(inp.value.trim().toUpperCase()===FULL_CODE){fullUnlock=true;save();chaChing();menuGo('main');}else{document.getElementById('unlockMsg').textContent='THAT CODE DIDN\'T WORK';blip(150,.15,'sawtooth',.04,90);}};
+    on('mUnlockGo',go);inp.addEventListener('keydown',e=>{e.stopPropagation();if(e.code==='Enter')go();else if(e.code==='Escape')menuGo('main');});inp.addEventListener('keyup',e=>e.stopPropagation());setTimeout(()=>inp.focus(),30);}}
   {const who=cur;on('mCheat',()=>{withPl(who,()=>{money+=1000;});chaChing();});}
   on('mPerf',()=>{perfSet(!PERF.on);renderMenu();});
   const setVol=(k,v)=>{settings[k]=clamp(Math.round(v*20)/20,0,1);saveSettings();applyVolumes();const r=modalEl.querySelector(`[data-vr="${k}"]`);if(r)r.value=Math.round(settings[k]*100);
@@ -232,7 +240,7 @@ function renderNight(){
     <div class="nightfoot ${nightTab==='sum'?'flat':''}">${nightTab==='shop'?`<button class="btn small" id="bBack">&larr; SUMMARY ${G('tabL')}</button><button class="btn big green bounce" id="bDay">START DAY ${day+1} ${G('start')}</button>${coop()?'':`<div class="bankchip"><b>${fmt$(withPl(players[0],()=>money))}</b></div>`}`:`<button class="btn big gold bounce" id="bNext">HARDWARE STORE &rarr; ${G('start')}</button>`}</div></div>`;
   const plOf=b=>players[+(b.dataset.pl||0)]||players[0];
   modalEl.querySelectorAll('[data-up]').forEach(b=>b.onclick=()=>buyUpgrade(plOf(b),b.dataset.up));
-  modalEl.querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>{if(NET.role==='guest'){if(plOf(b)===players[1])netSend({t:'act',a:'buy',id:b.dataset.buy});return;}const a=ATT.find(x=>x.id===b.dataset.buy);let ok=false;withPl(plOf(b),()=>{if(!owned.includes(a.id)&&money>=a.price){money-=a.price;owned.push(a.id);equipped=a.id;ok=true;}});if(ok){chaChing();renderNight();}});
+  modalEl.querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>{if(NET.role==='guest'){if(plOf(b)===players[1])netSend({t:'act',a:'buy',id:b.dataset.buy});return;}const a=ATT.find(x=>x.id===b.dataset.buy);let ok=false;withPl(plOf(b),()=>{if(!locked(a)&&!owned.includes(a.id)&&money>=a.price){money-=a.price;owned.push(a.id);equipped=a.id;ok=true;}});if(ok){chaChing();renderNight();}});
   const bd=document.getElementById('bDay'),bn=document.getElementById('bNext'),bb=document.getElementById('bBack');
   if(bd)bd.onclick=startDay;if(bn)bn.onclick=()=>nightGo('shop');if(bb)bb.onclick=()=>nightGo('sum');
   // put every scroll position back where it was, so buying something doesn't jump the page
@@ -259,10 +267,10 @@ function storeCards(pl,ids,withAtts){
   // the upgrades sit in four themed boxes (2 x 2 on a wide screen), each showing only the ones this column offers
   const cards=`<div class="ugroups">${UPG_GROUPS.map(([nm,gids],gi)=>{const g=gids.filter(id=>ids.includes(id));return g.length?`<div class="ugroup g${gi}"><div class="sect">${nm}</div><div class="cards">${g.map(card).join('')}</div></div>`:'';}).join('')}</div>`;
   if(!withAtts)return cards;
-  const atts=ATT.map(a=>{const own=owned.includes(a.id),can=!own&&money>=a.price;
-      const btn=own?'<button class="btn small" disabled>OWNED</button>':`<button class="btn small ${can?'green':''}" data-buy="${a.id}"${da} ${can?'':'disabled'}>BUY ${fmt$(a.price)}</button>`;
-      return `<div class="ucard"><div class="t"><span>${a.name}</span><span class="ic" style="background:${a.tip}">${a.id==='fan'?'&lt;':a.id==='jet'?'!':a.id==='long'?'=':a.id==='vortex'?'@':a.id==='eco'?'%':a.id==='twin'?'&lt;&gt;':'o'}</span></div>
-        <div class="d">${a.desc}</div>${statBars(a)}${btn}</div>`;}).join('');
+  const atts=ATT.map(a=>{const own=owned.includes(a.id),lk=locked(a),can=!own&&!lk&&money>=a.price;
+      const btn=lk?'<button class="btn small" disabled>LOCKED</button>':own?'<button class="btn small" disabled>OWNED</button>':`<button class="btn small ${can?'green':''}" data-buy="${a.id}"${da} ${can?'':'disabled'}>BUY ${fmt$(a.price)}</button>`;
+      return `<div class="ucard${lk?' locked':''}">${lk?LOCK_SVG:''}<div class="t"><span>${a.name}</span><span class="ic" style="background:${a.tip}">${a.id==='fan'?'&lt;':a.id==='jet'?'!':a.id==='long'?'=':a.id==='vortex'?'@':a.id==='eco'?'%':a.id==='twin'?'&lt;&gt;':a.id==='vac'?'v':'o'}</span></div>
+        <div class="d">${typeof a.desc==='function'?a.desc():a.desc}</div>${statBars(a)}${btn}</div>`;}).join('');
   if(pl)return `${cards}<div class="sect">NOZZLES</div><div class="cards atts">${atts}</div>`;
   return `${cards}
       <div class="sect">BLOWER ATTACHMENTS &middot; SWAP ANYTIME WITH ${G('nozzles')}</div><div class="cards atts">${atts}</div>`;
@@ -312,6 +320,7 @@ const PX_ICONS={
   flag:['.k.....','.kyyy..','.kyyyyy','.kyyy..','.k.....','.k.....','kkk....'],
   blu:['.......','.....hh','h...hhk','.hhhhh.','.hbbhh.','.h..h..','.......'],
 };
+const LOCK_SVG='<div class="lockov"><svg class="px" width="44" height="44" viewBox="0 0 8 8"><path d="M2 1h4v1h1v2h1v4H0V4h1V2h1zM3 2v2h2V2z" fill="#e6edee"/><path d="M3 5h2v2H3z" fill="#59666b"/></svg></div>';
 function pxIcon(name,sc=2){const g=PX_ICONS[name];let r='';g.forEach((row,y)=>[...row].forEach((c,x)=>{if(c!=='.')r+=`<rect x="${x}" y="${y}" width="1" height="1" fill="${PX_PAL[c]}"/>`;}));
   return`<svg class="px pxi" width="${7*sc}" height="${7*sc}" viewBox="0 0 7 7">${r}</svg>`;}
 function startDay(){if(NET.role==='guest'){netSend({t:'act',a:'start'});return;}day++;resetDay();usePl(players[0]);save();modalEl.classList.add('hide');state='play';document.body.style.cursor='none';blip(660,.1,'square',.05);}

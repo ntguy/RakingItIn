@@ -365,9 +365,9 @@ const HOUSES=TUTORIAL?[
     {t:'tree',x:34,y:90,r:11,pal:2}, {t:'mulch',x0:70,y0:172,x1:180,y1:184,fl:false}, {t:'mulch',x0:202,y0:172,x1:312,y1:184,fl:false},
     {t:'prop',k:'bench',x:158,y:220}, {t:'prop',k:'bench',x:225,y:221}, {t:'tree',x:104,y:210,r:14,pal:1},
     {t:'tree',x:286,y:210,r:14,pal:3}, {t:'pot',x:148,y:178,big:false}, {t:'pot',x:225,y:179,big:false}]},
-  {s:6,hood:2,level:4,face:'W',x:2196,y:1490,w:460,d:408,name:'THE WILLOWS',tag:'LUXURY CONDOS',...YARD.thewillows,yard:[
+  {s:6,hood:2,level:5,gate:'full',face:'W',x:2196,y:1490,w:460,d:408,name:'THE WILLOWS',tag:'LUXURY CONDOS',...YARD.thewillows,yard:[
     {t:'path',x0:295,y0:362,x1:305,y1:370,fl:false}, {t:'drive',x0:200,y0:356,x1:260,y1:408,fl:false}, {t:'drive',x0:150,y0:370,x1:310,y1:408,fl:false},
-    {t:'car',x:230,y:390,vert:true,dir:-1}, {t:'car',x:170,y:391,vert:true,dir:-1}, {t:'struct',k:'wing',x0:70,y0:64,x1:136,y1:290,roof:'spa',gap:[168,188]},
+    {t:'car',x:230,y:378,vert:true,dir:-1}, {t:'car',x:170,y:378,vert:true,dir:-1}, {t:'struct',k:'wing',x0:70,y0:64,x1:136,y1:290,roof:'spa',gap:[168,188]},
     {t:'struct',k:'wing',x0:324,y0:64,x1:390,y1:290,roof:'sport',gap:[168,188]}, {t:'path',x0:136,y0:102,x1:146,y1:256,fl:false}, {t:'path',x0:314,y0:102,x1:324,y1:256,fl:false},
     {t:'mulch',x0:136,y0:70,x1:168,y1:102,qa:[0,0],fl:false}, {t:'mulch',x0:292,y0:70,x1:324,y1:102,qa:[1,0],fl:false}, {t:'mulch',x0:136,y0:256,x1:168,y1:290,qa:[0,1],fl:false},
     {t:'mulch',x0:292,y0:256,x1:324,y1:290,qa:[1,1],fl:false}, {t:'tree',x:146,y:80,r:10,pal:0}, {t:'tree',x:314,y:80,r:10,pal:2},

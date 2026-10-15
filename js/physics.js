@@ -13,6 +13,7 @@ function collidePlayer(){
     const l=P.x-(w.x0-r),rr=(w.x1+r)-P.x,t=P.y-(w.y0-r),b=(w.y1+r)-P.y,m=Math.min(l,rr,t,b);
     if(m===l)P.x=w.x0-r;else if(m===rr)P.x=w.x1+r;else if(m===t)P.y=w.y0-r;else P.y=w.y1+r;}};
   for(const w of WALLS){if(P.x>w.x0-10&&P.x<w.x1+10&&P.y>w.y0-10&&P.y<w.y1+10)push(w);}
+  for(const L of LOTS)if(L.gate&&fullLocked(L))push(lotGate(L));
   const o=pushOutTruck(P.x,P.y,r);if(o){P.x=o[0];P.y=o[1];}
   for(const t of TREES){const dx=P.x-t.x,dy=P.y-t.y;if(Math.abs(dx)>12||Math.abs(dy)>12)continue;const d=Math.hypot(dx,dy),m=r+5;if(d<m&&d>0){P.x=t.x+dx/d*m;P.y=t.y+dy/d*m;}}
   for(const p of POTS){if(p.broken)continue;const dx=P.x-p.x,dy=P.y-p.y;if(Math.abs(dx)>12||Math.abs(dy)>12)continue;const d=Math.hypot(dx,dy),m=r+p.r;if(d<m&&d>0){P.x=p.x+dx/d*m;P.y=p.y+dy/d*m;}}
@@ -40,6 +41,7 @@ function blowParams(p){
   const a=att(),tl=upg.tune;let F,R,deg,lift;
   if(p<=1){F=BASE.lowF*p;R=BASE.lowR*(.55+.45*p);deg=a.coneLo;lift=.07*p;}
   else{const k=p-1;F=BASE.lowF+(BASE.highF-BASE.lowF)*k;R=BASE.lowR+(BASE.highR-BASE.lowR)*k;deg=a.coneLo+(a.coneHi-a.coneLo)*k;lift=.07+(BASE.liftHi-.07)*k;}
+  if(a.vac){const m=vacSuck(cur.vacN||0);F*=m;R*=.55+.45*m;}
   return{F:F*a.force*TUNE.force[tl],R:R*a.range*TUNE.range[tl],cosH:Math.cos(deg*Math.PI/180),lift:lift*a.lift*TUNE.lift[tl],vortex:!!a.vortex,twin:!!a.twin};
 }
 function hitPed(x,y){for(let k=0;k<peds.length;k++){const p=peds[k];if(Math.abs(x-p.x)<4&&y>p.y-5&&y<p.y+3){complain(p);return;}}}
@@ -54,7 +56,9 @@ function updateLeaves(dt){
     if(bp.vortex){const d=pl.vortexD;tgx=nx+ax*d;tgy=ny+ay*d;}
     pl.bl={nx,ny,range,cosH,tx:tgx,ty:tgy,vort:bp.vortex};
     const hi=(pl.mode||pl.lastMode)===2;
-    if(p>.02)B.push({nx,ny,ax,ay,range,R2:range*range,F:bp.F,cosH,inv:1/(1-cosH),liftK:bp.lift,vort:bp.vortex,tgx,tgy,hi});
+    // the vacuum only pulls on a left click; its right click shoots the tank out instead of blowing
+    const vac=pl.equipped==='vac';
+    if(p>.02&&(!vac||pl.mode===1))B.push({nx,ny,ax,ay,range,R2:range*range,F:bp.F,cosH,inv:1/(1-cosH),liftK:bp.lift,vort:bp.vortex,tgx,tgy,hi,suck:vac,pl,m:vacSuck(pl.vacN||0)});
     // the twin nozzle's second outlet points straight back from the pack
     if(bp.twin){const bx=pl.P.x-ax*tube,by=pl.P.y-ay*tube;pl.bl2={nx:bx,ny:by,range,cosH,ax:-ax,ay:-ay};
       if(p>.02)B.push({nx:bx,ny:by,ax:-ax,ay:-ay,range,R2:range*range,F:bp.F,cosH,inv:1/(1-cosH),liftK:bp.lift,vort:false,tgx:0,tgy:0,hi});}
@@ -95,7 +99,10 @@ function updateLeaves(dt){
           const t=1-d/range,ang=(c-cosH)*inv,f=F*t*(.3+.7*ang)*(z>1?1.3:1);
           if(z>.3||f>THR[i]*(nDT&&z<1&&onTarp(x,y)?tThr:1)){
             if(b.hi)UH[HOME[i]]=1;else UL[HOME[i]]=1;
-            if(vort){
+            if(b.suck){
+              // pulled in toward the nozzle, lifted a little on the way
+              const rx=dx/d,ry=dy/d;vx-=rx*f*dt*.9;vy-=ry*f*dt*.9;vz+=f*liftK*LIFT[i]*dt*.15;
+            }else if(vort){
               // steer the leaf toward a speed and heading rather than shoving it: a spiral in toward the aim point that
               // slows to nothing at the middle, so leaves settle into a pile instead of overshooting. More power only
               // makes them get there quicker
@@ -163,6 +170,11 @@ function updateLeaves(dt){
       const w=fromTruck(nlx,nly);LX[i]=w[0];LY[i]=w[1];bounceLeaf(i,nx2,ny2);}}}
     if(havePeds&&z<16&&(z>.5||s2>900))hitPed(LX[i],LY[i]);
   }
+  // anything that reaches the vacuum's mouth goes into the tank (the mouth shrinks as the tank fills)
+  for(const b of B){if(!b.suck)continue;
+    const pl=b.pl,pi=players.indexOf(pl),cr=4+6*b.m,c2=cr*cr;
+    for(let i=0;i<N;i++){if(ST[i]!==0||LZ[i]>16)continue;const dx=LX[i]-b.nx;if(dx>cr||dx<-cr)continue;const dy=LY[i]-b.ny;if(dx*dx+dy*dy>c2)continue;
+      ST[i]=6;UN[i]=pi;VX[i]=VY[i]=VZ[i]=0;pl.vacN++;statsT=1;}}
   airCount=air;rustleLeaves=slide;leafActive=act;
 }
 // a tunnel's roof goes see-through while anyone's walking under it
@@ -356,6 +368,10 @@ function updateParticles(dt){
   for(const pl of blowers(.05))withPl(pl,()=>{
     pl.streakAcc=(pl.streakAcc||0)+power*70*dt;const half=Math.acos(bl.cosH),base=Math.atan2(aim.y,aim.x);
     while(pl.streakAcc>=1){pl.streakAcc--;const a=base+(rnd()*2-1)*half*.8,sp=(120+rnd()*120)*(.6+power*.4)*Math.sqrt(att().range),l=.18+rnd()*.22*power;
+      if(att().vac&&mode===1){
+        // the lines reach as far as the real pull does (bl.range already shrinks with the tank) and fan in half as much
+        const f=.55+.45*vacSuck(pl.vacN||0),g=(1+f)/2,d=bl.range*(.35+rnd()*.65),a2=base+(a-base)*g;
+        streaks.push({x:bl.nx+Math.cos(a2)*d,y:bl.ny+Math.sin(a2)*d,vx:-Math.cos(a2)*sp*.7,vy:-Math.sin(a2)*sp*.7,l:l*.7,m:l*.7,v:false,sw:1});continue;}
       streaks.push({x:bl.nx,y:bl.ny,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,l,m:l,v:bl.vort,tx:bl.tx,ty:bl.ty,sw:rnd()<.5?1:-1});
       if(pl.bl2){const b2=pl.bl2,a2=a+Math.PI;streaks.push({x:b2.nx,y:b2.ny,vx:Math.cos(a2)*sp,vy:Math.sin(a2)*sp,l,m:l,v:false,sw:1});}}
   });

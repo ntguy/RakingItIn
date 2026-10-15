@@ -67,7 +67,7 @@ function hostData(m){
       else if(e.startsWith('eq:')){const a=ATT.filter(x=>owned.includes(x.id))[+e.slice(3)];if(a)equip(a.id);}});}
   else if(m.t==='act'&&state==='shop'){
     if(m.a==='up')buyUpgrade(p2,m.id);
-    else if(m.a==='buy'){const a=ATT.find(x=>x.id===m.id);let ok=false;withPl(p2,()=>{if(a&&!owned.includes(a.id)&&money>=a.price){money-=a.price;owned.push(a.id);equipped=a.id;ok=true;}});if(ok){chaChing();renderNight();}}
+    else if(m.a==='buy'){const a=ATT.find(x=>x.id===m.id);let ok=false;withPl(p2,()=>{if(a&&!locked(a)&&!owned.includes(a.id)&&money>=a.price){money-=a.price;owned.push(a.id);equipped=a.id;ok=true;}});if(ok){chaChing();renderNight();}}
     else if(m.a==='start')startDay();}
 }
 // last values sent to the guest for each leaf (quantized), so only changes go over the wire

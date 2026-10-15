@@ -22,7 +22,7 @@ function interact(){
   if(carryPkg&&truckPart()==='back'&&!TUT.on){stealPkg();return;}
   if(carryPkg){putDownPkg();return;}
   const pk=nearPkg();if(pk&&!bundle&&pk.far){pickUpPkg(pk);return;}
-  const L=tutOk('knock')&&nearDoor();if(L){if(lotLocked(L)){floatText(P.x,P.y-14,'NOT HIRING YOU YET','#fe5f55');blip(150,.15,'sawtooth',.04,90);return;}if(!L.done){if(cur.dev.t==='net'){const s0=lotStats(L),p0=calcPay(L,s0);pendingLot=L;pendingPay=p0;L.pct=s0.pct;const st=state;confirmCloseout();state=st;}else openCloseout(L);}return;}
+  const L=tutOk('knock')&&nearDoor();if(L){if(lotLocked(L)){floatText(P.x,P.y-14,fullLocked(L)?'FULL GAME ONLY':'NOT HIRING YOU YET','#fe5f55');blip(150,.15,'sawtooth',.04,90);return;}if(!L.done){if(cur.dev.t==='net'){const s0=lotStats(L),p0=calcPay(L,s0);pendingLot=L;pendingPay=p0;L.pct=s0.pct;const st=state;confirmCloseout();state=st;}else openCloseout(L);}return;}
   if(pk&&!bundle){pickUpPkg(pk);return;}
   const net=tutOk('net')&&nearNet();if(net){if(bundle)floatText(P.x,P.y-14,'HANDS FULL','#fe5f55');else grabNet(net);return;}
   const part=truckPart();
@@ -175,7 +175,7 @@ function breakPot(p){
 // ---------- closeout
 function lotStats(L){
   let total=0,good=0,fancy=0,pool=0;const k=L.k;
-  for(let i=0;i<N;i++){if(HOME[i]!==k)continue;total++;const st=ST[i];if(st===3){pool++;continue;}if(LZ[i]>3||st===2||st===4||st===5)continue;const z=zoneAt(L,LX[i],LY[i]);if(z===1)good++;else if(z===2)fancy++;}
+  for(let i=0;i<N;i++){if(HOME[i]!==k)continue;total++;const st=ST[i];if(st===3){pool++;continue;}if(LZ[i]>3||st===2||st===4||st===5||st===6)continue;const z=zoneAt(L,LX[i],LY[i]);if(z===1)good++;else if(z===2)fancy++;}
   const inB=bundle?(bundle.counts[k]||0):0;
   total+=L.hauled+inB;good+=L.hauled;
   return{total,good,fancy,pool,pct:total?good/total:1};

@@ -33,10 +33,10 @@ const upDesc=(u,lvl)=>typeof u.desc==='function'?u.desc(lvl):u.desc;
 function clampUpg(u){for(const k in UPG)u[k]=Math.min(u[k]||0,UPG[k].max);return u;}
 function newPlayer(i,dev,prof){
   const pr=prof||{money:0,upg:{},owned:['std'],equipped:'std'};
-  return{i,dev,pal:PLAYER_PALS[i],P:{x:0,y:0,vx:0,vy:0,walk:0},aim:{x:1,y:-.3},cam:{x:0,y:0},
+  return{i,dev,pal:i===0?lookPal():PLAYER_PALS[i],P:{x:0,y:0,vx:0,vy:0,walk:0},aim:{x:1,y:-.3},cam:{x:0,y:0},
     power:0,mode:0,battery:BATT_BASE,swapT:0,tieT:0,bundle:null,heldNet:null,carryPkg:null,driving:false,riding:false,
     equipped:pr.equipped||'std',owned:(pr.owned||['std']).slice(),upg:clampUpg({spare:0,cap:0,tune:0,boots:0,tarp:0,bigtarp:0,sticky:0,light:0,solar:0,rakecap:0,rakewide:0,rakeshovel:0,...pr.upg}),money:pr.money||0,tarpsUsed:0,
-    bl:{nx:0,ny:0,range:0,cosH:1,tx:0,ty:0},raking:false,rakeN:0,rake:{down:false,eff:RAKE_REACH,vL:-RAKE_WIDTHS[0]/2,vR:RAKE_WIDTHS[0]/2,prev:null,hx:0,hy:0,contact:0,load:0,drop:null,fullT:-9},lastEmptyBuzz:0,wasEmpty:false,netPrev:null,netFullT:-9,curLot:null,statsCache:null,statsT:0,autoMode:'kbm',vortexD:40,autoPad:-1};
+    bl:{nx:0,ny:0,range:0,cosH:1,tx:0,ty:0},raking:false,rakeN:0,vacN:0,vacAcc:0,rake:{down:false,eff:RAKE_REACH,vL:-RAKE_WIDTHS[0]/2,vR:RAKE_WIDTHS[0]/2,prev:null,hx:0,hy:0,contact:0,load:0,drop:null,fullT:-9},lastEmptyBuzz:0,wasEmpty:false,netPrev:null,netFullT:-9,curLot:null,statsCache:null,statsT:0,autoMode:'kbm',vortexD:40,autoPad:-1};
 }
 function usePl(pl){if(cur)storePl();cur=pl;P=pl.P;aim=pl.aim;PPAL=pl.pal;power=pl.power;mode=pl.mode;battery=pl.battery;swapT=pl.swapT;tieT=pl.tieT;bundle=pl.bundle;heldNet=pl.heldNet;
   carryPkg=pl.carryPkg;driving=pl.driving;equipped=pl.equipped;owned=pl.owned;upg=pl.upg;money=pl.money;tarpsUsed=pl.tarpsUsed;bl=pl.bl;lastEmptyBuzz=pl.lastEmptyBuzz;

@@ -11,7 +11,7 @@ function drawLeaves(cx,cy){
   gBuf.fill(0);aBuf.fill(0);
   const vw=VW,vh=VH,Q=Math.PI/4;
   for(let i=0;i<N;i++){
-    if(ST[i]===1)continue;
+    if(ST[i]===1||ST[i]===6)continue;
     const x=LX[i]-cx,y=LY[i]-cy,z=LZ[i];
     if(x<-4||x>vw+4||y<-4||y-z>vh+4)continue;
     const ix=Math.floor(x),iy=Math.floor(y);
@@ -114,6 +114,14 @@ function drawPools(cx,cy){
     if(Math.max(n.x,ex)-cx<-6||Math.min(n.x,ex)-cx>VW+6||Math.max(n.y,ey)-cy<-6||Math.min(n.y,ey)-cy>VH+6)continue;
     drawNetSprite(ctx,n.x-cx,n.y-cy,ex-cx,ey-cy,wet(ex,ey));}
 }
+// how many leaves are in the vacuum's tank, over the pack on the player's back
+function drawVacCount(cx,cy){
+  if(!cur.vacN||bundle)return;
+  const t=String(cur.vacN),tw=t.length*4-1,x=Math.round(P.x-cx-aim.x*4-tw/2),y=Math.round(P.y-cy-17-aim.y*2);
+  ctx.globalAlpha=.8;
+  for(const [dx,dy] of [[-1,0],[1,0],[0,-1],[0,1]])pxText(t,x+dx,y+dy,'#1a0f0a');
+  pxText(t,x,y,'#ffffff');ctx.globalAlpha=1;
+}
 function drawPlayer(cx,cy){
   const x=Math.round(P.x-cx),y=Math.round(P.y-cy),ax=aim.x,ay=aim.y,a=att();
   const mv=Math.hypot(P.vx,P.vy),walking=mv>8,bob=walking&&Math.sin(P.walk*2)>0?1:0,inWater=wet(P.x,P.y)>0;
@@ -147,15 +155,15 @@ function drawPlayer(cx,cy){
   const bp=battery/capacity(),lowBlink=bp<.2&&Math.sin(time*12)<0;
   ctx.fillStyle=battery<=0?'#3a0d0d':bp>.5?'#4bc26a':bp>.2?'#ffcf4a':(lowBlink?'#5a1a1a':'#fe5f55');ctx.fillRect(bx,bby-1,2,2);
   if(ay<-.35){tube();net();rake();}
-  ctx.fillStyle=PPAL.shirt[0];pcircle(ctx,x,by+1,5);ctx.fillStyle=PPAL.shirt[1];pcircle(ctx,x,by,4);
+  ctx.fillStyle=PPAL.shirt[0];pcircle(ctx,x,by+1,5);ctx.fillStyle=PPAL.shirt[1];pcircle(ctx,x,by,4);patCircle(ctx,x,by,4,PPAL.sp,PPAL.spc);
   // (the light suit turns the shirt's seams into glowing strips)
   ctx.fillStyle=upg.light>2?'#c8f4ff':PPAL.shirt[2];ctx.fillRect(x-4,by,9,1);ctx.fillRect(x-1,by-4,1,9);ctx.fillRect(x+2,by-3,1,7);
   ctx.fillStyle=PPAL.shirt[3];ctx.fillRect(x-3,by-3,2,1);
   if(ay>=-.35){tube();net();rake();}
   if(tieT>0){ctx.fillStyle='#f2c29a';const k=Math.sin(time*30)*2;ctx.fillRect(Math.round(x+ax*6+k)-1,Math.round(by+ay*6)-1,2,2);ctx.fillRect(Math.round(x+ax*6-k)-1,Math.round(by+ay*6+1)-1,2,2);}
   const hy=by-2;
-  ctx.fillStyle=PPAL.cap[0];pcircle(ctx,x,hy+1,3);ctx.fillStyle=PPAL.cap[1];pcircle(ctx,x,hy,3);ctx.fillStyle=PPAL.cap[2];ctx.fillRect(x-2,hy-2,2,1);
-  ctx.fillStyle='#ff9800';ctx.fillRect(Math.round(x-ay*3.5)-1,Math.round(hy+ax*3.5)-1,2,2);ctx.fillRect(Math.round(x+ay*3.5)-1,Math.round(hy-ax*3.5)-1,2,2);
+  ctx.fillStyle=PPAL.cap[0];pcircle(ctx,x,hy+1,3);ctx.fillStyle=PPAL.cap[1];pcircle(ctx,x,hy,3);patCircle(ctx,x,hy,3,PPAL.cp,PPAL.cpc);ctx.fillStyle=PPAL.cap[2];ctx.fillRect(x-2,hy-2,2,1);
+  ctx.fillStyle=PPAL.cap[1];ctx.fillRect(Math.round(x-ay*3.5)-1,Math.round(hy+ax*3.5)-1,2,2);ctx.fillRect(Math.round(x+ay*3.5)-1,Math.round(hy-ax*3.5)-1,2,2);
   ctx.fillStyle=PPAL.cap[3];ctx.fillRect(Math.round(x+ax*3.5)-1,Math.round(hy+ay*3.5)-1,3,3);ctx.fillStyle=PPAL.cap[2];ctx.fillRect(Math.round(x+ax*4)-1,Math.round(hy+ay*4)-1,2,2);
   if(bundle){
     const r=Math.round(4+Math.min(6,Math.sqrt(bundle.total)/4)),sx=x,sy=by-r-2;
@@ -267,6 +275,27 @@ function drawSign(L,s,cx,cy){
   ctx.fillStyle='#f4efe0';ctx.fillRect(bx+1,y-15,bw-2,12);
   ctx.fillStyle='#e0a418';const sx0=x-2;for(let r=0;r<5;r++)for(let k=0;k<5;k++)if(STAR_PX[r][k]==='1')ctx.fillRect(sx0+k,y-14+r,1,1);
   pxText(n,bx+2,y-8,'#2a2e33');
+}
+// the padlocked gate across the whole frontage of a house that needs the full game: an iron fence with posts, and a
+// wider gate with a brass padlock where the walk meets the street
+// the gate runs between the hedges at either end of the frontage, on the lot line
+const GATE_END=9;
+function lotGate(L){if(L.gateRect)return L.gateRect;
+  const a=L.T(GATE_END,L.d-5),b=L.T(L.w-GATE_END,L.d);return L.gateRect={x0:Math.min(a[0],b[0])-1,y0:Math.min(a[1],b[1]),x1:Math.max(a[0],b[0])+1,y1:Math.max(a[1],b[1])};}
+// the locked gate you're standing beside, if any
+function nearLockedGate(){for(const L of LOTS)if(L.gate&&fullLocked(L)){const [px,py]=L.T(L.w/2,L.d-3);if(Math.hypot(P.x-px,P.y-py)<50)return L;}return null;}
+function drawLotGate(L,cx,cy){
+  const g=lotGate(L);if(g.x1-cx<-12||g.x0-cx>VW+12||g.y1-cy<-12||g.y0-cy>VH+12)return;
+  const gx=L.w/2,fy=L.d-3;
+  for(let t=GATE_END;t<=L.w-GATE_END;t++){const [wx,wy]=L.T(t,fy),x=Math.round(wx-cx),y=Math.round(wy-cy);if(x<-4||x>VW+4||y<-4||y>VH+4)continue;
+    const inGate=Math.abs(t-gx)<=24,post=t%12===0||Math.abs(Math.abs(t-gx)-24)<1;
+    ctx.fillStyle=inGate?'#3a3f46':'#2a2f35';ctx.fillRect(x-1,y-1,2,2);
+    if(inGate&&t%4===0){ctx.fillStyle='#6a727a';ctx.fillRect(x,y,1,1);}
+    if(post){ctx.fillStyle='#15181b';ctx.fillRect(x-2,y-2,4,4);ctx.fillStyle='#8a9199';ctx.fillRect(x-1,y-1,1,1);}}
+  const [lx,ly]=L.T(gx,fy),x=Math.round(lx-cx),y=Math.round(ly-cy);if(x<-8||x>VW+8||y<-10||y>VH+10)return;
+  ctx.fillStyle='#15181b';ctx.fillRect(x-4,y-1,9,8);ctx.fillRect(x-3,y-5,1,5);ctx.fillRect(x+3,y-5,1,5);ctx.fillRect(x-3,y-6,7,1);
+  ctx.fillStyle='#c9ced3';ctx.fillRect(x-2,y-5,1,5);ctx.fillRect(x+2,y-5,1,5);ctx.fillRect(x-2,y-5,5,1);
+  ctx.fillStyle='#e0b53a';ctx.fillRect(x-3,y,7,6);ctx.fillStyle='#f6d36a';ctx.fillRect(x-3,y,7,1);ctx.fillStyle='#15181b';ctx.fillRect(x,y+2,1,2);
 }
 function drawDoorBadges(cx,cy){
   const nd=nearDoor();
@@ -415,13 +444,14 @@ function renderView(){
   for(const k of packages)spr.push([k===carryPkg?P.y+.5:k.y,()=>drawPackage(k,cx,cy)]);
   for(const q of squirrels)spr.push([q.y,()=>drawSquirrel(q,cx,cy)]);
   for(const m of MAILBOXES)spr.push([m.y+8,()=>drawMailbox(m,cx,cy)]);
-  for(const L of LOTS)if(lotLocked(L))for(const s of signSpots(L))spr.push([s.y,()=>drawSign(L,s,cx,cy)]);
+  for(const L of LOTS)if(fullLocked(L))spr.push([L.door.y+14,()=>drawLotGate(L,cx,cy)]);
+  for(const L of LOTS)if(repLocked(L))for(const s of signSpots(L))spr.push([s.y,()=>drawSign(L,s,cx,cy)]);
   {const lit=sky(hour).dark>.05;for(const L of ALL_LOTS)for(const l of L.lamps||[])spr.push([l.y,()=>drawYardLamp(l,cx,cy,lit)]);}
   for(const b of birds){ctx.fillStyle='rgba(0,0,0,.16)';ctx.fillRect(Math.round(b.x-cx)-1,Math.round(b.y-cy),3,1);}
   for(const c of CARS)spr.push([c.y1,()=>drawCar(c,cx,cy)]);
   for(const st of STREETLIGHTS)spr.push([st.y+1,()=>drawStreetlight(st,cx,cy)]);
   for(const p of POTS){if(p.x-cx<-14||p.x-cx>VW+14||p.y-cy<-4||p.y-cy>VH+24)continue;spr.push([p.y,()=>drawPot(p,cx,cy)]);}
-  for(const pl of players)if(onFoot(pl))spr.push([pl.P.y,()=>withPl(pl,()=>drawPlayer(cx,cy))]);
+  for(const pl of players)if(onFoot(pl))spr.push([pl.P.y,()=>withPl(pl,()=>{drawPlayer(cx,cy);drawVacCount(cx,cy);})]);
   spr.push([TR.y+12,()=>drawTruck(cx,cy)]);
   spr.sort((a,b)=>a[0]-b[0]);for(const s of spr)s[1]();
   for(const s of puffs){ctx.fillStyle=`rgba(200,200,200,${(s.l/s.m*.35).toFixed(2)})`;const r=Math.round((1-s.l/s.m)*3)+1;ctx.fillRect(Math.round(s.x-cx)-r,Math.round(s.y-cy)-r,r*2,r*2);}

@@ -16,7 +16,7 @@ function frame(now){
   let dt=(now-last)/1000;last=now;if(dt>1/20)dt=1/20;if(dt<=0)dt=1/240;const t0=performance.now();
   if(NET.role==='guest'){storePl();pollPad();if(state!=='play'||NET.localMenu)padInput(dt);guestFrame(dt);render();updateHUD(dt);updateFx(dt);updateAudio();updateRumble();perfFrame(now,performance.now()-t0);requestAnimationFrame(frame);return;}
   storePl();pollPad();padInput(dt);joinByKeyboard();
-  if(state==='play')update(dt);else{time+=dt;power=0;mode=0;}
+  if(state==='play')update(dt);else{time+=dt;power=0;mode=0;if(state==='intro')introTick(dt);}
   netHostTick(dt);
   render();updateHUD(dt);updateFx(dt);updateAudio();updateRumble();
   perfFrame(now,performance.now()-t0);

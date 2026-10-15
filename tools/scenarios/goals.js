@@ -2,7 +2,7 @@
 localStorage.clear();
 document.querySelector('#titleBtns button').click();
 await new Promise(r=>setTimeout(r,300));
-closeMenu();
+introSkip();closeMenu();
 const out={};
 // force a known goal set: the house goals
 GOALS.act=['rake50','fast','low10'];

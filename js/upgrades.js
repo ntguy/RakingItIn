@@ -22,7 +22,15 @@ const ATT=[
   {id:'eco',name:'ECO TIP',short:'ECO',desc:'Gentler air, but uses 35% less battery. Great for long days.',price:139,range:.9,coneLo:30,coneHi:24,force:.72,lift:.8,drain:.65,tube:14,tip:'#4bc26a'},
   {id:'twin',name:'TWIN NOZZLE',short:'TWIN',desc:'Splits the air out the front and the back at the same time.',price:499,range:.92,coneLo:26,coneHi:21,force:.72,lift:.8,drain:1.3,tube:9,tip:'#ff5f8f',twin:true},
   {id:'vortex',name:'VORTEX TIP',short:'VORTEX',desc:'Spins the air so leaves swirl in toward one spot. Builds piles right where you aim.',price:499,range:1,coneLo:36,coneHi:30,force:1.05,lift:.45,drain:1.1,tube:15,tip:'#b06cff',vortex:true},
+  {id:'vac',name:'VACUUM',short:'VACUUM',desc:()=>glyphStyle()==='kbm'?'Left click sucks leaves in, right click blows them back out.':`${G('low')} sucks leaves in, ${G('high')} blows them back out.`,price:2000,gate:'full',range:.76,coneLo:29,coneHi:29,force:1.6,lift:.6,drain:1.1,tube:14,tip:'#7f8cff',vac:true},
 ];
+// the vacuum's tank: suction falls off as 88/(88+n) (50 leaves in = 64% as strong, 100 = 47%, 500 = 15%) and walking speed
+// as .59*n/(n+88) (about -21% at 50, -31% at 100, -50% at 500), both smooth so there's no cliff to hit
+const VAC_OUT=110;
+const vacSuck=n=>88/(88+n),vacSlow=n=>1-.59*n/(n+88);
+// the full game unlock (a code typed into the pause menu) is kept in the save; it opens the items marked gate:'full'
+let fullUnlock=false;const FULL_CODE='BLUTHANKSYOU',locked=a=>a.gate==='full'&&!fullUnlock;
+let seenVac=false; // the how-to popup has been shown in this save
 const TUNE={force:[1,1.2,1.4,1.6,2],range:[1,1.05,1.12,1.22,1.35],lift:[1,1.15,1.25,1.35,1.65],drain:[1,1.05,1.12,1.2,1.35]};
 const BASE={lowF:600,highF:731,lowR:74,highR:90,liftHi:.18};
 let upg={spare:0,cap:0,tune:0,boots:0,tarp:0,bigtarp:0,sticky:0,light:0,solar:0,rakecap:0,rakewide:0,rakeshovel:0};

@@ -16,6 +16,9 @@ function updateTruck(dt,ix,iy){
   else{TR.v*=Math.exp(-1.3*dt);if(Math.abs(TR.v)<2)TR.v=0;}
   TR.steer+=(ix-TR.steer)*Math.min(1,dt*8);
   TR.a+=TR.steer*TR.v*dt*.88/(30+Math.abs(TR.v)*.3);
+  // let go of the wheel and the nose eases to the nearest heading the sprite can be drawn at (it turns in steps of pi/32),
+  // so a truck that looks straight really is: otherwise it could be up to 2.8 degrees off and slowly drift sideways
+  if(Math.abs(TR.steer)<.04&&Math.abs(TR.v)>3){const q=Math.PI/32;TR.a+=(Math.round(TR.a/q)*q-TR.a)*Math.min(1,dt*8);}
   const [c,s]=tdir();TR.x+=c*TR.v*dt;TR.y+=s*TR.v*dt;goalAdd('mile',Math.abs(TR.v)*dt/MILE_PX);
   // collisions: 3 circles along the truck
   let hit=false,car=null,cpt=null,fresh=false,tHit={v:null,sp:0},carImp=0;const r=11,sp0=Math.abs(TR.v);

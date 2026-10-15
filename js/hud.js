@@ -63,7 +63,10 @@ function hudView(dt){
   setIf('tarps',tarpsLeft(),v=>{E('gTarps').innerHTML='&times;'+v;E('gTarps').style.color=v>0?'#fff':'#fe5f55';});
   setIf('carry',bundle?bundle.total:-1,v=>{E('gBundle').style.display=v<0?'none':'flex';E('gCarry').textContent=v;});
   setIf('net',heldNet?heldNet.n:-1,v=>{E('gNet').style.display=v<0?'none':'flex';E('gNetN').textContent=v;E('gNetN').style.color=v>=NET_CAP?'#fe5f55':'';E('gNetCap').textContent='/ '+NET_CAP;});
-  setIf('rake',cur.raking?cur.rakeN+':'+rakeCap(cur):'',v=>{E('gRake').style.display=v?'flex':'none';if(!v)return;
+  const vacOn=!cur.raking&&att().vac;
+  setIf('rake',cur.raking?cur.rakeN+':'+rakeCap(cur):vacOn?'v'+Math.round(vacSuck(cur.vacN)*100):'',v=>{E('gRake').style.display=v?'flex':'none';if(!v)return;
+    E('gRakeL').textContent=vacOn?'VACUUM SUCTION:':'RAKE';
+    if(vacOn){E('gRakeN').textContent=Math.round(vacSuck(cur.vacN)*100)+'%';E('gRakeN').style.color='';E('gRakeCap').textContent='';return;}
     E('gRakeN').textContent=cur.rakeN;E('gRakeN').style.color=cur.rakeN>=rakeCap(cur)?'#fe5f55':'';E('gRakeCap').textContent='/ '+rakeCap(cur);});
   setIf('hot',equipped+owned.join()+glyphStyle(),()=>{
     const list=ATT.filter(a=>owned.includes(a.id)),gp=glyphStyle()!=='kbm';E('hotbar').style.display=list.length>1?'flex':'none';HV.root.classList.toggle('hb',list.length>1);
@@ -90,6 +93,7 @@ function hudView(dt){
     else if(carryPkg&&part==='back'&&!TUT.on){cls='dead calm';txt=`${G('use')} STEAL IT: +${fmt$(STEAL_PAY)} · &minus;${REP_STEAL} REP`;}
     else if(carryPkg){cls=carryPkg.far?'info':'swap';txt=carryPkg.far?`TAKE IT TO THE FRONT DOOR  ·  ${G('use')} PUT IT DOWN`:`${G('use')} LEAVE IT AT THE DOOR`;}
     else if(heldNet){const full=heldNet.n>=NET_CAP;cls=full?'dead':'info';txt=full?`${G('tarp')} EMPTY NET ON LAND`:heldNet.n?(TUT.on?`${G('tarp')} EMPTY THE NET`:`${G('tarp')} EMPTY THE NET  ·  ${G('use')} PUT IT DOWN`):`SWEEP NET THROUGH WATER  ·  ${G('use')} PUT IT DOWN`;}
+    else if(nearLockedGate()){cls='dead calm';txt=`UNLOCK FULL GAME TO SERVICE ${nearLockedGate().name}`;}
     else if(lotLocked(curLot)){cls='dead calm';txt=`HOUSE REQUIRES REPUTATION ${lotNeed(curLot)} ${STAR_ICON}`;}
     else if(door&&tutOk('knock')){cls=door.done?'info':'swap';txt=door.done?`${door.name} ALREADY PAID TODAY`:`${G('use')} KNOCK ON THE DOOR`;}
     else if(nearNet()&&tutOk('net')){cls='swap';txt=bundle?'HANDS FULL  ·  LOAD THE TARP FIRST':`${G('use')} GRAB THE POOL NET`;}

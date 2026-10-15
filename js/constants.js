@@ -43,7 +43,10 @@ const repRank=r=>r<0?'SKETCHY':REP_NAMES[repLevel(r)];
 // you earn it, and the best it reached today stays (a later penalty doesn't lock a house you already opened)
 let repPeak=0;
 const lotNeed=L=>REP_LEVELS[L.level||0];
-const lotLocked=L=>!!L&&!L.filler&&!TUTORIAL&&repLevel(Math.max(rep,repPeak))<(L.level||0);
+const repLocked=L=>!!L&&!L.filler&&!TUTORIAL&&repLevel(Math.max(rep,repPeak))<(L.level||0);
+// a house marked gate:'full' stays shut behind a padlocked gate until the full game is unlocked (see js/custom.js)
+const fullLocked=L=>!!L&&L.gate==='full'&&!fullUnlock&&!TUTORIAL;
+const lotLocked=L=>repLocked(L)||fullLocked(L);
 const TRUCK_HL=26,TRUCK_HW=12;
 // where the day starts: beside the truck, this far along it from the middle (+ toward the front)
 const SPAWN_AT=8;

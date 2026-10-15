@@ -4,7 +4,7 @@
 localStorage.clear();
 document.querySelector('#titleBtns button').click();
 await new Promise(r=>setTimeout(r,300));
-closeMenu();
+introSkip();closeMenu();
 const t0=performance.now();
 today.copHour=8;today.vanHour=8.2;hour=8.9;
 const log={};let steps=0,maxJam={};

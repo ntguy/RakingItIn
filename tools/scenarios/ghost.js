@@ -1,7 +1,7 @@
 // two vehicles wedged into each other on screen: after ~10s one should drive through the other (g1) and both move on
 localStorage.clear();
 document.querySelector('#titleBtns button').click();
-await new Promise(r=>setTimeout(r,300));closeMenu();
+await new Promise(r=>setTimeout(r,300));introSkip();closeMenu();
 today.copHour=99;today.vanHour=99;today.mailSent=true;today.carHour=99;
 // two cars driven nose to nose into each other in the same lane, right in front of the player
 const a=newVehicle('cop');a.s=700;trafficPos(a);traffic.push(a);

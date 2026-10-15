@@ -21,7 +21,7 @@ A top-down pixel-art leaf-blowing game. It is a static site with no build step: 
   it's loading, because function hoisting doesn't cross files. Once everything has loaded, anything can call anything.
 - Order is set by the `<script>` tags in `index.html`:
   util, constants, houses, upgrades, neighborhood, yard-format, leaves, background, state, gamepad, input, audio,
-  interactions, day, physics, traffic, update, render, hud, editor, net, tutorial, goals, perf, main.
+  interactions, day, custom, physics, traffic, update, render, hud, editor, net, tutorial, intro, goals, perf, main.
 - `js/perf.js` times functions by replacing `window[name]`. Keep the timed functions as top-level `function`
   declarations.
 
@@ -42,6 +42,7 @@ A top-down pixel-art leaf-blowing game. It is a static site with no build step: 
 | `audio.js` | Web Audio (blower, engine, rustle, `blip`) and the music |
 | `interactions.js` | `interact` (E/A), tarps, pool net, rake, flowerpots, closeout (`lotStats`, `calcPay`, `confirmCloseout`), package stealing |
 | `day.js` | `newToday`, `resetDay`, pause menu and settings, `endDay`, reputation (`repTally`), night summary and store (`renderNight`, `coopStore`), `pxIcon` |
+| `custom.js` | the Customization page of the pause menu (unlocked with the full game): shirts, hats, three truck bodies (`TRUCK_DRAW`: pickup, classic, electric) and paints, their prices, `CUST` (saved as `look`), `lookPal`, `applyLook`, `patCircle` |
 | `physics.js` | player collision, leaf physics (`updateLeaves`, the `HOT` grid that skips leaves nothing can stir), trees, pools, rakes, pots, particles |
 | `traffic.js` | the truck (`updateTruck`, crashes), pedestrians and Blu, traffic AI (`driveVehicle`, the jam fallback where a stuck car drives through: `GHOST_ON`/`GHOST_OFF`), mail, police, parcel van and couriers, packages, critters |
 | `update.js` | `update(dt)` (the order of every system), `updatePlayer`, `updateCamera` |
@@ -50,6 +51,7 @@ A top-down pixel-art leaf-blowing game. It is a static site with no build step: 
 | `editor.js` | yard editor, a dev tool players never see: open `index.html#editor`. Left menu: houses, decor (pumpkin, garbage can, dumpster, bench, bike rack, lamp post) and car models; MOVE tool (V) drags anything. SAVE DRAFT keeps edits in `localStorage` key `rakingitin-yards-v3` (only read under `#editor`); COPY YARDS puts the JSON on the clipboard to be built into `houses.js` |
 | `net.js` | online play over PeerJS: the host runs the game, the guest sends inputs and draws snapshots (`netHostTick`, `applySnapshot`) |
 | `tutorial.js` | `TUT_STEPS`, `tutOk` (what's unlocked), the red arrow, the tutorial modals |
+| `intro.js` | the cutscene before day 1 of a fresh save (`startIntro` from `beginGame(true)`): the store scene and portraits drawn in code, typed dialogue (`INTRO` steps), the paperwork zoom; Esc skips, `introSkip()` for test scenarios |
 | `goals.js` | `GOAL_DEFS` (27, rewards $50→$500), the active three, tracking hooks (`goalAdd`, `goalBest`, `goalsHouse`), bed counts, `goalRows` (panel lines), `toggleGoals` |
 | `perf.js` | F3 profiler overlay (`perfSet`, `perfText`, `perfReport()` in the console) |
 | `main.js` | boot: build the world, create player 1, title screen, the frame loop |

@@ -173,7 +173,7 @@ const BACKYARD_FENCES=false;
 // cfg: {w,d,s (style),hood,level,name,tag, and optionally h:[x,y,w,h] for the house and dx for the door}
 function makeLot(k,cfg,R,filler,custom){
   const {w,d,s}=cfg;
-  const L={k,style:s,apt:!!cfg.apt,bdx:cfg.bdx||[],gdx:cfg.gdx||null,hood:cfg.hood??1,level:cfg.level||0,w,d,filler:!!filler,lshrubs:[],lz:[],lpaved:[],lcars:[],ltrees:[],lpots:[],lnets:[],deco:[],name:filler?'':cfg.name,tag:filler?'':cfg.tag,done:false,hauled:0,paidAmt:0};
+  const L={k,style:s,apt:!!cfg.apt,bdx:cfg.bdx||[],gdx:cfg.gdx||null,hood:cfg.hood??1,level:cfg.level||0,gate:cfg.gate||null,w,d,filler:!!filler,lshrubs:[],lz:[],lpaved:[],lcars:[],ltrees:[],lpots:[],lnets:[],deco:[],name:filler?'':cfg.name,tag:filler?'':cfg.tag,done:false,hauled:0,paidAmt:0};
   L.lfences=[{x0:0,y0:0,x1:6,y1:d},{x0:w-6,y0:0,x1:w,y1:d},{x0:0,y0:0,x1:w,y1:6}];
   // the house sits toward the street with a modest front lawn, leaving a real backyard behind it (unless it's placed)
   let hw=Math.round(clamp(w*.42,72,190)),hh=Math.round(clamp(d*.28,46,122)),F=Math.round(clamp(d*.34,64,150)+R()*8);

@@ -1,5 +1,5 @@
 // the truck starts each day parked legally in the curb lane by the first house of the highest level the player can work, facing deeper into the pricier neighborhoods (fwdOk)
-localStorage.clear();document.querySelector('#titleBtns button').click();await new Promise(r=>setTimeout(r,300));closeMenu();
+localStorage.clear();document.querySelector('#titleBtns button').click();await new Promise(r=>setTimeout(r,300));introSkip();closeMenu();
 const out=[];
 for(const r of [0,50,100,200,300,500]){
   rep=r;resetDay();

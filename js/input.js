@@ -6,6 +6,7 @@ addEventListener('keydown',e=>{
   if(!(e.code==='Enter'&&state==='play')&&!kbClaim())setInputMode('kbm');
   if(e.repeat&&(e.code==='KeyE'||e.code==='KeyQ'))return;
   keys[e.code]=true;
+  if(state==='intro'){if(!e.repeat)introKey(e.code);return;}
   if(e.code.startsWith('Arrow')||e.code==='Space'||e.code==='Tab')e.preventDefault();
   if(state==='play'&&NET.role==='guest'){
     // on the guest, actions go to the host
@@ -72,15 +73,16 @@ function equip(id){if(equipped===id)return;equipped=id;rumble(0,.25,45);const a=
 const SAVE_KEY='leafblower-save-v3';
 function save(){if(TUT.on)return;try{const p1=players[0],p2=players[1];if(cur===p1)storePl();
   const prof=p2?{money:p2.money,upg:p2.upg,owned:p2.owned,equipped:p2.equipped}:p2Profile;
-  localStorage.setItem(SAVE_KEY,JSON.stringify({money:p1.money,day,rep,upg:p1.upg,owned:p1.owned,equipped:p1.equipped,p2:prof||null,goals:goalsSave()}));}catch(e){}}
+  localStorage.setItem(SAVE_KEY,JSON.stringify({money:p1.money,day,rep,upg:p1.upg,owned:p1.owned,equipped:p1.equipped,p2:prof||null,goals:goalsSave(),seenVac,full:fullUnlock,look:CUST}));}catch(e){}}
 function loadSave(){try{const s=JSON.parse(localStorage.getItem(SAVE_KEY));if(s&&typeof s.money==='number')return s;}catch(e){}return null;}
 function setupTitle(){
   const s=loadSave(),b=document.getElementById('titleBtns');
   b.innerHTML='';
   const mkb=(txt,cls,fn)=>{const el=document.createElement('button');el.className='btn '+cls;el.textContent=txt;el.onclick=e=>{e.stopPropagation();fn();};b.appendChild(el);};
-  if(s){mkb(`CONTINUE - DAY ${s.day}`,'bounce',()=>{money=s.money;day=s.day;rep=s.rep||0;upg=clampUpg({...upg,...s.upg});owned=s.owned||['std'];equipped=s.equipped||'std';p2Profile=s.p2||null;goalsLoad(s.goals);beginGame();});mkb('NEW GAME','red',()=>{try{localStorage.removeItem(SAVE_KEY);}catch(e){}money=0;rep=0;day=1;goalsLoad(null);beginGame(true);});}
+  if(s){mkb(`CONTINUE - DAY ${s.day}`,'bounce',()=>{money=s.money;day=s.day;rep=s.rep||0;upg=clampUpg({...upg,...s.upg});owned=s.owned||['std'];equipped=s.equipped||'std';p2Profile=s.p2||null;seenVac=!!s.seenVac;fullUnlock=!!s.full;custLoad(s.look);goalsLoad(s.goals);beginGame();});mkb('NEW GAME','red',()=>{try{fullUnlock=!!(loadSave()||{}).full||fullUnlock;localStorage.removeItem(SAVE_KEY);}catch(e){}money=0;rep=0;day=1;seenVac=false;custLoad(null);goalsLoad(null);beginGame(true);});}
   else mkb('START DAY 1','bounce',()=>{goalsLoad(null);beginGame(true);});
   mkb('TUTORIAL','',()=>{location.hash='tutorial';location.reload();});
   mkb('JOIN ONLINE','',openKeypad);
 }
-function beginGame(fresh){titleEl.classList.add('hide');ensureAudio();resetDay();state='play';document.body.style.cursor='none';if(fresh===true)openMenu(true);}
+// a fresh save gets the cutscene first, which then opens the how-to-play sheet
+function beginGame(fresh){titleEl.classList.add('hide');ensureAudio();resetDay();if(fresh===true){startIntro();return;}state='play';document.body.style.cursor='none';}

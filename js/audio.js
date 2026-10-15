@@ -63,12 +63,18 @@ function makeEngine(){
   lp.type='lowpass';lp.frequency.value=220;lp.Q.value=2.2;g.gain.value=0;
   pulse.connect(am);saw.connect(sawG);sawG.connect(am);ns.connect(nbp);nbp.connect(nG);nG.connect(am);am.connect(lp);lp.connect(g);g.connect(sfxBus);
   pulse.start();saw.start();ns.start();lope.start();
-  eOsc=pulse;eGain=g;eng={pulse,saw,sawG,nG,lope,lopeG,lp,t:0,sp:0,load:0};
+  // the electric truck has no engine: a low, soft hum that climbs a little with speed (no gears, no lope), with a quieter octave above
+  const ew=AC.createOscillator();ew.type='sine';ew.frequency.value=70;const ew2=AC.createOscillator();ew2.type='triangle';ew2.frequency.value=140;
+  const ew2G=AC.createGain();ew2G.gain.value=.12;const ewG=AC.createGain();ewG.gain.value=0;ew.connect(ewG);ew2.connect(ew2G);ew2G.connect(ewG);ewG.connect(sfxBus);ew.start();ew2.start();
+  eOsc=pulse;eGain=g;eng={pulse,saw,sawG,nG,lope,lopeG,lp,ew,ew2,ewG,t:0,sp:0,load:0};
 }
 // the firing rate for a speed, in whichever gear that speed is in
 function engineHz(sp){let lo=0;for(const [top,a,b] of GEARS){if(sp<top||top===GEARS[GEARS.length-1][0])return a+(b-a)*clamp((sp-lo)/(top-lo),0,1);lo=top;}}
 function setEngine(t,on,sp,load){
-  const e=eng,hz=engineHz(sp)+load*5,rev=clamp((hz-27)/41,0,1);
+  const e=eng,ev=CUST.truck==='electric';
+  e.ewG.gain.setTargetAtTime(on&&ev?ENG_VOL*(.16+clamp(sp/150,0,1)*.3+load*.1):0,t,on?.12:.2);
+  if(ev){const w=62+sp*.55+load*10;e.ew.frequency.setTargetAtTime(w,t,.09);e.ew2.frequency.setTargetAtTime(w*2.01,t,.09);eGain.gain.setTargetAtTime(0,t,.1);return;}
+  const hz=engineHz(sp)+load*5,rev=clamp((hz-27)/41,0,1);
   e.pulse.frequency.setTargetAtTime(hz,t,.07);e.saw.frequency.setTargetAtTime(hz*2,t,.07);e.lope.frequency.setTargetAtTime(hz/2,t,.07);
   e.pulse.detune.setTargetAtTime((Math.random()-.5)*50,t,.03);e.lope.detune.setTargetAtTime((Math.random()-.5)*80,t,.05);
   // idling it lopes hard; revved up the firings smooth out
